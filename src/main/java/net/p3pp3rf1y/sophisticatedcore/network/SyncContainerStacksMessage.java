@@ -5,13 +5,11 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 
 import java.util.List;
-import java.util.function.Supplier;
 
-public class SyncContainerStacksMessage {
+public class SyncContainerStacksMessage extends SimplePacketBase {
 	private final int windowId;
 	private final int stateId;
 	private final List<ItemStack> itemStacks;
@@ -24,43 +22,40 @@ public class SyncContainerStacksMessage {
 		this.carriedStack = carriedStack;
 	}
 
-	public static void encode(SyncContainerStacksMessage msg, FriendlyByteBuf packetBuffer) {
-		packetBuffer.writeByte(msg.windowId);
-		packetBuffer.writeVarInt(msg.stateId);
-		packetBuffer.writeShort(msg.itemStacks.size());
-
-		for (ItemStack itemstack : msg.itemStacks) {
-			PacketHelper.writeItemStack(itemstack, packetBuffer);
-		}
-		packetBuffer.writeItemStack(msg.carriedStack, true);
-	}
-
-	public static SyncContainerStacksMessage decode(FriendlyByteBuf packetBuffer) {
-		int windowId = packetBuffer.readUnsignedByte();
-		int stateId = packetBuffer.readVarInt();
-		int slots = packetBuffer.readShort();
-		List<ItemStack> itemStacks = NonNullList.withSize(slots, ItemStack.EMPTY);
+	public SyncContainerStacksMessage(FriendlyByteBuf buffer) {
+		this.windowId = buffer.readUnsignedByte();
+		this.stateId = buffer.readVarInt();
+		int slots = buffer.readShort();
+		this.itemStacks = NonNullList.withSize(slots, ItemStack.EMPTY);
 
 		for (int j = 0; j < slots; ++j) {
-			itemStacks.set(j, PacketHelper.readItemStack(packetBuffer));
+			this.itemStacks.set(j, buffer.readItem());
 		}
 
-		ItemStack carriedStack = packetBuffer.readItem();
-
-		return new SyncContainerStacksMessage(windowId, stateId, itemStacks, carriedStack);
+		this.carriedStack = buffer.readItem();
 	}
 
-	public static void onMessage(SyncContainerStacksMessage msg, Supplier<NetworkEvent.Context> contextSupplier) {
-		NetworkEvent.Context context = contextSupplier.get();
-		context.enqueueWork(() -> handleMessage(msg));
-		context.setPacketHandled(true);
-	}
+	@Override
+	public void write(FriendlyByteBuf buffer) {
+		buffer.writeByte(windowId);
+		buffer.writeVarInt(stateId);
+		buffer.writeShort(itemStacks.size());
 
-	private static void handleMessage(SyncContainerStacksMessage msg) {
-		LocalPlayer player = Minecraft.getInstance().player;
-		if (player == null || !(player.containerMenu instanceof StorageContainerMenuBase) || player.containerMenu.containerId != msg.windowId) {
-			return;
+		for (ItemStack itemstack : itemStacks) {
+			buffer.writeItem(itemstack);
 		}
-		player.containerMenu.initializeContents(msg.stateId, msg.itemStacks, msg.carriedStack);
+		buffer.writeItem(carriedStack);
+	}
+
+	@Override
+	public boolean handle(Context context) {
+		context.enqueueWork(() -> {
+			LocalPlayer player = Minecraft.getInstance().player;
+			if (player == null || !(player.containerMenu instanceof StorageContainerMenuBase) || player.containerMenu.containerId != windowId) {
+				return;
+			}
+			player.containerMenu.initializeContents(stateId, itemStacks, carriedStack);
+		});
+		return true;
 	}
 }

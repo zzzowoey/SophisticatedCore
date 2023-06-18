@@ -93,13 +93,12 @@ public class ServerStorageSoundHandler {
 	}
 
 	public static void startPlayingDisc(ServerLevel serverWorld, BlockPos position, UUID storageUuid, int discItemId, Runnable onStopHandler) {
-		Vec3 pos = Vec3.atCenterOf(position);
-		PacketHandler.INSTANCE.sendToAllNear(serverWorld, serverWorld.dimension(), pos, 128, new PlayDiscMessage(storageUuid, discItemId, position));
-		putKeepAliveInfo(serverWorld, storageUuid, onStopHandler, pos);
+		PacketHandler.sendToAllNear(serverWorld, position, 128, new PlayDiscMessage(storageUuid, discItemId, position));
+		putKeepAliveInfo(serverWorld, storageUuid, onStopHandler, Vec3.atCenterOf(position));
 	}
 
 	public static void startPlayingDisc(ServerLevel serverWorld, Vec3 position, UUID storageUuid, int entityId, int discItemId, Runnable onStopHandler) {
-		PacketHandler.INSTANCE.sendToAllNear(serverWorld, serverWorld.dimension(), position, 128, new PlayDiscMessage(storageUuid, discItemId, entityId));
+		PacketHandler.sendToAllNear(serverWorld, position, 128, new PlayDiscMessage(storageUuid, discItemId, entityId));
 		putKeepAliveInfo(serverWorld, storageUuid, onStopHandler, position);
 	}
 
@@ -120,6 +119,6 @@ public class ServerStorageSoundHandler {
 	}
 
 	private static void sendStopMessage(ServerLevel serverWorld, Vec3 position, UUID storageUuid) {
-		PacketHandler.INSTANCE.sendToAllNear(serverWorld, serverWorld.dimension(), position, 128, new StopDiscPlaybackMessage(storageUuid));
+		PacketHandler.sendToAllNear(serverWorld, position, 128, new StopDiscPlaybackMessage(storageUuid));
 	}
 }

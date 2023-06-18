@@ -8,58 +8,55 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
-import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerBase;
+import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
 
-import javax.annotation.Nullable;
-import java.util.function.Supplier;
-
-public class TankClickMessage {
+public class TankClickMessage extends SimplePacketBase {
 	private final int upgradeSlot;
 
 	public TankClickMessage(int upgradeSlot) {
 		this.upgradeSlot = upgradeSlot;
 	}
 
-	public static void encode(TankClickMessage msg, FriendlyByteBuf packetBuffer) {
-		packetBuffer.writeInt(msg.upgradeSlot);
+	public TankClickMessage(FriendlyByteBuf buffer) {
+		this(buffer.readInt());
 	}
 
-	public static TankClickMessage decode(FriendlyByteBuf packetBuffer) {
-		return new TankClickMessage(packetBuffer.readInt());
+	@Override
+	public void write(FriendlyByteBuf buffer) {
+		buffer.writeInt(this.upgradeSlot);
 	}
 
-	public static void onMessage(TankClickMessage msg, Supplier<NetworkEvent.Context> contextSupplier) {
-		NetworkEvent.Context context = contextSupplier.get();
-		context.enqueueWork(() -> handleMessage(context.getSender(), msg));
-		context.setPacketHandled(true);
-	}
-
-	private static void handleMessage(@Nullable ServerPlayer sender, TankClickMessage msg) {
-		if (sender == null || !(sender.containerMenu instanceof StorageContainerMenuBase)) {
-			return;
-		}
-		AbstractContainerMenu containerMenu = sender.containerMenu;
-		UpgradeContainerBase<?, ?> upgradeContainer = ((StorageContainerMenuBase<?>) containerMenu).getUpgradeContainers().get(msg.upgradeSlot);
-		if (!(upgradeContainer instanceof TankUpgradeContainer tankContainer)) {
-			return;
-		}
-		ItemStack cursorStack = containerMenu.getCarried();
-		cursorStack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).ifPresent(fluidHandler -> {
-			TankUpgradeWrapper tankWrapper = tankContainer.getUpgradeWrapper();
-			FluidStack tankContents = tankWrapper.getContents();
-			if (tankContents.isEmpty()) {
-				drainHandler(sender, containerMenu, fluidHandler, tankWrapper);
-			} else {
-				if (!tankWrapper.fillHandler(fluidHandler, itemStackIn -> {
-					containerMenu.setCarried(itemStackIn);
-					sender.connection.send(new ClientboundContainerSetSlotPacket(-1, containerMenu.incrementStateId(), -1, containerMenu.getCarried()));
-				})) {
-					drainHandler(sender, containerMenu, fluidHandler, tankWrapper);
-				}
+	@Override
+	public boolean handle(Context context) {
+		context.enqueueWork(() -> {
+			ServerPlayer sender = context.getSender();
+			if (sender == null || !(sender.containerMenu instanceof StorageContainerMenuBase)) {
+				return;
 			}
+			AbstractContainerMenu containerMenu = sender.containerMenu;
+			UpgradeContainerBase<?, ?> upgradeContainer = ((StorageContainerMenuBase<?>) containerMenu).getUpgradeContainers().get(upgradeSlot);
+			if (!(upgradeContainer instanceof TankUpgradeContainer tankContainer)) {
+				return;
+			}
+			ItemStack cursorStack = containerMenu.getCarried();
+			cursorStack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).ifPresent(fluidHandler -> {
+				TankUpgradeWrapper tankWrapper = tankContainer.getUpgradeWrapper();
+				FluidStack tankContents = tankWrapper.getContents();
+				if (tankContents.isEmpty()) {
+					drainHandler(sender, containerMenu, fluidHandler, tankWrapper);
+				} else {
+					if (!tankWrapper.fillHandler(fluidHandler, itemStackIn -> {
+						containerMenu.setCarried(itemStackIn);
+						sender.connection.send(new ClientboundContainerSetSlotPacket(-1, containerMenu.incrementStateId(), -1, containerMenu.getCarried()));
+					})) {
+						drainHandler(sender, containerMenu, fluidHandler, tankWrapper);
+					}
+				}
+			});
 		});
+		return true;
 	}
 
 	private static void drainHandler(ServerPlayer sender, AbstractContainerMenu containerMenu, IFluidHandlerItem fluidHandler, TankUpgradeWrapper tankWrapper) {

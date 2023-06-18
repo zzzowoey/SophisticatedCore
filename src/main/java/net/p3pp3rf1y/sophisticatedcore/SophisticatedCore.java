@@ -1,66 +1,49 @@
 package net.p3pp3rf1y.sophisticatedcore;
 
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.p3pp3rf1y.sophisticatedcore.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedcore.common.CommonEventHandler;
-import net.p3pp3rf1y.sophisticatedcore.data.DataGenerators;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCompat;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(SophisticatedCore.MOD_ID)
-public class SophisticatedCore {
-	public static final String MOD_ID = "sophisticatedcore";
-	public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
+public class SophisticatedCore implements ModInitializer {
+	public static final String ID = "sophisticatedcore";
+	public static final Logger LOGGER = LogManager.getLogger(ID);
+
 	public final CommonEventHandler commonEventHandler = new CommonEventHandler();
 
 	@SuppressWarnings("java:S1118") //needs to be public for mod to work
 	public SophisticatedCore() {
-		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
-		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
+	}
+
+	@Override
+	public void onInitialize() {
+		Config.register();
+
 		commonEventHandler.registerHandlers();
-		if (FMLEnvironment.dist == Dist.CLIENT) {
-			ClientEventHandler.registerHandlers();
-		}
-		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-		modBus.addListener(SophisticatedCore::setup);
-		modBus.addListener(DataGenerators::gatherData);
 
-		IEventBus eventBus = MinecraftForge.EVENT_BUS;
-		eventBus.addListener(SophisticatedCore::serverStarted);
+		init();
 	}
 
-	private static void serverStarted(ServerStartedEvent event) {
-		ServerLevel world = event.getServer().getLevel(Level.OVERWORLD);
-		if (world != null) {
-			RecipeHelper.setWorld(world);
-		}
-	}
-
-	private static void setup(FMLCommonSetupEvent event) {
-		PacketHandler.INSTANCE.init();
+	public static void init() {
+		PacketHandler.init();
 		ModCompat.initCompats();
+
+		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+			ServerLevel world = server.getLevel(Level.OVERWORLD);
+			if (world != null) {
+				RecipeHelper.setWorld(world);
+			}
+		});
 	}
 
-	public static ResourceLocation getRL(String regName) {
-		return new ResourceLocation(getRegistryName(regName));
-	}
-
-	public static String getRegistryName(String regName) {
-		return MOD_ID + ":" + regName;
+	public static ResourceLocation getRL(String path) {
+		return new ResourceLocation(ID, path);
 	}
 }

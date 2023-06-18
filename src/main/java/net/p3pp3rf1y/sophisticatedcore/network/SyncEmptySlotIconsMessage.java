@@ -4,41 +4,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.IAdditionalSlotInfoMenu;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class SyncEmptySlotIconsMessage {
+public class SyncEmptySlotIconsMessage extends SimplePacketBase {
 	private final Map<ResourceLocation, Set<Integer>> emptySlotIcons;
 
 	public SyncEmptySlotIconsMessage(Map<ResourceLocation, Set<Integer>> emptySlotIcons) {
 		this.emptySlotIcons = emptySlotIcons;
 	}
 
-	public static void encode(SyncEmptySlotIconsMessage msg, FriendlyByteBuf packetBuffer) {
-		writeEmptySlotTextures(packetBuffer, msg.emptySlotIcons);
-	}
-
-	public static void writeEmptySlotTextures(FriendlyByteBuf buffer, Map<ResourceLocation, Set<Integer>> map) {
-		buffer.writeInt(map.size());
-
-		for (Map.Entry<ResourceLocation, Set<Integer>> entry : map.entrySet()) {
-			buffer.writeResourceLocation(entry.getKey());
-			buffer.writeVarIntArray(entry.getValue().stream().mapToInt(i -> i).toArray());
-		}
-	}
-
-	public static SyncEmptySlotIconsMessage decode(FriendlyByteBuf packetBuffer) {
-		return new SyncEmptySlotIconsMessage(readEmptySlotTextures(packetBuffer));
-	}
-
-	public static Map<ResourceLocation, Set<Integer>> readEmptySlotTextures(FriendlyByteBuf buffer) {
+	public SyncEmptySlotIconsMessage(FriendlyByteBuf buffer) {
 		Map<ResourceLocation, Set<Integer>> map = new HashMap<>();
 
 		int size = buffer.readInt();
@@ -47,20 +28,30 @@ public class SyncEmptySlotIconsMessage {
 			map.put(resourceLocation, Arrays.stream(buffer.readVarIntArray()).boxed().collect(Collectors.toSet()));
 		}
 
-		return map;
+		Map<ResourceLocation, Set<Integer>> emptySlotIcons1 = map;
+		this.emptySlotIcons = emptySlotIcons1;
 	}
 
-	public static void onMessage(SyncEmptySlotIconsMessage msg, Supplier<NetworkEvent.Context> contextSupplier) {
-		NetworkEvent.Context context = contextSupplier.get();
-		context.enqueueWork(() -> handleMessage(msg));
-		context.setPacketHandled(true);
-	}
+	@Override
+	public void write(FriendlyByteBuf buffer) {
+		buffer.writeInt(emptySlotIcons.size());
 
-	private static void handleMessage(SyncEmptySlotIconsMessage msg) {
-		LocalPlayer player = Minecraft.getInstance().player;
-		if (player == null || !(player.containerMenu instanceof IAdditionalSlotInfoMenu menu)) {
-			return;
+		for (Map.Entry<ResourceLocation, Set<Integer>> entry : emptySlotIcons.entrySet()) {
+			buffer.writeResourceLocation(entry.getKey());
+			buffer.writeVarIntArray(entry.getValue().stream().mapToInt(i -> i).toArray());
 		}
-		menu.updateEmptySlotIcons(msg.emptySlotIcons);
 	}
+
+	@Override
+	public boolean handle(Context context) {
+		context.enqueueWork(() -> {
+			LocalPlayer player = Minecraft.getInstance().player;
+			if (player == null || !(player.containerMenu instanceof IAdditionalSlotInfoMenu menu)) {
+				return;
+			}
+			menu.updateEmptySlotIcons(emptySlotIcons);
+		});
+		return true;
+	}
+
 }

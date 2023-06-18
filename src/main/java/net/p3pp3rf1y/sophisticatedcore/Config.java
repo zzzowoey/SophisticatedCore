@@ -1,39 +1,37 @@
 package net.p3pp3rf1y.sophisticatedcore;
 
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraftforge.api.ModLoadingContext;
+import net.minecraftforge.api.fml.event.config.ModConfigEvents;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.fml.config.ModConfig;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SortButtonsPosition;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 public class Config {
+	private static final Map<ModConfig.Type, BaseConfig> CONFIGS = new EnumMap<>(ModConfig.Type.class);
 
-	private Config() {}
+	public static Client CLIENT;
+	public static Server SERVER;
 
-	public static final Client CLIENT;
-	public static final ForgeConfigSpec CLIENT_SPEC;
-	public static final Server SERVER;
-	public static final ForgeConfigSpec SERVER_SPEC;
+	public static class BaseConfig {
+		public ForgeConfigSpec specification;
 
-	static {
-		final Pair<Client, ForgeConfigSpec> clientSpec = new ForgeConfigSpec.Builder().configure(Client::new);
-		CLIENT_SPEC = clientSpec.getRight();
-		CLIENT = clientSpec.getLeft();
-
-		final Pair<Server, ForgeConfigSpec> commonSpec = new ForgeConfigSpec.Builder().configure(Server::new);
-		SERVER_SPEC = commonSpec.getRight();
-		SERVER = commonSpec.getLeft();
+		public void onLoad() { }
+		public void onReload() { }
 	}
 
-	public static class Client {
+	public static class Client extends BaseConfig {
 		public final ForgeConfigSpec.EnumValue<SortButtonsPosition> sortButtonsPosition;
 		public final ForgeConfigSpec.BooleanValue playButtonSound;
 
@@ -45,11 +43,11 @@ public class Config {
 		}
 	}
 
-	public static class Server {
+	public static class Server extends BaseConfig {
 		public final EnabledItems enabledItems;
 
 		@SuppressWarnings("unused") //need the Event parameter for forge reflection to understand what event this listens to
-		public void onConfigReload(ModConfigEvent.Reloading event) {
+		public void onReload() {
 			enabledItems.enabledMap.clear();
 		}
 
@@ -68,11 +66,11 @@ public class Config {
 			}
 
 			public boolean isItemEnabled(Item item) {
-				return RegistryHelper.getRegistryName(ForgeRegistries.ITEMS, item).map(this::isItemEnabled).orElse(false);
+				return RegistryHelper.getRegistryName(Registry.ITEM, item).map(this::isItemEnabled).orElse(false);
 			}
 
 			public boolean isItemEnabled(ResourceLocation itemRegistryName) {
-				if (!SERVER_SPEC.isLoaded()) {
+				if (!SERVER.specification.isLoaded()) {
 					return true;
 				}
 				if (enabledMap.isEmpty()) {
@@ -102,5 +100,37 @@ public class Config {
 			}
 		}
 
+	}
+
+	private static <T extends BaseConfig> T register(Function<ForgeConfigSpec.Builder, T> factory, ModConfig.Type side) {
+		Pair<T, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(factory);
+
+		T config = specPair.getLeft();
+		config.specification = specPair.getRight();
+		CONFIGS.put(side, config);
+		return config;
+	}
+
+	public static void register() {
+		CLIENT = register(Client::new, ModConfig.Type.CLIENT);
+		SERVER = register(Server::new, ModConfig.Type.SERVER);
+
+		for (Map.Entry<ModConfig.Type, BaseConfig> pair : CONFIGS.entrySet())
+			ModLoadingContext.registerConfig(SophisticatedCore.ID, pair.getKey(), pair.getValue().specification);
+
+		ModConfigEvents.loading(SophisticatedCore.ID).register(Config::onLoad);
+		ModConfigEvents.reloading(SophisticatedCore.ID).register(Config::onReload);
+	}
+
+	public static void onLoad(ModConfig modConfig) {
+		for (BaseConfig config : CONFIGS.values())
+			if (config.specification == modConfig.getSpec())
+				config.onLoad();
+	}
+
+	public static void onReload(ModConfig modConfig) {
+		for (BaseConfig config : CONFIGS.values())
+			if (config.specification == modConfig.getSpec())
+				config.onReload();
 	}
 }

@@ -3,13 +3,11 @@ package net.p3pp3rf1y.sophisticatedcore.network;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 
-public class SyncContainerClientDataMessage {
+public class SyncContainerClientDataMessage extends SimplePacketBase {
 	@Nullable
 	private final CompoundTag data;
 
@@ -17,18 +15,18 @@ public class SyncContainerClientDataMessage {
 		this.data = data;
 	}
 
-	public static void encode(SyncContainerClientDataMessage msg, FriendlyByteBuf packetBuffer) {
-		packetBuffer.writeNbt(msg.data);
+	public SyncContainerClientDataMessage(FriendlyByteBuf buffer) {
+		this(buffer.readNbt());
 	}
 
-	public static SyncContainerClientDataMessage decode(FriendlyByteBuf packetBuffer) {
-		return new SyncContainerClientDataMessage(packetBuffer.readNbt());
+	@Override
+	public void write(FriendlyByteBuf buffer) {
+		buffer.writeNbt(data);
 	}
 
-	public static void onMessage(SyncContainerClientDataMessage msg, Supplier<NetworkEvent.Context> contextSupplier) {
-		NetworkEvent.Context context = contextSupplier.get();
-		context.enqueueWork(() -> handleMessage(contextSupplier.get().getSender(), msg));
-		context.setPacketHandled(true);
+	public boolean handle(Context context) {
+		context.enqueueWork(() -> handleMessage(context.sender(), this));
+		return true;
 	}
 
 	private static void handleMessage(@Nullable ServerPlayer sender, SyncContainerClientDataMessage message) {

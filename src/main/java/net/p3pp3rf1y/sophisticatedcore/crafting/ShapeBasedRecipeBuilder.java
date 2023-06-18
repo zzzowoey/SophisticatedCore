@@ -4,6 +4,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionTriggerInstance;
@@ -18,8 +20,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.conditions.ICondition;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 
 import javax.annotation.Nullable;
@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 
 public class ShapeBasedRecipeBuilder {
 	private final Item itemResult;
-	private final List<ICondition> conditions = new ArrayList<>();
+	private final List<ConditionJsonProvider> conditions = new ArrayList<>();
 	private final List<String> pattern = new ArrayList<>();
 	private final Map<Character, Ingredient> keyIngredients = Maps.newLinkedHashMap();
 	private final RecipeSerializer<?> serializer;
@@ -136,7 +136,7 @@ public class ShapeBasedRecipeBuilder {
 
 	public static class Result implements FinishedRecipe {
 		private final ResourceLocation id;
-		private final List<ICondition> conditions;
+		private final List<ConditionJsonProvider> conditions;
 		private final Item itemResult;
 		@Nullable
 		private final CompoundTag nbt;
@@ -147,7 +147,7 @@ public class ShapeBasedRecipeBuilder {
 		private final Advancement.Builder advancementBuilder;
 
 		@SuppressWarnings("java:S107") //the only way of reducing number of parameters here means adding pretty much unnecessary object parameter
-		public Result(ResourceLocation id, List<ICondition> conditions, Item itemResult, @Nullable
+		public Result(ResourceLocation id, List<ConditionJsonProvider> conditions, Item itemResult, @Nullable
 				CompoundTag nbt, List<String> pattern, Map<Character, Ingredient> keyIngredients, Advancement.Builder advancementBuilder, ResourceLocation advancementId, RecipeSerializer<?> serializer) {
 			this.id = id;
 			this.conditions = conditions;
@@ -163,8 +163,8 @@ public class ShapeBasedRecipeBuilder {
 
 		public void serializeRecipeData(JsonObject json) {
 			JsonArray conditionsArray = new JsonArray();
-			conditions.forEach(c -> conditionsArray.add(CraftingHelper.serialize(c)));
-			json.add("conditions", conditionsArray);
+			conditions.forEach(c -> conditionsArray.add(c.toJson()));
+			json.add(ResourceConditions.CONDITIONS_KEY, conditionsArray);
 
 			JsonArray jsonarray = new JsonArray();
 

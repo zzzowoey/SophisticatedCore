@@ -1,74 +1,96 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
+import io.github.fabricators_of_create.porting_lib.util.NetworkDirection;
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
+import net.p3pp3rf1y.sophisticatedcore.compat.jei.TransferRecipeMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.PlayDiscMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.SoundStopNotificationMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.StopDiscPlaybackMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankClickMessage;
 
-import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
+
+import static io.github.fabricators_of_create.porting_lib.util.NetworkDirection.PLAY_TO_CLIENT;
+import static io.github.fabricators_of_create.porting_lib.util.NetworkDirection.PLAY_TO_SERVER;
 
 public class PacketHandler {
-	public static final PacketHandler INSTANCE = new PacketHandler(SophisticatedCore.MOD_ID);
-	private static final String PROTOCOL = "1";
+	public static final ResourceLocation CHANNEL_NAME = SophisticatedCore.getRL("channel");
+	public static final int NETWORK_VERSION = 3;
+	public static final String NETWORK_VERSION_STR = String.valueOf(NETWORK_VERSION);
+	private static SimpleChannel channel;
 
-	private final SimpleChannel networkWrapper;
-	private int idx = 0;
+	public static void init() {
+		channel = new SimpleChannel(CHANNEL_NAME);
 
-	public PacketHandler(String modId) {
-		networkWrapper = NetworkRegistry.newSimpleChannel(new ResourceLocation(modId, "channel"),
-				() -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
+		registerMessage(SyncContainerClientDataMessage.class, SyncContainerClientDataMessage::new, PLAY_TO_SERVER);
+		registerMessage(TransferFullSlotMessage.class, TransferFullSlotMessage::new, PLAY_TO_SERVER);
+		registerMessage(SyncContainerStacksMessage.class, SyncContainerStacksMessage::new, PLAY_TO_CLIENT);
+		registerMessage(SyncSlotStackMessage.class, SyncSlotStackMessage::new, PLAY_TO_CLIENT);
+		registerMessage(SyncPlayerSettingsMessage.class, SyncPlayerSettingsMessage::new, PLAY_TO_CLIENT);
+		registerMessage(PlayDiscMessage.class, PlayDiscMessage::new, PLAY_TO_CLIENT);
+		registerMessage(StopDiscPlaybackMessage.class, StopDiscPlaybackMessage::new, PLAY_TO_CLIENT);
+		registerMessage(SoundStopNotificationMessage.class, SoundStopNotificationMessage::new, PLAY_TO_SERVER);
+		registerMessage(TankClickMessage.class, TankClickMessage::new, PLAY_TO_SERVER);
+		registerMessage(StorageInsertMessage.class, StorageInsertMessage::new, PLAY_TO_CLIENT);
+		registerMessage(InsertIntoHeldStorageMessage.class, InsertIntoHeldStorageMessage::new, PLAY_TO_CLIENT);
+		registerMessage(SyncTemplateSettingsMessage.class, SyncTemplateSettingsMessage::new, PLAY_TO_CLIENT);
+		registerMessage(SyncAdditionalSlotInfoMessage.class, SyncAdditionalSlotInfoMessage::new, PLAY_TO_CLIENT);
+		registerMessage(SyncEmptySlotIconsMessage.class, SyncEmptySlotIconsMessage::new, PLAY_TO_CLIENT);
+		registerMessage(SyncSlotChangeErrorMessage.class, SyncSlotChangeErrorMessage::new, PLAY_TO_CLIENT);
+		registerMessage(TransferRecipeMessage.class, TransferRecipeMessage::new, PLAY_TO_SERVER);
 	}
 
-	public void init() {
-		registerMessage(SyncContainerClientDataMessage.class, SyncContainerClientDataMessage::encode, SyncContainerClientDataMessage::decode, SyncContainerClientDataMessage::onMessage);
-		registerMessage(TransferFullSlotMessage.class, TransferFullSlotMessage::encode, TransferFullSlotMessage::decode, TransferFullSlotMessage::onMessage);
-		registerMessage(SyncContainerStacksMessage.class, SyncContainerStacksMessage::encode, SyncContainerStacksMessage::decode, SyncContainerStacksMessage::onMessage);
-		registerMessage(SyncSlotStackMessage.class, SyncSlotStackMessage::encode, SyncSlotStackMessage::decode, SyncSlotStackMessage::onMessage);
-		registerMessage(SyncPlayerSettingsMessage.class, SyncPlayerSettingsMessage::encode, SyncPlayerSettingsMessage::decode, SyncPlayerSettingsMessage::onMessage);
-		registerMessage(PlayDiscMessage.class, PlayDiscMessage::encode, PlayDiscMessage::decode, PlayDiscMessage::onMessage);
-		registerMessage(StopDiscPlaybackMessage.class, StopDiscPlaybackMessage::encode, StopDiscPlaybackMessage::decode, StopDiscPlaybackMessage::onMessage);
-		registerMessage(SoundStopNotificationMessage.class, SoundStopNotificationMessage::encode, SoundStopNotificationMessage::decode, SoundStopNotificationMessage::onMessage);
-		registerMessage(TankClickMessage.class, TankClickMessage::encode, TankClickMessage::decode, TankClickMessage::onMessage);
-		registerMessage(StorageInsertMessage.class, StorageInsertMessage::encode, StorageInsertMessage::decode, StorageInsertMessage::onMessage);
-		registerMessage(InsertIntoHeldStorageMessage.class, InsertIntoHeldStorageMessage::encode, InsertIntoHeldStorageMessage::decode, InsertIntoHeldStorageMessage::onMessage);
-		registerMessage(SyncTemplateSettingsMessage.class, SyncTemplateSettingsMessage::encode, SyncTemplateSettingsMessage::decode, SyncTemplateSettingsMessage::onMessage);
-		registerMessage(SyncAdditionalSlotInfoMessage.class, SyncAdditionalSlotInfoMessage::encode, SyncAdditionalSlotInfoMessage::decode, SyncAdditionalSlotInfoMessage::onMessage);
-		registerMessage(SyncEmptySlotIconsMessage.class, SyncEmptySlotIconsMessage::encode, SyncEmptySlotIconsMessage::decode, SyncEmptySlotIconsMessage::onMessage);
-		registerMessage(SyncSlotChangeErrorMessage.class, SyncSlotChangeErrorMessage::encode, SyncSlotChangeErrorMessage::decode, SyncSlotChangeErrorMessage::onMessage);
+	public static <T extends SimplePacketBase> void registerMessage(Class<T> type, Function<FriendlyByteBuf, T> factory, NetworkDirection direction) {
+		PacketType<T> packet = new PacketType<>(type, factory, direction);
+		packet.register();
 	}
 
-	@SuppressWarnings("SameParameterValue")
-	public <M> void registerMessage(Class<M> messageType, BiConsumer<M, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, M> decoder, BiConsumer<M, Supplier<NetworkEvent.Context>> messageConsumer) {
-		networkWrapper.registerMessage(idx++, messageType, encoder, decoder, messageConsumer);
+	public static SimpleChannel getChannel() {
+		return channel;
 	}
 
-	public <M> void sendToServer(M message) {
-		networkWrapper.sendToServer(message);
+	public static void sendToServer(Object message) {
+		getChannel().sendToServer((C2SPacket) message);
 	}
 
-	public <M> void sendToClient(ServerPlayer player, M message) {
-		networkWrapper.sendTo(message, player.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
+	public static void sendToClient(ServerPlayer player, Object message) {
+		getChannel().sendToClient((S2CPacket) message, player);
 	}
 
-	public <M> void sendToAllNear(ServerLevel world, ResourceKey<Level> dimension, Vec3 position, int range, M message) {
-		world.players().forEach(player -> {
-			if (player.level.dimension() == dimension && player.distanceToSqr(position) <= range * range) {
-				sendToClient(player, message);
+	public static void sendToAllNear(ServerLevel world, BlockPos pos, int range, Object message) {
+		getChannel().sendToClientsAround((S2CPacket) message, world, pos, range);
+	}
+	public static void sendToAllNear(ServerLevel world, Vec3 pos, int range, Object message) {
+		getChannel().sendToClientsAround((S2CPacket) message, world, pos, range);
+	}
+
+	private static class PacketType<T extends SimplePacketBase> {
+		private static int index = 0;
+
+		private Function<FriendlyByteBuf, T> decoder;
+		private Class<T> type;
+		private NetworkDirection direction;
+
+		private PacketType(Class<T> type, Function<FriendlyByteBuf, T> factory, NetworkDirection direction) {
+			decoder = factory;
+			this.type = type;
+			this.direction = direction;
+		}
+
+		private void register() {
+			switch (direction) {
+				case PLAY_TO_CLIENT -> getChannel().registerS2CPacket(type, index++, decoder);
+				case PLAY_TO_SERVER -> getChannel().registerC2SPacket(type, index++, decoder);
 			}
-		});
+		}
 	}
 }

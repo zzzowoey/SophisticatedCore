@@ -16,6 +16,6 @@ public class SCRecipeProvider extends RecipeProvider {
 
 	@Override
 	protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
-		SpecialRecipeBuilder.special(ModRecipes.UPGRADE_CLEAR_SERIALIZER.get()).save(consumer, SophisticatedCore.getRegistryName("upgrade_clear"));
+		SpecialRecipeBuilder.special(ModRecipes.UPGRADE_CLEAR_SERIALIZER.get()).save(consumer, SophisticatedCore.getRL("upgrade_clear").toString());
 	}
 }

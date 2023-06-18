@@ -28,7 +28,7 @@ public class CraftingUpgradeTweakProvider implements CraftingGridProvider {
 
 	@Override
 	public String getModId() {
-		return SophisticatedCore.MOD_ID;
+		return SophisticatedCore.ID;
 	}
 
 	@Override

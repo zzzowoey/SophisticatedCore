@@ -53,7 +53,7 @@ public abstract class SettingsContainerBase<C extends ISettingsCategory> {
 		}
 		CompoundTag data = supplyData.get();
 		data.putString("categoryName", categoryName);
-		PacketHandler.INSTANCE.sendToServer(new SyncContainerClientDataMessage(data));
+		PacketHandler.sendToServer(new SyncContainerClientDataMessage(data));
 	}
 
 	protected boolean isServer() {

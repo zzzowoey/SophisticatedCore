@@ -4,13 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 
-import java.util.function.Supplier;
-
-public class SyncSlotStackMessage {
+public class SyncSlotStackMessage  extends SimplePacketBase{
 	private final int windowId;
 	private final int stateId;
 	private final int slotNumber;
@@ -23,28 +20,27 @@ public class SyncSlotStackMessage {
 		this.stack = stack;
 	}
 
-	public static void encode(SyncSlotStackMessage msg, FriendlyByteBuf packetBuffer) {
-		packetBuffer.writeByte(msg.windowId);
-		packetBuffer.writeVarInt(msg.stateId);
-		packetBuffer.writeShort(msg.slotNumber);
-		PacketHelper.writeItemStack(msg.stack, packetBuffer);
+	public SyncSlotStackMessage(FriendlyByteBuf buffer) {
+		this(buffer.readInt(), buffer.readVarInt(), buffer.readShort(), buffer.readItem());
 	}
 
-	public static SyncSlotStackMessage decode(FriendlyByteBuf packetBuffer) {
-		return new SyncSlotStackMessage(packetBuffer.readUnsignedByte(), packetBuffer.readVarInt(), packetBuffer.readShort(), PacketHelper.readItemStack(packetBuffer));
+	@Override
+	public void write(FriendlyByteBuf buffer) {
+		buffer.writeByte(windowId);
+		buffer.writeVarInt(stateId);
+		buffer.writeShort(slotNumber);
+		buffer.writeItem(stack);
 	}
 
-	public static void onMessage(SyncSlotStackMessage msg, Supplier<NetworkEvent.Context> contextSupplier) {
-		NetworkEvent.Context context = contextSupplier.get();
-		context.enqueueWork(() -> handleMessage(msg));
-		context.setPacketHandled(true);
-	}
-
-	private static void handleMessage(SyncSlotStackMessage msg) {
-		LocalPlayer player = Minecraft.getInstance().player;
-		if (player == null || !(player.containerMenu instanceof StorageContainerMenuBase || player.containerMenu instanceof SettingsContainerMenu) || player.containerMenu.containerId != msg.windowId) {
-			return;
-		}
-		player.containerMenu.setItem(msg.slotNumber, msg.stateId, msg.stack);
+	@Override
+	public boolean handle(Context context) {
+		context.enqueueWork(() -> {
+			LocalPlayer player = Minecraft.getInstance().player;
+			if (player == null || !(player.containerMenu instanceof StorageContainerMenuBase || player.containerMenu instanceof SettingsContainerMenu) || player.containerMenu.containerId != windowId) {
+				return;
+			}
+			player.containerMenu.setItem(slotNumber, stateId, stack);
+		});
+		return true;
 	}
 }

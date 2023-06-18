@@ -76,7 +76,7 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 			return false;
 		}
 
-		PacketHandler.INSTANCE.sendToServer(new TankClickMessage(upgradeSlot));
+		PacketHandler.sendToServer(new TankClickMessage(upgradeSlot));
 
 		return true;
 	}

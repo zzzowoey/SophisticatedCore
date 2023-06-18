@@ -35,7 +35,7 @@ public class SettingsGhostIngredientHandler<S extends SettingsScreen> implements
 
 							@Override
 							public void accept(I i) {
-								PacketHandler.INSTANCE.sendToServer(new SetMemorySlotMessage(ghostStack, s.index));
+								PacketHandler.sendToServer(new SetMemorySlotMessage(ghostStack, s.index));
 							}
 						});
 					}

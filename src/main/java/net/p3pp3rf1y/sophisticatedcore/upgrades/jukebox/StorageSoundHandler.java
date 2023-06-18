@@ -35,7 +35,7 @@ public class StorageSoundHandler {
 	public static void stopStorageSound(UUID storageUuid) {
 		if (storageSounds.containsKey(storageUuid)) {
 			Minecraft.getInstance().getSoundManager().stop(storageSounds.remove(storageUuid));
-			PacketHandler.INSTANCE.sendToServer(new SoundStopNotificationMessage(storageUuid));
+			PacketHandler.sendToServer(new SoundStopNotificationMessage(storageUuid));
 		}
 	}
 
@@ -44,7 +44,7 @@ public class StorageSoundHandler {
 			lastPlaybackChecked = event.level.getGameTime();
 			storageSounds.entrySet().removeIf(entry -> {
 				if (!Minecraft.getInstance().getSoundManager().isActive(entry.getValue())) {
-					PacketHandler.INSTANCE.sendToServer(new SoundStopNotificationMessage(entry.getKey()));
+					PacketHandler.sendToServer(new SoundStopNotificationMessage(entry.getKey()));
 					return true;
 				}
 				return false;

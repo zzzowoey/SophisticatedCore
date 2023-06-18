@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 public class SCFluidTagsProvider extends FluidTagsProvider {
 	public SCFluidTagsProvider(DataGenerator generatorIn,
 			@Nullable ExistingFileHelper existingFileHelper) {
-		super(generatorIn, SophisticatedCore.MOD_ID, existingFileHelper);
+		super(generatorIn, SophisticatedCore.ID, existingFileHelper);
 	}
 
 	@Override

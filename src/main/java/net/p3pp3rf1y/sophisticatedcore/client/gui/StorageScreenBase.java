@@ -755,7 +755,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 			ItemStack slotItem = slot2.getItem();
 			if (ItemStack.isSameItemSameTags(lastQuickMoved, slotItem)) {
 				if (slotItem.getCount() > slotItem.getMaxStackSize()) {
-					PacketHandler.INSTANCE.sendToServer(new TransferFullSlotMessage(slot2.index));
+					PacketHandler.sendToServer(new TransferFullSlotMessage(slot2.index));
 				} else {
 					slotClicked(slot2, slot2.index, button, ClickType.QUICK_MOVE);
 				}
@@ -829,7 +829,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		Slot slot = findSlot(mouseX, mouseY);
 		if (hasShiftDown() && hasControlDown() && slot instanceof StorageInventorySlot && button == 0) {
-			PacketHandler.INSTANCE.sendToServer(new TransferFullSlotMessage(slot.index));
+			PacketHandler.sendToServer(new TransferFullSlotMessage(slot.index));
 			return true;
 		}
 

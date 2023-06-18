@@ -75,7 +75,7 @@ public class BatteryInventoryPart extends UpgradeInventoryPartBase<BatteryUpgrad
 			return false;
 		}
 
-		PacketHandler.INSTANCE.sendToServer(new TankClickMessage(upgradeSlot));
+		PacketHandler.sendToServer(new TankClickMessage(upgradeSlot));
 
 		return true;
 	}

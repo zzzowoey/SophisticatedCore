@@ -1,54 +1,33 @@
 package net.p3pp3rf1y.sophisticatedcore.crafting;
 
 import com.google.gson.JsonObject;
+import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.common.crafting.conditions.ICondition;
-import net.minecraftforge.common.crafting.conditions.IConditionSerializer;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.Config;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 
-public class ItemEnabledCondition implements ICondition {
-	private static final ResourceLocation NAME = SophisticatedCore.getRL("item_enabled");
+public class ItemEnabledCondition implements ConditionJsonProvider {
+	public static final ResourceLocation ID = SophisticatedCore.getRL("item_enabled");
 	private final ResourceLocation itemRegistryName;
 
 	public ItemEnabledCondition(Item item) {
-		//noinspection ConstantConditions - only called after actually registered
-		this(ForgeRegistries.ITEMS.getKey(item));
-	}
-
-	public ItemEnabledCondition(ResourceLocation itemRegistryName) {
-		this.itemRegistryName = itemRegistryName;
+		this.itemRegistryName = Registry.ITEM.getKey(item);
 	}
 
 	@Override
-	public ResourceLocation getID() {
-		return NAME;
+	public ResourceLocation getConditionId() {
+		return ID;
 	}
 
 	@Override
-	public boolean test(IContext context) {
-		return Config.SERVER.enabledItems.isItemEnabled(itemRegistryName);
+	public void writeParameters(JsonObject json) {
+		json.addProperty("itemRegistryName", itemRegistryName.toString());
 	}
 
-	public static class Serializer implements IConditionSerializer<ItemEnabledCondition> {
-		public static final Serializer INSTANCE = new Serializer();
-
-		@Override
-		public void write(JsonObject json, ItemEnabledCondition value) {
-			json.addProperty("itemRegistryName", value.itemRegistryName.toString());
-		}
-
-		@Override
-		public ItemEnabledCondition read(JsonObject json) {
-			return new ItemEnabledCondition(new ResourceLocation(GsonHelper.getAsString(json, "itemRegistryName")));
-		}
-
-		@Override
-		public ResourceLocation getID() {
-			return NAME;
-		}
+	public static boolean test(JsonObject json) {
+		return Config.SERVER.enabledItems.isItemEnabled(new ResourceLocation(GsonHelper.getAsString(json, "itemRegistryName")));
 	}
 }

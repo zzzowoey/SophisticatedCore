@@ -1,132 +1,196 @@
-buildscript {
-    repositories {
-        maven {
-            name = "forge"
-            url = "https://maven.minecraftforge.net"
-        }
-        maven { url = 'https://maven.parchmentmc.org' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath group: 'org.parchmentmc', name: 'librarian', version: '1.+', changing: true
-    }
-}
-
+//file:noinspection GroovyAssignabilityCheck
+//file:noinspection GroovyAccessibility
+//file:noinspection GradlePackageVersionRange
 plugins {
-    id "org.sonarqube" version "3.3"
+    id "idea"
+    id "fabric-loom" version "1.1.+"
+    id "io.github.juuxel.loom-quiltflower" version "1.+" // Quiltflower, a better decompiler
+    id "io.github.p03w.machete" version "1.+" // automatic jar compressing on build
     id "maven-publish"
 }
 
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
-apply plugin: 'idea'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = archives_base_name
+group = maven_group
+
+String buildNumber = System.getenv("GITHUB_RUN_NUMBER")
+String patch = buildNumber != null ? buildNumber : "99999"
+version = mod_version.replace("<build>", patch)
 
 repositories {
-    mavenCentral()
-    maven { url "https://maven.theillusivec4.top/" }
-    maven { url "https://maven.tterrag.com/" }
-    maven { url = "https://modmaven.dev/" }
-    maven {
-        url "https://www.cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
-    maven { url "https://maven.blamejared.com/" }
+    maven { url = "https://maven.quiltmc.org/repository/release" }
+    maven { url = 'https://maven.parchmentmc.org' }
+
+    maven { url = "https://maven.fabricmc.net/" } // FAPI, Loader
+    maven { url = "https://mvn.devos.one/snapshots/" } // Registrate, Porting Lib, Forge Tags, Milk Lib
+    maven { url = "https://jitpack.io/" } // for Porting Lib: Mixin Extras, Fabric ASM
+    maven { url = "https://cursemaven.com" } // Forge Config API Port
+
+    maven { url = "https://api.modrinth.com/maven" }
+    maven { url = "https://maven.bai.lol" }
+    maven { url = "https://maven.terraformersmc.com/releases/" }
+    maven { url = "https://maven.shedaniel.me/" } // REI and deps
 }
 
-group = 'sophisticatedcore'
-version = "${project.minecraft_version}-${project.mod_version}.${getBuildNumber()}${getStable()}"
-archivesBaseName = 'sophisticatedcore'
-
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '17'
-
-minecraft {
-    mappings channel: 'parchment', version: "$parchment_version"
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-    runs {
-        client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-            property "mixin.env.disableRefMap", "true"
-            //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            mods {
-                sophisticatedcore {
-                    source sourceSets.main
-                }
-            }
-        }
-        server {
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-            property "mixin.env.disableRefMap", "true"
-            //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            workingDirectory project.file('run')
-            mods {
-                sophisticatedcore {
-                    source sourceSets.main
-                }
-            }
-        }
-        data {
-            property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-            property 'fml.earlyprogresswindow', 'false'
-            property "mixin.env.disableRefMap", "true"
-            //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            workingDirectory project.file('run')
-            mods {
-                sophisticatedcore {
-                    source sourceSets.main
-                }
-            }
-            args '--mod', 'sophisticatedcore', '--all', '--output', file('src/generated/resources/')
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.module.name == "fabric-loader") {
+            useVersion(loader_version)
         }
     }
-}
-
-sourceSets.main.resources {
-    srcDir 'src/generated/resources'
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+    // dev environment
+    minecraft("com.mojang:minecraft:$minecraft_version")
+    mappings(loom.layered {
+        it.mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$qm_version:intermediary-v2")
+        if (parchment_version != "none")
+            it.parchment("org.parchmentmc.data:parchment-$minecraft_version:$parchment_version@zip")
+        it.officialMojangMappings { nameSyntheticMembers = false }
+    })
+    modImplementation("net.fabricmc:fabric-loader:$loader_version")
 
-    compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
-    runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
-    compileOnly fg.deobf("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
-    runtimeOnly fg.deobf("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
-    compileOnly fg.deobf("curse.maven:balm-531761:${balm_cf_file_id}")
-    runtimeOnly fg.deobf("curse.maven:balm-531761:${balm_cf_file_id}")
-    compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
-    compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
-    //runtimeOnly fg.deobf("curse.maven:balm-531761:${balm_cf_file_id}")
+    // dependencies
+    modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.+'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.+'
-    testImplementation "org.mockito:mockito-core:5.1.+"
+    modApi(include("io.github.fabricators_of_create.Porting-Lib:Porting-Lib:$port_lib_version+$minecraft_version"))
+
+    modApi(include("com.electronwill.night-config:core:$night_config_version"))
+    modApi(include("com.electronwill.night-config:toml:$night_config_version"))
+    modApi(include("curse.maven:forge-config-api-port-fabric-547434:$config_api_id"))
+
+    api(include("com.google.code.findbugs:jsr305:$jsr305_version"))
+
+//    compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
+//    runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
+//    compileOnly fg.deobf("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
+//    runtimeOnly fg.deobf("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
+//    compileOnly fg.deobf("curse.maven:balm-531761:${balm_cf_file_id}")
+//    runtimeOnly fg.deobf("curse.maven:balm-531761:${balm_cf_file_id}")
+//    compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
+//    compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
+//    runtimeOnly fg.deobf("curse.maven:balm-531761:${balm_cf_file_id}")
+
+//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
+//    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.+'
+//    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.+'
+//    testImplementation "org.mockito:mockito-core:5.1.+"
+
 }
 
-test {
+loom {
+    if(file("src/main/resources/sophisticatedcore.accesswidener").exists()){
+        accessWidenerPath = file("src/main/resources/sophisticatedcore.accesswidener")
+    }
+    sourceSets {
+        main {
+            resources {
+                srcDir("src/generated/resources")
+                exclude("src/generated/resources/.cache")
+            }
+        }
+    }
+
+    runs {
+        datagen {
+            client()
+
+            name "Data Generation"
+            vmArg "-Dfabric-api.datagen"
+            vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"
+            vmArg "-Dfabric-api.datagen.modid=create"
+            vmArg "-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}"
+        }
+
+        client {
+            client()
+            property "mixin.env.disableRefMap", "true"
+            //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            source sourceSets.main
+            runDir "run/test_server"
+        }
+        server {
+            server()
+            property "mixin.env.disableRefMap", "true"
+            //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            source sourceSets.main
+            runDir "run/test_server"
+        }
+        gametest {
+            server()
+            name "Test"
+            source sourceSets.main
+            vmArg "-Dfabric-api.gametest"
+            vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml"
+            runDir "run/gametest_server"
+        }
+    }
+}
+
+
+/*test {
     useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"
     }
+}*/
+
+
+machete {
+    enabled = buildNumber != null
 }
 
+tasks.register("buildOrPublish") {
+    group = "build"
+    String mavenUser = System.getenv("MAVEN_USER")
+    if (mavenUser != null && !mavenUser.isEmpty()) {
+        dependsOn(tasks.named("publish"))
+        println("prepared for publish")
+    } else {
+        dependsOn(tasks.named("build"))
+        println("prepared for build")
+    }
+}
 
-task generateSources(type: Copy) {
-    from 'src/replaceme/java'
-    into "$buildDir/generated-src"
-    filter { line -> line.replaceAll('@MOD_VERSION@', '${project.version}') }
+processResources {
+    // Exclude datagenerator .cache directory
+    exclude '.cache'
+    exclude("**/*.bbmodel", "**/*.lnk")
+
+    Map<String, String> properties = new HashMap<>()
+    properties.put("version", version)
+    properties.put("loader_version", loader_version)
+    properties.put("fabric_version", fabric_version)
+    properties.put("minecraft_version", minecraft_version)
+
+    properties.forEach((k, v) -> inputs.property(k, v))
+
+    filesMatching("fabric.mod.json") {
+        expand properties
+    }
+
+    filesMatching("sophisticatedcore.mixins.json") {
+        expand "archivesBaseName": archivesBaseName
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+    it.options.release = Integer.parseInt(sourceCompatibility)
+}
+
+java {
+    withSourcesJar()
 }
 
 jar {
-    from('/') {
-        include 'LICENSE'
+    from("LICENSE") {
+        rename { "${it}_${archivesBaseName}" }
     }
 
     manifest {
@@ -138,25 +202,6 @@ jar {
                     "Implementation-Vendor"   : "p3pp3rf1y",
                     "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")],)
     }
-}
-
-processResources {
-    // Exclude datagenerator .cache directory
-    exclude '.cache'
-}
-
-static def getBuildNumber() {
-    if (System.getenv("GITHUB_RUN_NUMBER") != null) {
-        return System.getenv("GITHUB_RUN_NUMBER").toString()
-    }
-    return ""
-}
-
-static def getStable() {
-    if ((System.getenv("GITHUB_REF") == null || System.getenv("GITHUB_REF").endsWith("-dev"))) {
-        return "-alpha"
-    }
-    return ""
 }
 
 publishing {
@@ -176,15 +221,4 @@ publishing {
             from(components.java)
         }
     }
-}
-
-sonarqube {
-    properties {
-        property "sonar.projectName", "sophisticatedcore"
-        property "sonar.projectKey", "sophisticatedcore:SophisticatedCore"
-    }
-}
-
-task printVersionName {
-    println "version:" + project.version
 }

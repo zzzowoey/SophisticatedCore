@@ -3,7 +3,9 @@ package net.p3pp3rf1y.sophisticatedcore.common.gui;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
 import it.unimi.dsi.fastutil.ints.IntComparators;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -25,8 +27,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.items.SlotItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
@@ -67,7 +67,7 @@ import java.util.function.Supplier;
 
 public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extends AbstractContainerMenu implements IAdditionalSlotInfoMenu {
 	public static final int NUMBER_OF_PLAYER_SLOTS = 36;
-	public static final ResourceLocation EMPTY_UPGRADE_SLOT_BACKGROUND = new ResourceLocation(SophisticatedCore.MOD_ID, "item/empty_upgrade_slot");
+	public static final ResourceLocation EMPTY_UPGRADE_SLOT_BACKGROUND = new ResourceLocation(SophisticatedCore.ID, "item/empty_upgrade_slot");
 	public static final Pair<ResourceLocation, ResourceLocation> INACCESSIBLE_SLOT_BACKGROUND = new Pair<>(InventoryMenu.BLOCK_ATLAS, SophisticatedCore.getRL("item/inaccessible_slot"));
 	protected static final String UPGRADE_ENABLED_TAG = "upgradeEnabled";
 	protected static final String UPGRADE_SLOT_TAG = "upgradeSlot";
@@ -536,7 +536,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 	protected void sendToServer(Consumer<CompoundTag> addData) {
 		CompoundTag data = new CompoundTag();
 		addData.accept(data);
-		PacketHandler.INSTANCE.sendToServer(new SyncContainerClientDataMessage(data));
+		PacketHandler.sendToServer(new SyncContainerClientDataMessage(data));
 	}
 
 	public void setUpgradeEnabled(int upgradeSlot, boolean enabled) {
@@ -794,7 +794,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 	protected void triggerSlotListeners(int stackIndex, ItemStack slotStack, Supplier<ItemStack> slotStackCopy, NonNullList<ItemStack> lastSlotsCollection, int slotIndexOffset) {
 		ItemStack itemstack = lastSlotsCollection.get(stackIndex);
 		if (!ItemStack.matches(itemstack, slotStack)) {
-			boolean clientStackChanged = !slotStack.equals(itemstack, true);
+			boolean clientStackChanged = !slotStack.equals(itemstack);
 			ItemStack stackCopy = slotStackCopy.get();
 			lastSlotsCollection.set(stackIndex, stackCopy);
 
@@ -841,7 +841,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 				noItemSlotTextures.computeIfAbsent(noItemIcon.getSecond(), rl -> new HashSet<>()).add(slot);
 			}
 		}
-		PacketHandler.INSTANCE.sendToClient(serverPlayer, new SyncEmptySlotIconsMessage(noItemSlotTextures));
+		PacketHandler.sendToClient(serverPlayer, new SyncEmptySlotIconsMessage(noItemSlotTextures));
 	}
 
 	private void sendAdditionalSlotInfo() {
@@ -865,7 +865,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 				slotFilterItems.put(slot, inventoryHandler.getFilterItem(slot));
 			}
 		}
-		PacketHandler.INSTANCE.sendToClient(serverPlayer, new SyncAdditionalSlotInfoMessage(inaccessibleSlots, slotLimitOverrides, slotFilterItems));
+		PacketHandler.sendToClient(serverPlayer, new SyncAdditionalSlotInfoMessage(inaccessibleSlots, slotLimitOverrides, slotFilterItems));
 	}
 
 	@Override
@@ -1569,7 +1569,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 			errorUpgradeSlotChangeResult = result;
 			errorResultExpirationTime = player.level.getGameTime() + 60;
 		} else if (!player.level.isClientSide() && !result.isSuccessful()) {
-			PacketHandler.INSTANCE.sendToClient((ServerPlayer) player, new SyncSlotChangeErrorMessage(result));
+			PacketHandler.sendToClient((ServerPlayer) player, new SyncSlotChangeErrorMessage(result));
 		}
 	}
 
@@ -1601,7 +1601,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 
 		@Override
 		public boolean mayPlace(ItemStack stack) {
-			if (stack.isEmpty() || !getItemHandler().isItemValid(slotIndex, stack)) {
+			if (stack.isEmpty() || !getItemHandler().isItemValid(slotIndex, ItemVariant.of(stack), stack.getCount())) {
 				return false;
 			}
 			UpgradeSlotChangeResult result = ((IUpgradeItem<?>) stack.getItem()).canAddUpgradeTo(storageWrapper, stack, isFirstLevelStorage(), player.getLevel().isClientSide());

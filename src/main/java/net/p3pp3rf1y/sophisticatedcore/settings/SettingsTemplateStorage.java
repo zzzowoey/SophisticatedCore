@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.settings;
 
+import io.github.fabricators_of_create.porting_lib.util.ServerLifecycleHooks;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -7,8 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
-import net.minecraftforge.fml.util.thread.SidedThreadGroups;
-import net.minecraftforge.server.ServerLifecycleHooks;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 
@@ -18,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class SettingsTemplateStorage extends SavedData {
-	private static final String SAVED_DATA_NAME = SophisticatedCore.MOD_ID + "_settings_templates";
+	private static final String SAVED_DATA_NAME = SophisticatedCore.ID + "_settings_templates";
 	private Map<UUID, Map<Integer, CompoundTag>> playerTemplates = new HashMap<>();
 	private static final SettingsTemplateStorage clientStorageCopy = new SettingsTemplateStorage();
 

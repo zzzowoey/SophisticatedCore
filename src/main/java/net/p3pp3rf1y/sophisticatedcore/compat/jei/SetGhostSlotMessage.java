@@ -3,13 +3,10 @@ package net.p3pp3rf1y.sophisticatedcore.compat.jei;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
 
-import javax.annotation.Nullable;
-import java.util.function.Supplier;
-
-public class SetGhostSlotMessage {
+public class SetGhostSlotMessage extends SimplePacketBase {
 	private final ItemStack stack;
 	private final int slotNumber;
 
@@ -18,25 +15,26 @@ public class SetGhostSlotMessage {
 		this.slotNumber = slotNumber;
 	}
 
-	public static void encode(SetGhostSlotMessage msg, FriendlyByteBuf packetBuffer) {
-		packetBuffer.writeItem(msg.stack);
-		packetBuffer.writeShort(msg.slotNumber);
+	public SetGhostSlotMessage(FriendlyByteBuf buffer) {
+		this(buffer.readItem(), buffer.readShort());
 	}
 
-	public static SetGhostSlotMessage decode(FriendlyByteBuf packetBuffer) {
-		return new SetGhostSlotMessage(packetBuffer.readItem(), packetBuffer.readShort());
+	@Override
+	public void write(FriendlyByteBuf buffer) {
+		buffer.writeItem(stack);
+		buffer.writeShort(slotNumber);
 	}
 
-	static void onMessage(SetGhostSlotMessage msg, Supplier<NetworkEvent.Context> contextSupplier) {
-		NetworkEvent.Context context = contextSupplier.get();
-		context.enqueueWork(() -> handleMessage(msg, context.getSender()));
-		context.setPacketHandled(true);
+	@Override
+	public boolean handle(Context context) {
+		context.enqueueWork(() -> {
+			ServerPlayer sender = context.getSender();
+			if (sender == null || !(sender.containerMenu instanceof StorageContainerMenuBase<?>)) {
+				return;
+			}
+			sender.containerMenu.getSlot(slotNumber).set(stack);
+		});
+		return true;
 	}
 
-	private static void handleMessage(SetGhostSlotMessage msg, @Nullable ServerPlayer sender) {
-		if (sender == null || !(sender.containerMenu instanceof StorageContainerMenuBase<?>)) {
-			return;
-		}
-		sender.containerMenu.getSlot(msg.slotNumber).set(msg.stack);
-	}
 }

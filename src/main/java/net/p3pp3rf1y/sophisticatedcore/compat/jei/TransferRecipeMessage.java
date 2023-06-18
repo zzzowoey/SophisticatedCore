@@ -2,16 +2,14 @@ package net.p3pp3rf1y.sophisticatedcore.compat.jei;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
-public class TransferRecipeMessage {
+public class TransferRecipeMessage extends SimplePacketBase {
 	private final Map<Integer, Integer> matchingItems;
 	private final List<Integer> craftingSlotIndexes;
 	private final List<Integer> inventorySlotIndexes;
@@ -24,58 +22,59 @@ public class TransferRecipeMessage {
 		this.maxTransfer = maxTransfer;
 	}
 
-	public static void encode(TransferRecipeMessage msg, FriendlyByteBuf packetBuffer) {
-		writeMap(packetBuffer, msg.matchingItems);
-		writeList(packetBuffer, msg.craftingSlotIndexes);
-		writeList(packetBuffer, msg.inventorySlotIndexes);
-		packetBuffer.writeBoolean(msg.maxTransfer);
+	public TransferRecipeMessage(FriendlyByteBuf buffer) {
+		this(readMap(buffer), readList(buffer), readList(buffer), buffer.readBoolean());
 	}
 
-	private static void writeMap(FriendlyByteBuf packetBuffer, Map<Integer, Integer> map) {
-		packetBuffer.writeInt(map.size());
+	@Override
+	public void write(FriendlyByteBuf buffer) {
+		writeMap(buffer, matchingItems);
+		writeList(buffer, craftingSlotIndexes);
+		writeList(buffer, inventorySlotIndexes);
+		buffer.writeBoolean(maxTransfer);
+	}
+
+	private static void writeMap(FriendlyByteBuf buffer, Map<Integer, Integer> map) {
+		buffer.writeInt(map.size());
 		map.forEach((key, value) -> {
-			packetBuffer.writeInt(key);
-			packetBuffer.writeInt(value);
+			buffer.writeInt(key);
+			buffer.writeInt(value);
 		});
 	}
 
-	private static void writeList(FriendlyByteBuf packetBuffer, List<Integer> list) {
-		packetBuffer.writeInt(list.size());
-		list.forEach(packetBuffer::writeInt);
+	private static void writeList(FriendlyByteBuf buffer, List<Integer> list) {
+		buffer.writeInt(list.size());
+		list.forEach(buffer::writeInt);
 	}
 
-	public static TransferRecipeMessage decode(FriendlyByteBuf packetBuffer) {
-		return new TransferRecipeMessage(readMap(packetBuffer), readList(packetBuffer), readList(packetBuffer), packetBuffer.readBoolean());
-	}
-
-	private static Map<Integer, Integer> readMap(FriendlyByteBuf packetBuffer) {
+	private static Map<Integer, Integer> readMap(FriendlyByteBuf buffer) {
 		Map<Integer, Integer> ret = new HashMap<>();
-		int size = packetBuffer.readInt();
+		int size = buffer.readInt();
 		for (int i = 0; i < size; i++) {
-			ret.put(packetBuffer.readInt(), packetBuffer.readInt());
+			ret.put(buffer.readInt(), buffer.readInt());
 		}
 		return ret;
 	}
 
-	private static List<Integer> readList(FriendlyByteBuf packetBuffer) {
+	private static List<Integer> readList(FriendlyByteBuf buffer) {
 		List<Integer> ret = new ArrayList<>();
-		int size = packetBuffer.readInt();
+		int size = buffer.readInt();
 		for (int i = 0; i < size; i++) {
-			ret.add(packetBuffer.readInt());
+			ret.add(buffer.readInt());
 		}
 		return ret;
 	}
 
-	static void onMessage(TransferRecipeMessage msg, Supplier<NetworkEvent.Context> contextSupplier) {
-		NetworkEvent.Context context = contextSupplier.get();
-		context.enqueueWork(() -> handleMessage(msg, context.getSender()));
-		context.setPacketHandled(true);
+	@Override
+	public boolean handle(Context context) {
+		context.enqueueWork(() -> {
+			ServerPlayer sender = context.getSender();
+			if (sender == null) {
+				return;
+			}
+			CraftingContainerRecipeTransferHandlerServer.setItems(sender, matchingItems, craftingSlotIndexes, inventorySlotIndexes, maxTransfer);
+		});
+		return true;
 	}
 
-	private static void handleMessage(TransferRecipeMessage msg, @Nullable ServerPlayer sender) {
-		if (sender == null) {
-			return;
-		}
-		CraftingContainerRecipeTransferHandlerServer.setItems(sender, msg.matchingItems, msg.craftingSlotIndexes, msg.inventorySlotIndexes, msg.maxTransfer);
-	}
 }

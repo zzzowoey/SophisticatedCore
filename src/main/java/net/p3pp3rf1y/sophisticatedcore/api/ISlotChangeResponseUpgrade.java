@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.api;
 
-import net.minecraftforge.items.IItemHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
 
 public interface ISlotChangeResponseUpgrade {
-	void onSlotChange(IItemHandler inventoryHandler, int slot);
+	void onSlotChange(SlotExposedStorage inventoryHandler, int slot);
 }

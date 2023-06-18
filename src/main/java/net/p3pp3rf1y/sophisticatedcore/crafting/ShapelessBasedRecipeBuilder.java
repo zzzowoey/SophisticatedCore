@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedcore.crafting;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionTriggerInstance;
@@ -18,8 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.conditions.ICondition;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 
 import javax.annotation.Nullable;
@@ -34,7 +33,7 @@ public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
 	private final int count;
 	private final List<Ingredient> ingredients = Lists.newArrayList();
 	private final Advancement.Builder advancement = Advancement.Builder.advancement();
-	private final List<ICondition> conditions = new ArrayList<>();
+	private final List<ConditionJsonProvider> conditions = new ArrayList<>();
 	@Nullable
 	private String group;
 
@@ -56,7 +55,7 @@ public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
 		return new ShapelessBasedRecipeBuilder(stack.getItem(), 1, stack.getTag());
 	}
 
-	public ShapelessBasedRecipeBuilder condition(ICondition condition) {
+	public ShapelessBasedRecipeBuilder condition(ConditionJsonProvider condition) {
 		conditions.add(condition);
 		return this;
 	}
@@ -113,7 +112,7 @@ public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
 	}
 
 	public static class Result implements FinishedRecipe {
-		private final List<ICondition> conditions;
+		private final List<ConditionJsonProvider> conditions;
 		private final ResourceLocation id;
 		private final Item itemResult;
 		@Nullable
@@ -125,7 +124,7 @@ public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
 		private final ResourceLocation advancementId;
 
 		@SuppressWarnings("java:S107") //the only way of reducing number of parameters here means adding pretty much unnecessary object parameter
-		public Result(ResourceLocation id, Item itemResult, List<ICondition> conditions, @Nullable CompoundTag nbt,
+		public Result(ResourceLocation id, Item itemResult, List<ConditionJsonProvider> conditions, @Nullable CompoundTag nbt,
 				int count, String group, List<Ingredient> ingredients, Advancement.Builder advancement, ResourceLocation advancementId) {
 			this.id = id;
 			this.itemResult = itemResult;
@@ -145,7 +144,7 @@ public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
 			}
 
 			JsonArray conditionsArray = new JsonArray();
-			conditions.forEach(c -> conditionsArray.add(CraftingHelper.serialize(c)));
+			conditions.forEach(c -> conditionsArray.add(c.toJson()));
 			json.add("conditions", conditionsArray);
 
 			JsonArray jsonarray = new JsonArray();

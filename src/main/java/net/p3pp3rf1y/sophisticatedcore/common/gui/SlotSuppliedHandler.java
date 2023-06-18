@@ -1,16 +1,17 @@
 package net.p3pp3rf1y.sophisticatedcore.common.gui;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.SlotItemHandler;
 
 import java.util.function.Supplier;
 
 public class SlotSuppliedHandler extends SlotItemHandler {
-	private final Supplier<IItemHandler> itemHandlerSupplier;
+	private final Supplier<SlotExposedStorage> itemHandlerSupplier;
 	private final int slot;
 
-	public SlotSuppliedHandler(Supplier<IItemHandler> itemHandlerSupplier, int slot, int xPosition, int yPosition) {
+	public SlotSuppliedHandler(Supplier<SlotExposedStorage> itemHandlerSupplier, int slot, int xPosition, int yPosition) {
 		super(itemHandlerSupplier.get(), slot, xPosition, yPosition);
 
 		this.itemHandlerSupplier = itemHandlerSupplier;
@@ -18,13 +19,13 @@ public class SlotSuppliedHandler extends SlotItemHandler {
 	}
 
 	@Override
-	public IItemHandler getItemHandler() {
+	public SlotExposedStorage getItemHandler() {
 		return itemHandlerSupplier.get();
 	}
 
 	@Override
 	public boolean mayPlace(ItemStack stack) {
-		return itemHandlerSupplier.get().isItemValid(slot, stack);
+		return itemHandlerSupplier.get().isItemValid(slot, ItemVariant.of(stack), stack.getCount());
 	}
 
 	@Override
