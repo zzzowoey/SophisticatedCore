@@ -1,12 +1,11 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 
 import java.lang.ref.WeakReference;
@@ -21,15 +20,11 @@ public class ServerStorageSoundHandler {
 	private static final Map<ResourceKey<Level>, Long> lastWorldCheck = new HashMap<>();
 	private static final Map<ResourceKey<Level>, Map<UUID, KeepAliveInfo>> worldStorageSoundKeepAlive = new HashMap<>();
 
-	public static void init() {
-		MinecraftForge.EVENT_BUS.addListener(ServerStorageSoundHandler::tick);
-	}
-
-	public static void tick(TickEvent.LevelTickEvent event) {
-		if (event.phase != TickEvent.Phase.END || event.level.isClientSide()) {
+	public static void tick(ServerLevel world) {
+		if (world.isClientSide()) {
 			return;
 		}
-		ServerLevel world = (ServerLevel) event.level;
+
 		ResourceKey<Level> dim = world.dimension();
 		if (lastWorldCheck.computeIfAbsent(dim, key -> world.getGameTime()) > world.getGameTime() - KEEP_ALIVE_CHECK_INTERVAL || !worldStorageSoundKeepAlive.containsKey(dim)) {
 			return;

@@ -1,3 +1,4 @@
+/*
 package net.p3pp3rf1y.sophisticatedcore.compat.inventorysorter;
 
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -35,3 +36,4 @@ public class InventorySorterCompat implements ICompat {
 		//noop
 	}
 }
+*/

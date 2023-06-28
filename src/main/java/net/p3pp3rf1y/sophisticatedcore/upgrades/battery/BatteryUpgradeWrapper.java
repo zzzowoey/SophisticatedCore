@@ -1,31 +1,35 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.battery;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IRenderedBatteryUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IStackableContentsUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import team.reborn.energy.api.EnergyStorage;
+import team.reborn.energy.api.EnergyStorageUtil;
+import team.reborn.energy.api.base.SimpleEnergyItem;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrapper, BatteryUpgradeItem>
-		implements IRenderedBatteryUpgrade, IEnergyStorage, ITickableUpgrade, IStackableContentsUpgrade {
+		implements IRenderedBatteryUpgrade, EnergyStorage, ITickableUpgrade, IStackableContentsUpgrade {
 	public static final int INPUT_SLOT = 0;
 	public static final int OUTPUT_SLOT = 1;
-	public static final String ENERGY_STORED_TAG = "energyStored";
+	public static final String ENERGY_STORED_TAG = SimpleEnergyItem.ENERGY_KEY;
 	private Consumer<BatteryRenderInfo> updateTankRenderInfoCallback;
 	private final ItemStackHandler inventory;
-	private int energyStored;
+	private BatteryUpgradeEnergyStorage energyStorage;
 
 	protected BatteryUpgradeWrapper(IStorageWrapper storageWrapper, ItemStack upgrade, Consumer<ItemStack> upgradeSaveHandler) {
 		super(storageWrapper, upgrade, upgradeSaveHandler);
@@ -38,6 +42,16 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 			}
 
 			@Override
+			public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+				if (slot == INPUT_SLOT) {
+					return isValidInputItem(resource.toStack((int) amount));
+				} else if (slot == OUTPUT_SLOT) {
+					return isValidOutputItem(resource.toStack((int) amount));
+				}
+				return false;
+			}
+
+/*			@Override
 			public boolean isItemValid(int slot, ItemStack stack) {
 				if (slot == INPUT_SLOT) {
 					return isValidInputItem(stack);
@@ -45,7 +59,7 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 					return isValidOutputItem(stack);
 				}
 				return false;
-			}
+			}*/
 
 			private boolean isValidInputItem(ItemStack stack) {
 				return isValidEnergyItem(stack, false);
@@ -61,7 +75,12 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 			}
 		};
 		NBTHelper.getCompound(upgrade, "inventory").ifPresent(inventory::deserializeNBT);
-		energyStored = getEnergyStored(upgrade);
+		energyStorage = new BatteryUpgradeEnergyStorage(getEnergyStored(upgrade)) {
+			@Override
+			protected void onFinalCommit() {
+				serializeEnergyStored();
+			}
+		};
 	}
 
 	public static int getEnergyStored(ItemStack upgrade) {
@@ -69,31 +88,43 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 	}
 
 	@Override
-	public int receiveEnergy(int maxReceive, boolean simulate) {
-		return innerReceiveEnergy(maxReceive, simulate);
+	public long insert(long maxAmount, @Nullable TransactionContext ctx) {
+		long ret = Math.min(getCapacity() - getAmount(), Math.min(getMaxInOut(), maxAmount));
+		return energyStorage.insert(ret, ctx);
 	}
 
-	private int innerReceiveEnergy(int maxReceive, boolean simulate) {
+/*	@Override
+	public int receiveEnergy(int maxReceive, boolean simulate) {
+		return innerReceiveEnergy(maxReceive, simulate);
+	}*/
+
+/*	private int innerReceiveEnergy(int maxReceive, boolean simulate) {
 		int ret = Math.min(getMaxEnergyStored() - energyStored, Math.min(getMaxInOut(), maxReceive));
 		if (!simulate) {
 			energyStored += ret;
 			serializeEnergyStored();
 		}
 		return ret;
-	}
+	}*/
 
 	private void serializeEnergyStored() {
-		NBTHelper.setInteger(upgrade, ENERGY_STORED_TAG, energyStored);
+		NBTHelper.setInteger(upgrade, ENERGY_STORED_TAG, (int) energyStorage.amount);
 		save();
 		forceUpdateBatteryRenderInfo();
 	}
 
 	@Override
-	public int extractEnergy(int maxExtract, boolean simulate) {
-		return innerExtractEnergy(maxExtract, simulate);
+	public long extract(long maxAmount, @Nullable TransactionContext ctx) {
+		long ret = Math.min(getAmount(), Math.min(getMaxInOut(), maxAmount));
+		return energyStorage.extract(ret, ctx);
 	}
 
-	private int innerExtractEnergy(int maxExtract, boolean simulate) {
+/*	@Override
+	public int extractEnergy(int maxExtract, boolean simulate) {
+		return innerExtractEnergy(maxExtract, simulate);
+	}*/
+
+/*	private int innerExtractEnergy(int maxExtract, boolean simulate) {
 		int ret = Math.min(energyStored, Math.min(getMaxInOut(), maxExtract));
 
 		if (!simulate) {
@@ -101,35 +132,62 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 			serializeEnergyStored();
 		}
 		return ret;
-	}
+	}*/
 
 	@Override
-	public int getEnergyStored() {
-		return energyStored;
+	public long getAmount() {
+		return energyStorage.getAmount();
 	}
 
+/*	@Override
+	public int getEnergyStored() {
+		return energyStored;
+	}*/
+
+	@Override
+	public long getCapacity() {
+		return upgradeItem.getMaxEnergyStored(storageWrapper);
+	}
+
+/*
 	@Override
 	public int getMaxEnergyStored() {
 		return upgradeItem.getMaxEnergyStored(storageWrapper);
 	}
+*/
 
 	@Override
+	public boolean supportsExtraction() {
+		return true;
+	}
+
+/*	@Override
 	public boolean canExtract() {
 		return true;
-	}
+	}*/
 
 	@Override
-	public boolean canReceive() {
+	public boolean supportsInsertion() {
 		return true;
 	}
+
+	/*	@Override
+	public boolean canReceive() {
+		return true;
+	}*/
 
 	private int getMaxInOut() {
 		return upgradeItem.getBatteryUpgradeConfig().maxInputOutput.get() * storageWrapper.getNumberOfSlotRows() * upgradeItem.getAdjustedStackMultiplier(storageWrapper);
 	}
 
 	private boolean isValidEnergyItem(ItemStack stack, boolean isOutput) {
-		return stack.getCapability(ForgeCapabilities.ENERGY).map(energyStorage -> isOutput || energyStorage.getEnergyStored() > 0).orElse(false);
+		return isOutput || EnergyStorageUtil.isEnergyStorage(stack);
 	}
+
+	// TODO: Reimplement
+/*	private boolean isValidEnergyItem(ItemStack stack, boolean isOutput) {
+		return stack.getCapability(ForgeCapabilities.ENERGY).map(energyStorage -> isOutput || energyStorage.getEnergyStored() > 0).orElse(false);
+	}*/
 
 	@Override
 	public void setBatteryRenderInfoUpdateCallback(Consumer<BatteryRenderInfo> updateTankRenderInfoCallback) {
@@ -139,22 +197,26 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 	@Override
 	public void forceUpdateBatteryRenderInfo() {
 		BatteryRenderInfo batteryRenderInfo = new BatteryRenderInfo(1f);
-		batteryRenderInfo.setChargeRatio((float) Math.round((float) energyStored / getMaxEnergyStored() * 4) / 4);
+		batteryRenderInfo.setChargeRatio((float) Math.round((float) getAmount() / getCapacity() * 4) / 4);
 		updateTankRenderInfoCallback.accept(batteryRenderInfo);
 	}
 
-	@Override
 	public void tick(@Nullable LivingEntity entity, Level world, BlockPos pos) {
-		if (energyStored < getMaxEnergyStored()) {
+	}
+
+	// TODO: Reimplement
+/*	@Override
+	public void tick(@Nullable LivingEntity entity, Level world, BlockPos pos) {
+		if (getAmount() < getCapacity()) {
 			inventory.getStackInSlot(INPUT_SLOT).getCapability(ForgeCapabilities.ENERGY).ifPresent(this::receiveFromStorage);
 		}
 
-		if (energyStored > 0) {
+		if (getAmount() > 0) {
 			inventory.getStackInSlot(OUTPUT_SLOT).getCapability(ForgeCapabilities.ENERGY).ifPresent(this::extractToStorage);
 		}
 	}
 
-	private void extractToStorage(IEnergyStorage energyStorage) {
+	private void extractToStorage(EnergyStorage energyStorage) {
 		int toExtract = innerExtractEnergy(getMaxInOut(), true);
 		if (toExtract > 0) {
 			toExtract = energyStorage.receiveEnergy(toExtract, true);
@@ -165,7 +227,7 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 		}
 	}
 
-	private void receiveFromStorage(IEnergyStorage energyStorage) {
+	private void receiveFromStorage(EnergyStorage energyStorage) {
 		int toReceive = innerReceiveEnergy(getMaxInOut(), true);
 		if (toReceive > 0) {
 			toReceive = energyStorage.extractEnergy(toReceive, true);
@@ -174,15 +236,15 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 				innerReceiveEnergy(toReceive, false);
 			}
 		}
-	}
+	}*/
 
-	public IItemHandler getInventory() {
+	public SlotExposedStorage getInventory() {
 		return inventory;
 	}
 
 	@Override
 	public int getMinimumMultiplierRequired() {
-		return (int) Math.ceil((float) energyStored / upgradeItem.getMaxEnergyBase(storageWrapper));
+		return (int) Math.ceil((float) getAmount() / upgradeItem.getMaxEnergyBase(storageWrapper));
 	}
 
 	@Override

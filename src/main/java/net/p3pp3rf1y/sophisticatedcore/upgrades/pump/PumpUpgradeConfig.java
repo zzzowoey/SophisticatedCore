@@ -1,3 +1,5 @@
+// TODO: Reimplement
+/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.pump;
 
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -15,3 +17,4 @@ public class PumpUpgradeConfig {
 		builder.pop();
 	}
 }
+*/

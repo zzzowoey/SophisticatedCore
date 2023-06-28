@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.Rect2i;
@@ -83,8 +84,9 @@ public abstract class Tab extends CompositeWidgetBase<WidgetBase> {
 		this.height = height;
 	}
 
-	public Optional<Rect2i> getRectangle() {
-		return GuiHelper.getPositiveRectangle(x, y, width, height);
+	@Override
+	public ScreenRectangle getRectangle() {
+		return new ScreenRectangle(x, y, width, height);
 	}
 
 	@Override

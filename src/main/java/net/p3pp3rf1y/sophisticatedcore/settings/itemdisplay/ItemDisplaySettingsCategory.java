@@ -6,7 +6,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
@@ -211,7 +210,8 @@ public class ItemDisplaySettingsCategory implements ISettingsCategory<ItemDispla
 	}
 
 	public void itemChanged(int changedSlotIndex) {
-		if (Thread.currentThread().getThreadGroup() != SidedThreadGroups.SERVER || !slotIndexes.contains(changedSlotIndex)) {
+		// TODO: Reimplement?
+		if (/*Thread.currentThread().getThreadGroup() != SidedThreadGroups.SERVER || */!slotIndexes.contains(changedSlotIndex)) {
 			return;
 		}
 

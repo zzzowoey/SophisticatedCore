@@ -12,11 +12,15 @@ import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.advancements.RequirementsStrategy;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
@@ -29,36 +33,48 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static net.minecraft.data.recipes.RecipeBuilder.ROOT_RECIPE_ADVANCEMENT;
+
 public class ShapeBasedRecipeBuilder {
+	private final RecipeCategory category;
 	private final Item itemResult;
+	@Nullable
+	private final CompoundTag nbt;
+	private final int count;
 	private final List<ConditionJsonProvider> conditions = new ArrayList<>();
 	private final List<String> pattern = new ArrayList<>();
 	private final Map<Character, Ingredient> keyIngredients = Maps.newLinkedHashMap();
 	private final RecipeSerializer<?> serializer;
 	private final Advancement.Builder advancementBuilder = Advancement.Builder.advancement();
 	@Nullable
-	private final CompoundTag nbt;
+	private String group;
 
-	public ShapeBasedRecipeBuilder(ItemLike itemResult, @Nullable CompoundTag nbt, RecipeSerializer<?> serializer) {
+	public ShapeBasedRecipeBuilder(RecipeCategory category, ItemLike itemResult, int count, @Nullable CompoundTag nbt, RecipeSerializer<?> serializer) {
+		this.category = category;
 		this.itemResult = itemResult.asItem();
-		this.serializer = serializer;
+		this.count = count;
 		this.nbt = nbt;
+		this.serializer = serializer;
 	}
 
-	public static ShapeBasedRecipeBuilder shaped(ItemLike itemResult) {
-		return shaped(itemResult, RecipeSerializer.SHAPED_RECIPE);
+	public static ShapeBasedRecipeBuilder shaped(RecipeCategory category, ItemLike itemResult) {
+		return shaped(category, itemResult, 1, RecipeSerializer.SHAPED_RECIPE);
 	}
 
-	public static ShapeBasedRecipeBuilder shaped(ItemLike itemResult, RecipeSerializer<?> serializer) {
-		return shaped(itemResult, null, serializer);
+	public static ShapeBasedRecipeBuilder shaped(RecipeCategory category, ItemLike itemResult, RecipeSerializer<?> serializer) {
+		return shaped(category, itemResult, 1, serializer);
 	}
 
-	public static ShapeBasedRecipeBuilder shaped(ItemLike itemResult, @Nullable CompoundTag nbt, RecipeSerializer<?> serializer) {
-		return new ShapeBasedRecipeBuilder(itemResult, nbt, serializer);
+	public static ShapeBasedRecipeBuilder shaped(RecipeCategory category, ItemLike itemResult, int count, RecipeSerializer<?> serializer) {
+		return shaped(category, itemResult, count, null, serializer);
 	}
 
-	public static ShapeBasedRecipeBuilder shaped(ItemStack stack) {
-		return shaped(stack.getItem(), stack.getTag(), RecipeSerializer.SHAPED_RECIPE);
+	public static ShapeBasedRecipeBuilder shaped(RecipeCategory category, ItemLike itemResult, int count, @Nullable CompoundTag nbt, RecipeSerializer<?> serializer) {
+		return new ShapeBasedRecipeBuilder(category, itemResult, count, nbt,serializer);
+	}
+
+	public static ShapeBasedRecipeBuilder shaped(RecipeCategory category, ItemStack stack) {
+		return shaped(category, stack.getItem(), 1, stack.getTag(), RecipeSerializer.SHAPED_RECIPE);
 	}
 
 	public ShapeBasedRecipeBuilder define(Character symbol, TagKey<Item> tagIn) {
@@ -94,18 +110,19 @@ public class ShapeBasedRecipeBuilder {
 		return this;
 	}
 
+	public ShapeBasedRecipeBuilder group(@org.jetbrains.annotations.Nullable String groupName) {
+		this.group = groupName;
+		return this;
+	}
+
 	public void save(Consumer<FinishedRecipe> consumerIn) {
 		save(consumerIn, RegistryHelper.getItemKey(itemResult));
 	}
 
 	public void save(Consumer<FinishedRecipe> consumerIn, ResourceLocation id) {
 		ensureValid(id);
-		advancementBuilder.parent(new ResourceLocation("recipes/root")).addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id)).rewards(AdvancementRewards.Builder.recipe(id)).requirements(RequirementsStrategy.OR);
-		consumerIn.accept(new Result(id, conditions, itemResult, nbt, pattern, keyIngredients, advancementBuilder, new ResourceLocation(id.getNamespace(), "recipes/" + getGroup() + "/" + id.getPath()), serializer));
-	}
-
-	private String getGroup() {
-		return itemResult.getItemCategory() == null ? "" : itemResult.getItemCategory().getRecipeFolderName();
+		advancementBuilder.parent(ROOT_RECIPE_ADVANCEMENT).addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id)).rewards(AdvancementRewards.Builder.recipe(id)).requirements(RequirementsStrategy.OR);
+		consumerIn.accept(new Result(id, itemResult, conditions, nbt, count, group == null ? "" : group, determineBookCategory(this.category), pattern, keyIngredients, advancementBuilder, new ResourceLocation(id.getNamespace(), "recipes/" + this.category.getFolderName() + "/" + id.getPath()), serializer));
 	}
 
 	private void ensureValid(ResourceLocation id) {
@@ -134,44 +151,75 @@ public class ShapeBasedRecipeBuilder {
 		}
 	}
 
+	protected static CraftingBookCategory determineBookCategory(RecipeCategory category) {
+		CraftingBookCategory var10000;
+		switch (category) {
+			case BUILDING_BLOCKS:
+				var10000 = CraftingBookCategory.BUILDING;
+				break;
+			case TOOLS:
+			case COMBAT:
+				var10000 = CraftingBookCategory.EQUIPMENT;
+				break;
+			case REDSTONE:
+				var10000 = CraftingBookCategory.REDSTONE;
+				break;
+			default:
+				var10000 = CraftingBookCategory.MISC;
+		}
+
+		return var10000;
+	}
+
 	public static class Result implements FinishedRecipe {
 		private final ResourceLocation id;
 		private final List<ConditionJsonProvider> conditions;
 		private final Item itemResult;
 		@Nullable
 		private final CompoundTag nbt;
+		private final int count;
+		private final String group;
+		private final CraftingBookCategory category;
 		private final List<String> pattern;
 		private final Map<Character, Ingredient> key;
 		private final ResourceLocation advancementId;
-		private final RecipeSerializer<?> serializer;
 		private final Advancement.Builder advancementBuilder;
+		private final RecipeSerializer<?> serializer;
 
 		@SuppressWarnings("java:S107") //the only way of reducing number of parameters here means adding pretty much unnecessary object parameter
-		public Result(ResourceLocation id, List<ConditionJsonProvider> conditions, Item itemResult, @Nullable
-				CompoundTag nbt, List<String> pattern, Map<Character, Ingredient> keyIngredients, Advancement.Builder advancementBuilder, ResourceLocation advancementId, RecipeSerializer<?> serializer) {
+		public Result(ResourceLocation id, Item itemResult, List<ConditionJsonProvider> conditions, @Nullable CompoundTag nbt,
+					  int count, String group, CraftingBookCategory craftingBookCategory, List<String> pattern, Map<Character, Ingredient> keyIngredients, Advancement.Builder advancementBuilder, ResourceLocation advancementId, RecipeSerializer<?> serializer) {
 			this.id = id;
 			this.conditions = conditions;
 			this.itemResult = itemResult;
 			this.nbt = nbt;
+			this.count = count;
+			this.group = group;
+			this.category = craftingBookCategory;
 			this.pattern = pattern;
-			key = keyIngredients;
+			this.key = keyIngredients;
 			this.advancementId = advancementId;
-			this.serializer = serializer;
 			this.advancementBuilder = advancementBuilder;
+			this.serializer = serializer;
+
 			conditions.add(new ItemEnabledCondition(itemResult));
 		}
 
 		public void serializeRecipeData(JsonObject json) {
+			json.addProperty("category", this.category.getSerializedName());
+
+			if (!this.group.isEmpty()) {
+				json.addProperty("group", this.group);
+			}
+
 			JsonArray conditionsArray = new JsonArray();
 			conditions.forEach(c -> conditionsArray.add(c.toJson()));
 			json.add(ResourceConditions.CONDITIONS_KEY, conditionsArray);
 
 			JsonArray jsonarray = new JsonArray();
-
 			for (String s : pattern) {
 				jsonarray.add(s);
 			}
-
 			json.add("pattern", jsonarray);
 			JsonObject jsonobject = new JsonObject();
 
@@ -182,7 +230,10 @@ public class ShapeBasedRecipeBuilder {
 			json.add("key", jsonobject);
 			JsonObject jsonobject1 = new JsonObject();
 			jsonobject1.addProperty("item", RegistryHelper.getItemKey(itemResult).toString());
-			if (nbt != null) {
+			if (count > 1) {
+				jsonobject1.addProperty("count", count);
+			}
+			if (this.nbt != null) {
 				jsonobject1.addProperty("nbt", nbt.toString());
 			}
 

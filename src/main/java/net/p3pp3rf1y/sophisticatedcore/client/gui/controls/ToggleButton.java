@@ -27,7 +27,7 @@ public class ToggleButton<T extends Comparable<T>> extends Button {
 	}
 
 	@Override
-	protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		StateData data = stateData.get(getState.get());
 		GuiHelper.blit(matrixStack, x, y, data.getTexture());
 	}

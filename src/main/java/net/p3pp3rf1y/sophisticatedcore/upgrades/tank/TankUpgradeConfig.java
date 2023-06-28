@@ -1,3 +1,5 @@
+// TODO: Reimplement
+/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -17,3 +19,4 @@ public class TankUpgradeConfig {
 		builder.pop();
 	}
 }
+*/

@@ -1,10 +1,12 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.voiding;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.ISlotChangeResponseUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
@@ -38,6 +40,24 @@ public class VoidUpgradeWrapper extends UpgradeWrapperBase<VoidUpgradeWrapper, V
 	}
 
 	@Override
+	public long onBeforeInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		ItemStack stack = resource.toStack((int) maxAmount);
+		if (shouldVoidOverflow && inventoryHandler.getStackInSlot(slot).isEmpty() && (!filterLogic.shouldMatchNbt() || !filterLogic.shouldMatchDurability() || filterLogic.getPrimaryMatch() != PrimaryMatch.ITEM) && filterLogic.matchesFilter(stack)) {
+			for (int s = 0; s < inventoryHandler.getSlots(); s++) {
+				if (s == slot) {
+					continue;
+				}
+				if (stackMatchesFilterStack(inventoryHandler.getStackInSlot(s), stack)) {
+					return 0;
+				}
+			}
+			return maxAmount;
+		}
+
+		return !shouldVoidOverflow && filterLogic.matchesFilter(stack) ? 0 : maxAmount;
+	}
+
+/*	@Override
 	public ItemStack onBeforeInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, ItemStack stack, boolean simulate) {
 		if (shouldVoidOverflow && inventoryHandler.getStackInSlot(slot).isEmpty() && (!filterLogic.shouldMatchNbt() || !filterLogic.shouldMatchDurability() || filterLogic.getPrimaryMatch() != PrimaryMatch.ITEM) && filterLogic.matchesFilter(stack)) {
 			for (int s = 0; s < inventoryHandler.getSlots(); s++) {
@@ -52,7 +72,7 @@ public class VoidUpgradeWrapper extends UpgradeWrapperBase<VoidUpgradeWrapper, V
 		}
 
 		return !shouldVoidOverflow && filterLogic.matchesFilter(stack) ? ItemStack.EMPTY : stack;
-	}
+	}*/
 
 	@Override
 	public void onAfterInsert(IItemHandlerSimpleInserter inventoryHandler, int slot) {
@@ -92,7 +112,7 @@ public class VoidUpgradeWrapper extends UpgradeWrapperBase<VoidUpgradeWrapper, V
 	}
 
 	@Override
-	public void onSlotChange(IItemHandler inventoryHandler, int slot) {
+	public void onSlotChange(SlotExposedStorage inventoryHandler, int slot) {
 		if (!shouldWorkInGUI() || shouldVoidOverflow()) {
 			return;
 		}
@@ -111,7 +131,9 @@ public class VoidUpgradeWrapper extends UpgradeWrapperBase<VoidUpgradeWrapper, V
 
 		InventoryHandler storageInventory = storageWrapper.getInventoryHandler();
 		for (int slot : slotsToVoid) {
-			storageInventory.extractItem(slot, storageInventory.getStackInSlot(slot).getCount(), false);
+			ItemStack stack = storageInventory.getStackInSlot(slot);
+			storageInventory.extractSlot(slot, ItemVariant.of(stack), stack.getCount(), null);
+			//storageInventory.extractItem(slot, storageInventory.getStackInSlot(slot).getCount(), false);
 		}
 
 		slotsToVoid.clear();

@@ -15,7 +15,6 @@ import net.p3pp3rf1y.sophisticatedcore.compat.jei.TransferRecipeMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.PlayDiscMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.SoundStopNotificationMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.StopDiscPlaybackMessage;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankClickMessage;
 
 import java.util.function.Function;
 
@@ -24,8 +23,6 @@ import static io.github.fabricators_of_create.porting_lib.util.NetworkDirection.
 
 public class PacketHandler {
 	public static final ResourceLocation CHANNEL_NAME = SophisticatedCore.getRL("channel");
-	public static final int NETWORK_VERSION = 3;
-	public static final String NETWORK_VERSION_STR = String.valueOf(NETWORK_VERSION);
 	private static SimpleChannel channel;
 
 	public static void init() {
@@ -39,7 +36,7 @@ public class PacketHandler {
 		registerMessage(PlayDiscMessage.class, PlayDiscMessage::new, PLAY_TO_CLIENT);
 		registerMessage(StopDiscPlaybackMessage.class, StopDiscPlaybackMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SoundStopNotificationMessage.class, SoundStopNotificationMessage::new, PLAY_TO_SERVER);
-		registerMessage(TankClickMessage.class, TankClickMessage::new, PLAY_TO_SERVER);
+		// registerMessage(TankClickMessage.class, TankClickMessage::new, PLAY_TO_SERVER);
 		registerMessage(StorageInsertMessage.class, StorageInsertMessage::new, PLAY_TO_CLIENT);
 		registerMessage(InsertIntoHeldStorageMessage.class, InsertIntoHeldStorageMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SyncTemplateSettingsMessage.class, SyncTemplateSettingsMessage::new, PLAY_TO_CLIENT);
@@ -73,20 +70,20 @@ public class PacketHandler {
 		getChannel().sendToClientsAround((S2CPacket) message, world, pos, range);
 	}
 
-	private static class PacketType<T extends SimplePacketBase> {
+	public static class PacketType<T extends SimplePacketBase> {
 		private static int index = 0;
 
 		private Function<FriendlyByteBuf, T> decoder;
 		private Class<T> type;
 		private NetworkDirection direction;
 
-		private PacketType(Class<T> type, Function<FriendlyByteBuf, T> factory, NetworkDirection direction) {
+		public PacketType(Class<T> type, Function<FriendlyByteBuf, T> factory, NetworkDirection direction) {
 			decoder = factory;
 			this.type = type;
 			this.direction = direction;
 		}
 
-		private void register() {
+		public void register() {
 			switch (direction) {
 				case PLAY_TO_CLIENT -> getChannel().registerS2CPacket(type, index++, decoder);
 				case PLAY_TO_SERVER -> getChannel().registerC2SPacket(type, index++, decoder);

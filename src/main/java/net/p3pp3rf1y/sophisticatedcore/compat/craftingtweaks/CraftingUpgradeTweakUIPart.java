@@ -1,3 +1,4 @@
+/*
 package net.p3pp3rf1y.sophisticatedcore.compat.craftingtweaks;
 
 import net.blay09.mods.craftingtweaks.CraftingTweaksProviderManager;
@@ -94,3 +95,4 @@ public class CraftingUpgradeTweakUIPart implements ICraftingUIPart {
 		return firstSlot.y + 18 * index;
 	}
 }
+*/

@@ -1,13 +1,13 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.crafting;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.world.inventory.Slot;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 
 import java.util.List;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public interface ICraftingUIPart {
 	void onCraftingSlotsDisplayed(List<Slot> slots);
 

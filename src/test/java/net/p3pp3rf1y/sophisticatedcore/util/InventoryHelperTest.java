@@ -1,14 +1,15 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
 import com.google.common.collect.ImmutableMap;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,25 +31,26 @@ class InventoryHelperTest {
 		Bootstrap.bootStrap();
 	}
 
-	private IItemHandler getItemHandler(NonNullList<ItemStack> stacks, int stackLimitMultiplier) {
+	private SlotExposedStorage getItemHandler(NonNullList<ItemStack> stacks, int stackLimitMultiplier) {
 		return getItemHandler(stacks, stackLimitMultiplier, (slot, stack) -> true);
 	}
 
-	private IItemHandler getItemHandler(NonNullList<ItemStack> stacks, int stackLimitMultiplier, BiPredicate<Integer, ItemStack> isStackValidForSlot) {
-		return new ItemStackHandler(stacks) {
+	private SlotExposedStorage getItemHandler(NonNullList<ItemStack> stacks, int stackLimitMultiplier, BiPredicate<Integer, ItemStack> isStackValidForSlot) {
+		return new ItemStackHandler(stacks.toArray(new ItemStack[0])) {
 			@Override
 			public int getSlotLimit(int slot) {
 				return super.getSlotLimit(slot) * stackLimitMultiplier;
 			}
 
 			@Override
-			protected int getStackLimit(int slot, @Nonnull ItemStack stack) {
-				return super.getStackLimit(slot, stack) * stackLimitMultiplier;
+			protected int getStackLimit(int slot, @Nonnull ItemVariant resource) {
+				return super.getStackLimit(slot, resource) * stackLimitMultiplier;
 			}
 
-			@Override
-			public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-				return isStackValidForSlot.test(slot, stack);
+
+            @Override
+            public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+				return isStackValidForSlot.test(slot, resource.toStack((int) amount));
 			}
 		};
 	}
@@ -57,8 +59,8 @@ class InventoryHelperTest {
 	@MethodSource("transferMovesOnlyStacksThatCanGoIntoInventory")
 	void transferMovesOnlyStacksThatCanGoIntoInventory(NonNullList<ItemStack> stacksHandlerA, int limitMultiplierA, NonNullList<ItemStack> stacksHandlerB, int limitMultiplierB,
 			BiPredicate<Integer, ItemStack> isStackValidInHandlerB, Map<Integer, ItemStack> stacksAfterTransferA, Map<Integer, ItemStack> stacksAfterTransferB) {
-		IItemHandler handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
-		IItemHandler handlerB = getItemHandler(stacksHandlerB, limitMultiplierB, isStackValidInHandlerB);
+		SlotExposedStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
+		SlotExposedStorage handlerB = getItemHandler(stacksHandlerB, limitMultiplierB, isStackValidInHandlerB);
 
 		InventoryHelper.transfer(handlerA, handlerB, s -> {});
 
@@ -175,8 +177,8 @@ class InventoryHelperTest {
 	@ParameterizedTest
 	@MethodSource("transferMovesStacksCorrectly")
 	void transferMovesStacksCorrectly(NonNullList<ItemStack> stacksHandlerA, int limitMultiplierA, NonNullList<ItemStack> stacksHandlerB, int limitMultiplierB, Map<Integer, ItemStack> stacksAfterTransferA, Map<Integer, ItemStack> stacksAfterTransferB) {
-		IItemHandler handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
-		IItemHandler handlerB = getItemHandler(stacksHandlerB, limitMultiplierB);
+        SlotExposedStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
+        SlotExposedStorage handlerB = getItemHandler(stacksHandlerB, limitMultiplierB);
 
 		InventoryHelper.transfer(handlerA, handlerB, s -> {});
 
@@ -184,7 +186,7 @@ class InventoryHelperTest {
 		assertHandlerState(handlerB, stacksAfterTransferB);
 	}
 
-	private static void assertHandlerState(IItemHandler handler, Map<Integer, ItemStack> expectedStacksInHandler) {
+	private static void assertHandlerState(SlotExposedStorage handler, Map<Integer, ItemStack> expectedStacksInHandler) {
 		for (int slot = 0; slot < handler.getSlots(); slot++) {
 			ItemStack stackInSlot = handler.getStackInSlot(slot);
 			if (expectedStacksInHandler.containsKey(slot)) {

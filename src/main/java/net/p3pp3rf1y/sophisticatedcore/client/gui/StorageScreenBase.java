@@ -4,13 +4,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.math.Matrix4f;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -29,8 +28,6 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.event.ContainerScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.p3pp3rf1y.sophisticatedcore.Config;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.Button;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ButtonDefinitions;
@@ -48,6 +45,7 @@ import net.p3pp3rf1y.sophisticatedcore.network.TransferFullSlotMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.crafting.ICraftingUIPart;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.CountAbbreviator;
+import org.joml.Matrix4f;
 
 import javax.annotation.Nullable;
 import java.text.NumberFormat;
@@ -60,8 +58,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper.GUI_CONTROLS;
 
 public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> extends AbstractContainerScreen<S>
 		implements InventoryScrollPanel.IInventoryScreen {
@@ -243,7 +239,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 
 		int numberOfVisibleRows = getNumberOfVisibleRows();
 		if (numberOfVisibleRows < getMenu().getNumberOfRows()) {
-			inventoryScrollPanel = new InventoryScrollPanel(Minecraft.getInstance(), this, 0, getMenu().getNumberOfStorageInventorySlots(), getSlotsOnLine(), numberOfVisibleRows * 18, getGuiTop() + 17, getGuiLeft() + 7);
+			inventoryScrollPanel = new InventoryScrollPanel(Minecraft.getInstance(), this, 0, getMenu().getNumberOfStorageInventorySlots(), getSlotsOnLine(), numberOfVisibleRows * 18, GuiHelper.getGuiTop(this) + 17, GuiHelper.getGuiLeft(this) + 7);
 			addRenderableWidget(inventoryScrollPanel);
 			inventoryScrollPanel.updateSlotsYPosition();
 		} else {
@@ -383,19 +379,20 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 		int i = leftPos;
 		int j = topPos;
 		renderBg(pPoseStack, pPartialTick, pMouseX, pMouseY);
-		//noinspection UnstableApiUsage
-		MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.ContainerScreenEvent.Render.Background(this, pPoseStack, pMouseX, pMouseY));
+/*		//noinspection UnstableApiUsage
+		MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.ContainerScreenEvent.Render.Background(this, pPoseStack, pMouseX, pMouseY));*/
 		RenderSystem.disableDepthTest();
 
 		hoveredSlot = null;
 
-		for (Widget widget : renderables) {
+		for (Renderable widget : renderables) {
 			widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
 		}
 
 		PoseStack posestack = RenderSystem.getModelViewStack();
 		posestack.pushPose();
 		posestack.translate(i, j, 0.0D);
+
 		RenderSystem.applyModelViewMatrix();
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -411,13 +408,13 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 				hoveredSlot = slot;
 				int l = slot.x;
 				int i1 = slot.y;
-				renderSlotHighlight(pPoseStack, l, i1, getBlitOffset(), getSlotColor(k));
+				renderSlotHighlight(pPoseStack, l, i1, 0);
 			}
 		}
 
 		renderLabels(pPoseStack, pMouseX, pMouseY);
-		//noinspection UnstableApiUsage
-		MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, pPoseStack, pMouseX, pMouseY));
+/*		//noinspection UnstableApiUsage
+		MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, pPoseStack, pMouseX, pMouseY));*/
 		ItemStack itemstack = draggingItem.isEmpty() ? menu.getCarried() : draggingItem;
 		if (!itemstack.isEmpty()) {
 			int i2 = draggingItem.isEmpty() ? 8 : 16;
@@ -434,7 +431,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 			}
 
 			//noinspection ConstantConditions - renderFloatingItem should really have altText as nullable as it is then only passed to nullable parameter
-			renderFloatingItem(itemstack, pMouseX - i - 8, pMouseY - j - i2, s);
+			renderFloatingItem(pPoseStack, itemstack, pMouseX - i - 8, pMouseY - j - i2, s);
 		}
 
 		posestack.popPose();
@@ -521,16 +518,15 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 			}
 		}
 
-		setBlitOffset(100);
-		itemRenderer.blitOffset = 100.0F;
+		matrixStack.pushPose();
+		matrixStack.translate(0.0F, 0.0F, 100.0F);
 		if (itemstack.isEmpty() && slot.isActive()) {
 			renderSlotBackground(matrixStack, slot, i, j);
 		} else if (!rightClickDragging) {
 			renderStack(matrixStack, i, j, itemstack, flag, stackCountText);
 		}
 
-		itemRenderer.blitOffset = 0.0F;
-		setBlitOffset(0);
+		matrixStack.popPose();
 	}
 
 	private void renderStack(PoseStack poseStack, int i, int j, ItemStack itemstack, boolean flag, @Nullable String stackCountText) {
@@ -539,25 +535,25 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 		}
 
 		RenderSystem.enableDepthTest();
-		itemRenderer.renderAndDecorateItem(itemstack, i, j);
+		itemRenderer.renderAndDecorateItem(poseStack, itemstack, i, j);
 		if (shouldUseSpecialCountRender(itemstack)) {
-			itemRenderer.renderGuiItemDecorations(font, itemstack, i, j, "");
+			itemRenderer.renderGuiItemDecorations(poseStack, font, itemstack, i, j, "");
 			if (stackCountText == null) {
 				stackCountText = CountAbbreviator.abbreviate(itemstack.getCount());
 			}
-			renderStackCount(stackCountText, i, j);
+			renderStackCount(poseStack, stackCountText, i, j);
 		} else {
-			itemRenderer.renderGuiItemDecorations(font, itemstack, i, j, stackCountText);
+			itemRenderer.renderGuiItemDecorations(poseStack, font, itemstack, i, j, stackCountText);
 		}
 	}
 
 	private void renderSlotBackground(PoseStack poseStack, Slot slot, int i, int j) {
 		Optional<ItemStack> memorizedStack = getMenu().getMemorizedStackInSlot(slot.index);
 		if (memorizedStack.isPresent()) {
-			itemRenderer.renderAndDecorateItem(memorizedStack.get(), i, j);
+			itemRenderer.renderAndDecorateItem(poseStack, memorizedStack.get(), i, j);
 			drawStackOverlay(poseStack, i, j);
 		} else if (!getMenu().getSlotFilterItem(slot.index).isEmpty()) {
-			itemRenderer.renderAndDecorateItem(getMenu().getSlotFilterItem(slot.index), i, j);
+			itemRenderer.renderAndDecorateItem(poseStack, getMenu().getSlotFilterItem(slot.index), i, j);
 			drawStackOverlay(poseStack, i, j);
 		} else {
 			Pair<ResourceLocation, ResourceLocation> pair = slot.getNoItemIcon();
@@ -565,8 +561,8 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 				//noinspection ConstantConditions - by this point minecraft isn't null
 				TextureAtlasSprite textureatlassprite = minecraft.getTextureAtlas(pair.getFirst()).apply(pair.getSecond());
 				RenderSystem.setShader(GameRenderer::getPositionTexShader);
-				RenderSystem.setShaderTexture(0, textureatlassprite.atlas().location());
-				blit(poseStack, i, j, getBlitOffset(), 16, 16, textureatlassprite);
+				RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
+				blit(poseStack, i, j, 0, 16, 16, textureatlassprite);
 			}
 		}
 	}
@@ -624,7 +620,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 
 	private void drawSlotOverlays(PoseStack matrixStack) {
 		matrixStack.pushPose();
-		matrixStack.translate(getGuiLeft(), getGuiTop(), 0.0F);
+		matrixStack.translate(GuiHelper.getGuiLeft(this), GuiHelper.getGuiTop(this), 0.0F);
 		for (int slotNumber = 0; slotNumber < menu.getNumberOfStorageInventorySlots(); slotNumber++) {
 			List<Integer> colors = menu.getSlotOverlayColors(slotNumber);
 			if (!colors.isEmpty()) {
@@ -649,7 +645,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 			if (hoveredSlot.hasItem()) {
 				renderTooltip(poseStack, hoveredSlot.getItem(), x, y);
 			} else if (hoveredSlot instanceof INameableEmptySlot emptySlot && emptySlot.hasEmptyTooltip()) {
-				renderComponentTooltip(poseStack, Collections.singletonList(emptySlot.getEmptyTooltip()), x, y, font);
+				renderComponentTooltip(poseStack, Collections.singletonList(emptySlot.getEmptyTooltip()), x, y);
 			}
 		}
 		if (sortButton != null) {
@@ -684,7 +680,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderTexture(0, GUI_CONTROLS);
+		RenderSystem.setShaderTexture(0, GuiHelper.GUI_CONTROLS);
 
 		int firstHalfHeight = getUpgradeHeightWithoutBottom();
 
@@ -874,17 +870,18 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 		return numberOfUpgradeSlots == 0 ? Optional.empty() : GuiHelper.getPositiveRectangle(leftPos - UPGRADE_INVENTORY_OFFSET, topPos + getUpgradeTop(), 32, getUpgradeHeight());
 	}
 
-	private void renderStackCount(String count, int x, int y) {
-		PoseStack posestack = new PoseStack();
-		posestack.translate(0.0D, 0.0D, itemRenderer.blitOffset + 200.0F);
+	private void renderStackCount(PoseStack poseStrack, String count, int x, int y) {
+		poseStrack.pushPose();
+		poseStrack.translate(0.0D, 0.0D, 200.0F);
 		float scale = Math.min(1f, (float) 16 / font.width(count));
 		if (scale < 1f) {
-			posestack.scale(scale, scale, 1.0F);
+			poseStrack.scale(scale, scale, 1.0F);
 		}
 		MultiBufferSource.BufferSource renderBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 		font.drawInBatch(count, (x + 19 - 2 - (font.width(count) * scale)) / scale,
-				(y + 6 + 3 + (1 / (scale * scale) - 1)) / scale, 16777215, true, posestack.last().pose(), renderBuffer, false, 0, 15728880);
+				(y + 6 + 3 + (1 / (scale * scale) - 1)) / scale, 16777215, true, poseStrack.last().pose(), renderBuffer, Font.DisplayMode.NORMAL, 0, 15728880);
 		renderBuffer.endBatch();
+		poseStrack.popPose();
 	}
 
 	@Override
@@ -915,7 +912,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 	private void renderErrorOverlay(PoseStack matrixStack) {
 		menu.getErrorUpgradeSlotChangeResult().ifPresent(upgradeSlotChangeResult -> upgradeSlotChangeResult.getErrorMessage().ifPresent(overlayErrorMessage -> {
 			matrixStack.pushPose();
-			matrixStack.translate(getGuiLeft(), getGuiTop(), 0.0F);
+			matrixStack.translate(GuiHelper.getGuiLeft(this), GuiHelper.getGuiTop(this), 0.0F);
 			upgradeSlotChangeResult.getErrorUpgradeSlots().forEach(slotIndex -> renderSlotOverlay(matrixStack, menu.getSlot(menu.getFirstUpgradeSlot() + slotIndex), ERROR_SLOT_COLOR));
 			upgradeSlotChangeResult.getErrorInventorySlots().forEach(slotIndex -> {
 				Slot slot = menu.getSlot(slotIndex);
@@ -990,7 +987,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 
 	@Override
 	public int getTopY() {
-		return getGuiTop();
+		return GuiHelper.getGuiTop(this);
 	}
 
 	@Override
@@ -1001,7 +998,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 
 	@Override
 	public int getLeftX() {
-		return getGuiLeft();
+		return GuiHelper.getGuiLeft(this);
 	}
 
 	public Position getRightTopAbovePlayersInventory() {

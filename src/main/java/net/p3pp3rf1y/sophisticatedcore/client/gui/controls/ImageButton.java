@@ -24,7 +24,7 @@ public class ImageButton extends ButtonBase {
 	}
 
 	@Override
-	protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		GuiHelper.blit(matrixStack, x, y, texture);
 	}
 

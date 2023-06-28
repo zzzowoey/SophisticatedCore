@@ -10,8 +10,8 @@ public class FilterUpgradeItem extends UpgradeItemBase<FilterUpgradeWrapper> {
 	public static final UpgradeType<FilterUpgradeWrapper> TYPE = new UpgradeType<>(FilterUpgradeWrapper::new);
 	private final IntSupplier filterSlotCount;
 
-	public FilterUpgradeItem(IntSupplier filterSlotCount, CreativeModeTab itemGroup) {
-		super(itemGroup);
+	public FilterUpgradeItem(IntSupplier filterSlotCount) {
+		super();
 		this.filterSlotCount = filterSlotCount;
 	}
 

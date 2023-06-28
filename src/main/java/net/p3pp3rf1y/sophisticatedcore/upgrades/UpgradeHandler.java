@@ -1,7 +1,11 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades;
 
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
@@ -45,7 +49,8 @@ public class UpgradeHandler extends ItemStackHandler {
 		this.contentsSaveHandler = contentsSaveHandler;
 		this.onInvalidateUpgradeCaches = onInvalidateUpgradeCaches;
 		deserializeNBT(contentsNbt.getCompound(UPGRADE_INVENTORY_TAG));
-		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && storageWrapper.getRenderInfo().getUpgradeItems().size() != getSlots()) {
+		// TODO: Reimplement?
+		if (/*Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && */storageWrapper.getRenderInfo().getUpgradeItems().size() != getSlots()) {
 			setRenderUpgradeItems();
 		}
 	}
@@ -55,9 +60,14 @@ public class UpgradeHandler extends ItemStackHandler {
 	}
 
 	@Override
+	public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+		return amount == 0 || resource.getItem() instanceof IUpgradeItem;
+	}
+
+/*	@Override
 	public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
 		return stack.isEmpty() || stack.getItem() instanceof IUpgradeItem;
-	}
+	}*/
 
 	@Override
 	protected void onContentsChanged(int slot) {
@@ -80,7 +90,7 @@ public class UpgradeHandler extends ItemStackHandler {
 
 	@Override
 	public void setSize(int size) {
-		super.setSize(stacks.size());
+		super.setSize(getSlots());
 	}
 
 	public void saveInventory() {
@@ -129,6 +139,18 @@ public class UpgradeHandler extends ItemStackHandler {
 
 	@Nonnull
 	@Override
+	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
+		long inserted = super.insertSlot(slot, resource, maxAmount, transaction);
+		// TODO: Reimplement?
+		if (/*Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && */inserted > 0 && maxAmount > 0) {
+			onUpgradeAdded(slot);
+		}
+
+		return inserted;
+	}
+
+/*	@Nonnull
+	@Override
 	public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
 		ItemStack result = super.insertItem(slot, stack, simulate);
 		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && result.isEmpty() && !stack.isEmpty()) {
@@ -136,7 +158,7 @@ public class UpgradeHandler extends ItemStackHandler {
 		}
 
 		return result;
-	}
+	}*/
 
 	private void onUpgradeAdded(int slot) {
 		Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
@@ -159,18 +181,40 @@ public class UpgradeHandler extends ItemStackHandler {
 		ItemStack originalStack = getStackInSlot(slot);
 		Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
 		boolean itemsDiffer = !ItemHandlerHelper.canItemStacksStack( originalStack, stack);
-		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && itemsDiffer && wrappers.containsKey(slot)) {
+		// TODO: Reimplement?
+		if (/*Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && */itemsDiffer && wrappers.containsKey(slot)) {
 			wrappers.get(slot).onBeforeRemoved();
 		}
 
 		super.setStackInSlot(slot, stack);
 
-		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && itemsDiffer) {
+		if (/*Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && */itemsDiffer) {
 			onUpgradeAdded(slot);
 		}
 	}
 
 	@Override
+	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
+		try (Transaction extractTransaction = Transaction.openNested(transaction)) {
+			TransactionCallback.onSuccess(extractTransaction, () -> {
+				// TODO: Reimplement?
+				//if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
+				ItemStack slotStack = getStackInSlot(slot);
+				if (persistent && !slotStack.isEmpty() && maxAmount == 1) {
+					Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
+					if (wrappers.containsKey(slot)) {
+						wrappers.get(slot).onBeforeRemoved();
+					}
+				}
+				//}
+			});
+
+			extractTransaction.commit();
+		}
+		return super.extractSlot(slot, resource, maxAmount, transaction);
+	}
+
+/*	@Override
 	public ItemStack extractItem(int slot, int amount, boolean simulate) {
 		if (!simulate && Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
 			ItemStack slotStack = getStackInSlot(slot);
@@ -182,7 +226,7 @@ public class UpgradeHandler extends ItemStackHandler {
 			}
 		}
 		return super.extractItem(slot, amount, simulate);
-	}
+	}*/
 
 	private void initializeTypeWrappers() {
 		if (typeWrappersInitialized) {
@@ -331,6 +375,18 @@ public class UpgradeHandler extends ItemStackHandler {
 	}
 
 	public void increaseSize(int diff) {
+		var previousStacks = stacks.clone();
+
+		setSize(previousStacks.length + diff);
+		for (int slot = 0; slot < previousStacks.length && slot < getSlots(); slot++) {
+			contentsChangedInternal(slot, previousStacks[slot], null);
+		}
+
+		saveInventory();
+		setRenderUpgradeItems();
+	}
+
+/*	public void increaseSize(int diff) {
 		NonNullList<ItemStack> previousStacks = stacks;
 		stacks = NonNullList.withSize(previousStacks.size() + diff, ItemStack.EMPTY);
 		for (int slot = 0; slot < previousStacks.size(); slot++) {
@@ -338,7 +394,7 @@ public class UpgradeHandler extends ItemStackHandler {
 		}
 		saveInventory();
 		setRenderUpgradeItems();
-	}
+	}*/
 
 	@Override
 	public int getSlotLimit(int slot) {

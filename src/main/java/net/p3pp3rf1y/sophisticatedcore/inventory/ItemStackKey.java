@@ -1,8 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore.inventory;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 
 import javax.annotation.Nullable;
@@ -17,6 +17,10 @@ public record ItemStackKey(ItemStack stack) {
 	public ItemStackKey(ItemStack stack) {
 		this.stack = stack.copy();
 		this.stack.setCount(1);
+	}
+
+	public ItemStackKey(ItemVariant resource) {
+		this(resource.toStack());
 	}
 
 	@Override
@@ -58,17 +62,27 @@ public record ItemStackKey(ItemStack stack) {
 		return hash;
 	}
 
-	private static final Field CAP_NBT = ObfuscationReflectionHelper.findField(ItemStack.class, "capNBT");
+	public static int getHashCode(ItemVariant resource) {
+		return getHashCode(resource.toStack());
+	}
+
+	// TODO: Reimplement
+	//private static final Field CAP_NBT = ObfuscationReflectionHelper.findField(ItemStack.class, "capNBT");
 
 	@Nullable
 	private static CompoundTag getCapNbt(ItemStack stack) {
-		try {
+		/*try {
 			return (CompoundTag) CAP_NBT.get(stack);
 		}
 		catch (IllegalAccessException e) {
 			SophisticatedCore.LOGGER.error("Error getting capNBT of stack ", e);
 			return null;
-		}
+		}*/
+		return null;
+	}
+
+	public boolean matches(ItemVariant resource) {
+		return hashCode() == getHashCode(resource);
 	}
 
 	public boolean matches(ItemStack stack) {

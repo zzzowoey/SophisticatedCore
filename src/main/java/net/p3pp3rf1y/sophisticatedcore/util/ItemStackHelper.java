@@ -1,7 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
+import io.github.fabricators_of_create.porting_lib.item.XpRepairItem;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 
 import javax.annotation.Nullable;
 import java.util.Objects;

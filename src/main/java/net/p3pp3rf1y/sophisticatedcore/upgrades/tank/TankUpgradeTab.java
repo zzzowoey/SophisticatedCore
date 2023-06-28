@@ -1,3 +1,5 @@
+// TODO: Reimplement
+/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -39,3 +41,4 @@ public class TankUpgradeTab extends UpgradeSettingsTab<TankUpgradeContainer> {
 		slot.y = y - screenGuiTop + 25;
 	}
 }
+*/

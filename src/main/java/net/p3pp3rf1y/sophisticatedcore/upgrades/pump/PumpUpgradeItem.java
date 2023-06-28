@@ -1,3 +1,5 @@
+// TODO: Reimplement
+/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.pump;
 
 import net.minecraft.world.item.CreativeModeTab;
@@ -34,3 +36,4 @@ public class PumpUpgradeItem extends UpgradeItemBase<PumpUpgradeWrapper> {
 		return pumpUpgradeConfig;
 	}
 }
+*/

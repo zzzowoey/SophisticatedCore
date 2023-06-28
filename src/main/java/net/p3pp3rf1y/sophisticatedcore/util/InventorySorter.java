@@ -1,10 +1,12 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 
@@ -67,10 +69,10 @@ public class InventorySorter {
 
 	private static String getRegistryName(ItemStackKey itemStackKey) {
 		//noinspection ConstantConditions - registryName is nonNull by the time it exists in itemstack form
-		return ForgeRegistries.ITEMS.getKey(itemStackKey.getStack().getItem()).toString();
+		return BuiltInRegistries.ITEM.getKey(itemStackKey.getStack().getItem()).toString();
 	}
 
-	public static void sortHandler(IItemHandlerModifiable handler, Comparator<? super Map.Entry<ItemStackKey, Integer>> comparator, Set<Integer> noSortSlots) {
+	public static void sortHandler(SlotExposedStorage handler, Comparator<? super Map.Entry<ItemStackKey, Integer>> comparator, Set<Integer> noSortSlots) {
 		Map<ItemStackKey, Integer> compactedStacks = InventoryHelper.getCompactedStacks(handler, noSortSlots);
 		List<Map.Entry<ItemStackKey, Integer>> sortedList = new ArrayList<>(compactedStacks.entrySet());
 		sortedList.sort(comparator);
@@ -96,15 +98,15 @@ public class InventorySorter {
 		}
 	}
 
-	private static void emptySlot(IItemHandlerModifiable handler, int slot) {
+	private static void emptySlot(SlotExposedStorage handler, int slot) {
 		if (!handler.getStackInSlot(slot).isEmpty()) {
 			handler.setStackInSlot(slot, ItemStack.EMPTY);
 		}
 	}
 
-	private static int placeStack(IItemHandlerModifiable handler, ItemStackKey current, int count, int slot) {
+	private static int placeStack(SlotExposedStorage handler, ItemStackKey current, int count, int slot) {
 		ItemStack copy = current.getStack().copy();
-		int slotLimit = handler instanceof InventoryHandler inventoryHandler ? inventoryHandler.getStackLimit(slot, copy) : handler.getSlotLimit(slot);
+		int slotLimit = handler instanceof InventoryHandler inventoryHandler ? inventoryHandler.getStackLimit(slot, ItemVariant.of(copy)) : handler.getSlotLimit(slot);
 		int countPlaced = Math.min(count, slotLimit);
 		copy.setCount(countPlaced);
 		if (!ItemStack.matches(handler.getStackInSlot(slot), copy)) {

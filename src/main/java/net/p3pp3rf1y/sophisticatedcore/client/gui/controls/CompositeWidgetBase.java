@@ -24,7 +24,7 @@ public abstract class CompositeWidgetBase<T extends WidgetBase> extends WidgetBa
 	}
 
 	@Override
-	protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		children.forEach(child -> child.render(matrixStack, mouseX, mouseY, partialTicks));
 	}
 

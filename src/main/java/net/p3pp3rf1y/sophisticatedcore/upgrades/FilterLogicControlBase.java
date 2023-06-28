@@ -159,7 +159,7 @@ public abstract class FilterLogicControlBase<F extends FilterLogicBase, S extend
 			}
 
 			@Override
-			protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+			public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 				if (container.getPrimaryMatch() == PrimaryMatch.TAGS) {
 					super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
 				}
@@ -259,14 +259,14 @@ public abstract class FilterLogicControlBase<F extends FilterLogicBase, S extend
 	public void moveSlotsToView() {
 		if (container.getPrimaryMatch() == PrimaryMatch.TAGS) {
 			Slot slot = container.getTagSelectionSlot();
-			slot.x = x - screen.getGuiLeft() + 1;
-			slot.y = y - screen.getGuiTop() + tagButtonsYOffset + 1;
+			slot.x = x - GuiHelper.getGuiLeft(screen) + 1;
+			slot.y = y - GuiHelper.getGuiTop(screen) + tagButtonsYOffset + 1;
 			container.getFilterSlots().forEach(s -> s.x = StorageScreenBase.DISABLED_SLOT_X_POS);
 		} else {
 			int upgradeSlotNumber = 0;
 			for (S slot : container.getFilterSlots()) {
-				slot.x = x - screen.getGuiLeft() + 1 + (upgradeSlotNumber % slotsPerRow) * 18;
-				slot.y = y - screen.getGuiTop() + slotsTopYOffset + 1 + (upgradeSlotNumber / slotsPerRow) * 18;
+				slot.x = x - GuiHelper.getGuiLeft(screen) + 1 + (upgradeSlotNumber % slotsPerRow) * 18;
+				slot.y = y - GuiHelper.getGuiTop(screen) + slotsTopYOffset + 1 + (upgradeSlotNumber / slotsPerRow) * 18;
 				upgradeSlotNumber++;
 			}
 			container.getTagSelectionSlot().x = StorageScreenBase.DISABLED_SLOT_X_POS;
@@ -274,7 +274,7 @@ public abstract class FilterLogicControlBase<F extends FilterLogicBase, S extend
 	}
 
 	@Override
-	protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
 		if (container.getPrimaryMatch() == PrimaryMatch.TAGS) {
 			renderTagNames(matrixStack);
@@ -350,7 +350,7 @@ public abstract class FilterLogicControlBase<F extends FilterLogicBase, S extend
 		}
 
 		@Override
-		protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 			if (container.getPrimaryMatch() == PrimaryMatch.TAGS) {
 				super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
 			}

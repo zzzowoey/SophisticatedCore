@@ -67,14 +67,13 @@ import java.util.function.Supplier;
 
 public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extends AbstractContainerMenu implements IAdditionalSlotInfoMenu {
 	public static final int NUMBER_OF_PLAYER_SLOTS = 36;
-	public static final ResourceLocation EMPTY_UPGRADE_SLOT_BACKGROUND = new ResourceLocation(SophisticatedCore.ID, "item/empty_upgrade_slot");
+	public static final ResourceLocation EMPTY_UPGRADE_SLOT_BACKGROUND = SophisticatedCore.getRL("item/empty_upgrade_slot");
 	public static final Pair<ResourceLocation, ResourceLocation> INACCESSIBLE_SLOT_BACKGROUND = new Pair<>(InventoryMenu.BLOCK_ATLAS, SophisticatedCore.getRL("item/inaccessible_slot"));
 	protected static final String UPGRADE_ENABLED_TAG = "upgradeEnabled";
 	protected static final String UPGRADE_SLOT_TAG = "upgradeSlot";
 	protected static final String ACTION_TAG = "action";
 	protected static final String OPEN_TAB_ID_TAG = "openTabId";
 	protected static final String SORT_BY_TAG = "sortBy";
-	private static final Method ON_SWAP_CRAFT = ObfuscationReflectionHelper.findMethod(Slot.class, "m_6405_", int.class);
 	public final NonNullList<ItemStack> lastUpgradeSlots = NonNullList.create();
 	public final List<Slot> upgradeSlots = Lists.newArrayList();
 	public final NonNullList<ItemStack> remoteUpgradeSlots = NonNullList.create();
@@ -856,9 +855,9 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 			if (!inventoryHandler.isSlotAccessible(slot)) {
 				inaccessibleSlots.add(slot);
 			}
-			ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
-			int stackLimit = inventoryHandler.getStackLimit(slot, stackInSlot);
-			if (stackLimit != inventoryHandler.getBaseStackLimit(stackInSlot)) {
+			ItemVariant variantInSlot = inventoryHandler.getVariantInSlot(slot);
+			int stackLimit = inventoryHandler.getStackLimit(slot, variantInSlot);
+			if (stackLimit != inventoryHandler.getBaseStackLimit(variantInSlot)) {
 				slotLimitOverrides.put(slot, stackLimit);
 			}
 			if (inventoryHandler.getFilterItem(slot) != Items.AIR) {
@@ -930,12 +929,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 	}
 
 	private void onSwapCraft(Slot slot, int numItemsCrafted) {
-		try {
-			ON_SWAP_CRAFT.invoke(slot, numItemsCrafted);
-		}
-		catch (IllegalAccessException | InvocationTargetException e) {
-			SophisticatedCore.LOGGER.error("Error invoking onSwapCraft method in Slot class", e);
-		}
+		slot.onSwapCraft(numItemsCrafted);
 	}
 
 	//copy of Container's doClick with the replacement of inventorySlots.get to getSlot, call to onswapcraft as that's protected in vanilla and an addition of upgradeSlots to pickup all

@@ -127,18 +127,24 @@ public class FilterLogic extends FilterLogicBase {
 				CompoundTag itemTags = tagList.getCompound(i);
 				int slot = itemTags.getInt("Slot");
 
-				if (slot >= 0 && slot < stacks.size()) {
+				if (slot >= 0 && slot < getSlots()) {
 					ItemStack stack = ItemStack.of(itemTags);
-					stacks.set(slot, stack);
+					contentsChangedInternal(slot, stack, null);
 				}
 			}
 			onLoad();
 		}
 
 		@Override
-		public boolean isItemValid(int slot, ItemStack stack) {
+		public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+			ItemStack stack = resource.toStack();
 			return stack.isEmpty() || (doesNotContain(stack) && isItemValid.test(stack));
 		}
+
+/*		@Override
+		public boolean isItemValid(int slot, ItemStack stack) {
+			return stack.isEmpty() || (doesNotContain(stack) && isItemValid.test(stack));
+		}*/
 
 		private boolean doesNotContain(ItemStack stack) {
 			return !InventoryHelper.hasItem(this, s -> ItemHandlerHelper.canItemStacksStack(s, stack));

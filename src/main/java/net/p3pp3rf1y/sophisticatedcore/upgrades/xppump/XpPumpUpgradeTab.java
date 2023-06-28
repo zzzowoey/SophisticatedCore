@@ -1,3 +1,5 @@
+// TODO: Reimplement
+/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.xppump;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -162,3 +164,4 @@ public class XpPumpUpgradeTab extends UpgradeSettingsTab<XpPumpUpgradeContainer>
 		}
 	}
 }
+*/

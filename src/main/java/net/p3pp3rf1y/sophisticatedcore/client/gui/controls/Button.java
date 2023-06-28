@@ -54,7 +54,7 @@ public class Button extends ButtonBase {
 	}
 
 	@Override
-	protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		if (foregroundTexture != null) {
 			GuiHelper.blit(matrixStack, x, y, foregroundTexture);
 		}

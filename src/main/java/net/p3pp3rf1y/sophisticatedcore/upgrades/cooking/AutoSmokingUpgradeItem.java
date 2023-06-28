@@ -8,7 +8,8 @@ public class AutoSmokingUpgradeItem extends UpgradeItemBase<AutoCookingUpgradeWr
 	public static final UpgradeType<AutoCookingUpgradeWrapper.AutoSmokingUpgradeWrapper> TYPE = new UpgradeType<>(AutoCookingUpgradeWrapper.AutoSmokingUpgradeWrapper::new);
 	private final AutoCookingUpgradeConfig autoSmokingUpgradeConfig;
 
-	public AutoSmokingUpgradeItem(CreativeModeTab itemGroup, AutoCookingUpgradeConfig autoSmokingUpgradeConfig) {super(itemGroup);
+	public AutoSmokingUpgradeItem(AutoCookingUpgradeConfig autoSmokingUpgradeConfig) {
+		super();
 		this.autoSmokingUpgradeConfig = autoSmokingUpgradeConfig;
 	}
 

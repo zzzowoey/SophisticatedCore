@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "sophisticatedcore",
+  "version": "${version}",
+
+  "name": "Sophisticated Core",
+  "description": "Base mod of Sophisticated mods.",
+
+  "environment": "*",
+  "license": "GNU General Public License v3.0",
+  "authors": [
+    "Salandora",
+    "P3pp3rF1y"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/sophisticated-core",
+    "issues": "https://github.com/P3pp3rF1y/SophisticatedCore/issues",
+    "sources": "https://github.com/P3pp3rF1y/SophisticatedCore/"
+  },
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.p3pp3rf1y.sophisticatedcore.SophisticatedCore"
+    ],
+    "client": [
+      "net.p3pp3rf1y.sophisticatedcore.SophisticatedCoreClient"
+    ],
+    "fabric-datagen": [
+      "net.p3pp3rf1y.sophisticatedcore.SophisticatedCoreData"
+    ],
+    "jei_mod_plugin": [
+      "net.p3pp3rf1y.sophisticatedcore.compat.jei.CorePlugin"
+    ]
+  },
+
+  "mixins": [ "sophisticatedcore.mixins.json" ],
+  "accessWidener": "sophisticatedcore.accesswidener",
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": ">=${fabric_version}",
+    "minecraft": "${minecraft_version}"
+  },
+
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/class_465": ["net/p3pp3rf1y/sophisticatedcore/extensions/client/gui/screens/inventory/SophisticatedAbstractContainerScreen"],
+      "net/minecraft/class_1735": ["net/p3pp3rf1y/sophisticatedcore/extensions/inventory/SophisticatedSlot"],
+      "net/minecraft/class_1792": ["net/p3pp3rf1y/sophisticatedcore/extensions/item/SophisticatedItem"],
+      "net/minecraft/class_1799": ["net/p3pp3rf1y/sophisticatedcore/extensions/item/SophisticatedItemStack"]
+    }
+  }
+}

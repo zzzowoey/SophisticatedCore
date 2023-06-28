@@ -1,10 +1,11 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.stack;
 
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.Config;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
@@ -56,15 +57,15 @@ public class StackUpgradeConfig {
 	}
 
 	public boolean canStackItem(Item item) {
-		if (!Config.SERVER_SPEC.isLoaded()) {
+		if (!Config.SERVER.specification.isLoaded()) {
 			return true;
 		}
 		if (nonStackableItems == null) {
 			nonStackableItems = new HashSet<>();
 			nonStackableItemsList.get().forEach(name -> {
 				ResourceLocation registryName = new ResourceLocation(name);
-				if (ForgeRegistries.ITEMS.containsKey(registryName)) {
-					nonStackableItems.add(ForgeRegistries.ITEMS.getValue(registryName));
+				if (BuiltInRegistries.ITEM.containsKey(registryName)) {
+					nonStackableItems.add(BuiltInRegistries.ITEM.get(registryName));
 				} else {
 					SophisticatedCore.LOGGER.error("Item {} is set to not be affected by stack upgrade in config, but it does not exist in item registry", name);
 				}

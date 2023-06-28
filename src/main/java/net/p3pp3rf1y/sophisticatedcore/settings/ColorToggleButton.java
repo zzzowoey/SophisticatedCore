@@ -71,7 +71,7 @@ public class ColorToggleButton extends ButtonBase {
 	}
 
 	@Override
-	protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		RenderSystem.disableDepthTest();
 		RenderSystem.colorMask(true, true, true, false);
 		int color = ColorHelper.getColor(getColor.get().getTextureDiffuseColors()) | (200 << 24);

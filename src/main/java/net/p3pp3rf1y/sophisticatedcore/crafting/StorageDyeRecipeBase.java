@@ -1,15 +1,16 @@
 package net.p3pp3rf1y.sophisticatedcore.crafting;
 
+import io.github.fabricators_of_create.porting_lib.util.TagUtil;
+import me.alphamode.forgetags.Tags;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.Tags;
+import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class StorageDyeRecipeBase extends CustomRecipe {
-	protected StorageDyeRecipeBase(ResourceLocation registryName) {
-		super(registryName);
+	protected StorageDyeRecipeBase(ResourceLocation registryName, CraftingBookCategory category) {
+		super(registryName, category);
 	}
 
 	@Override
@@ -45,7 +46,7 @@ public abstract class StorageDyeRecipeBase extends CustomRecipe {
 	}
 
 	@Override
-	public ItemStack assemble(CraftingContainer inv) {
+	public ItemStack assemble(CraftingContainer inv, RegistryAccess registryManager) {
 		Map<Integer, List<DyeColor>> columnDyes = new HashMap<>();
 		Tuple<Integer, ItemStack> columnStorage = null;
 
@@ -63,7 +64,7 @@ public abstract class StorageDyeRecipeBase extends CustomRecipe {
 
 				columnStorage = new Tuple<>(column, slotStack);
 			} else if (slotStack.is(Tags.Items.DYES)) {
-				DyeColor dyeColor = DyeColor.getColor(slotStack);
+				DyeColor dyeColor = TagUtil.getColorFromStack(slotStack);
 				if (dyeColor == null) {
 					return ItemStack.EMPTY;
 				}

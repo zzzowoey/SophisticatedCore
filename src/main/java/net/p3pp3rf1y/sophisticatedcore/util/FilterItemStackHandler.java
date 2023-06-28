@@ -1,7 +1,9 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemStackHandler;
 
 public class FilterItemStackHandler extends ItemStackHandler {
 	private boolean onlyEmptyFilters = true;
@@ -14,14 +16,24 @@ public class FilterItemStackHandler extends ItemStackHandler {
 	}
 
 	@Override
-	public ItemStack extractItem(int slot, int amount, boolean simulate) {
-		return ItemStack.EMPTY;
+	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
+		return 0;
 	}
 
+/*	@Override
+	public ItemStack extractItem(int slot, int amount, boolean simulate) {
+		return ItemStack.EMPTY;
+	}*/
+
 	@Override
+	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
+		return 0;
+	}
+
+/*	@Override
 	public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
 		return ItemStack.EMPTY;
-	}
+	}*/
 
 	@Override
 	protected void onContentsChanged(int slot) {

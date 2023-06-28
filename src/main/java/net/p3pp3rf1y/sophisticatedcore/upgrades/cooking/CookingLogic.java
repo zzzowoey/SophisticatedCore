@@ -1,5 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.cooking;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
@@ -7,8 +10,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.items.ItemStackHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 
@@ -166,7 +167,8 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 		}
 
 		ItemStack input = getCookInput();
-		ItemStack recipeOutput = recipe.getResultItem();
+		Minecraft mc = Minecraft.getInstance();
+		ItemStack recipeOutput = recipe.getResultItem(mc.level.registryAccess());
 		ItemStack output = getCookOutput();
 		if (output.isEmpty()) {
 			setCookOutput(recipeOutput.copy());
@@ -237,7 +239,8 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 		if (getCookInput().isEmpty()) {
 			return false;
 		}
-		ItemStack recipeOutput = cookingRecipe.getResultItem();
+		Minecraft mc = Minecraft.getInstance();
+		ItemStack recipeOutput = cookingRecipe.getResultItem(mc.level.registryAccess());
 		if (recipeOutput.isEmpty()) {
 			return false;
 		} else {
@@ -255,7 +258,7 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 	}
 
 	private static <T extends AbstractCookingRecipe> int getBurnTime(ItemStack fuel, RecipeType<T> recipeType, float burnTimeModifier) {
-		return (int) (ForgeHooks.getBurnTime(fuel, recipeType) * burnTimeModifier);
+		return (int) (fuel.getBurnTime(recipeType) * burnTimeModifier);
 	}
 
 	public ItemStack getCookOutput() {
@@ -288,10 +291,10 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 				}
 
 				@Override
-				public boolean isItemValid(int slot, ItemStack stack) {
+				public boolean isItemValid(int slot, ItemVariant resource, long amount) {
 					return switch (slot) {
-						case COOK_INPUT_SLOT -> isInput.test(stack);
-						case FUEL_SLOT -> isFuel.test(stack);
+						case COOK_INPUT_SLOT -> isInput.test(resource.toStack());
+						case FUEL_SLOT -> isFuel.test(resource.toStack());
 						default -> true;
 					};
 				}

@@ -1,3 +1,4 @@
+/*
 package net.p3pp3rf1y.sophisticatedcore.compat.craftingtweaks;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -363,3 +364,4 @@ public class CraftingUpgradeTweakProvider implements CraftingGridProvider {
 		}
 	}
 }
+*/

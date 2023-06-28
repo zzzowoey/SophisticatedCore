@@ -7,6 +7,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeSlotChangeResult;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeType;
+import team.reborn.energy.api.base.SimpleEnergyItem;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,8 +18,8 @@ public class BatteryUpgradeItem extends UpgradeItemBase<BatteryUpgradeWrapper> {
 
 	private final BatteryUpgradeConfig batteryUpgradeConfig;
 
-	public BatteryUpgradeItem(CreativeModeTab itemGroup, BatteryUpgradeConfig batteryUpgradeConfig) {
-		super(itemGroup);
+	public BatteryUpgradeItem(BatteryUpgradeConfig batteryUpgradeConfig) {
+		super();
 		this.batteryUpgradeConfig = batteryUpgradeConfig;
 	}
 

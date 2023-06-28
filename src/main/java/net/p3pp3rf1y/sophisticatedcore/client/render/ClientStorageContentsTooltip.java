@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedcore.client.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -12,7 +13,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Dimension;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper;
@@ -159,7 +159,7 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 
 	private void addEnergyTooltip(IStorageWrapper wrapper) {
 		wrapper.getEnergyStorage().ifPresent(energyStorage -> tooltipLines.add(Component.translatable(getEnergyTooltipTranslation(),
-				Component.literal(CountAbbreviator.abbreviate(energyStorage.getEnergyStored())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.RED)
+				Component.literal(CountAbbreviator.abbreviate((int) energyStorage.getAmount())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.RED)
 		));
 	}
 
@@ -168,20 +168,20 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 	}
 
 	private void addFluidTooltip(IStorageWrapper wrapper) {
-		wrapper.getFluidHandler().ifPresent(fluidHandler -> {
+		// TODO: Reimplement
+/*		wrapper.getFluidHandler().ifPresent(fluidHandler -> {
 			for (int tank = 0; tank < fluidHandler.getTanks(); tank++) {
 				FluidStack fluid = fluidHandler.getFluidInTank(tank);
 				if (fluid.isEmpty()) {
 					tooltipLines.add(Component.translatable(getEmptyFluidTooltipTranslation()).withStyle(ChatFormatting.BLUE));
 				} else {
 					tooltipLines.add(Component.translatable(getFluidTooltipTranslation(),
-							Component.literal(CountAbbreviator.abbreviate(fluid.getAmount())).withStyle(ChatFormatting.WHITE),
-							Component.translatable(fluid.getTranslationKey()).withStyle(ChatFormatting.BLUE)
-
+							Component.literal(CountAbbreviator.abbreviate((int) fluid.getAmount())).withStyle(ChatFormatting.WHITE),
+							fluid.getDisplayName().getStyle().applyFormat(ChatFormatting.BLUE)
 					));
 				}
 			}
-		});
+		});*/
 	}
 
 	protected String getFluidTooltipTranslation() {
@@ -215,6 +215,10 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 		return height;
 	}
 
+	protected void renderTooltip(IStorageWrapper wrapper, Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer) {
+		renderTooltip(wrapper, font, leftX, topY, poseStack, itemRenderer, 0);
+	}
+
 	protected void renderTooltip(IStorageWrapper wrapper, Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer, int blitOffset) {
 		Minecraft minecraft = Minecraft.getInstance();
 		LocalPlayer player = minecraft.player;
@@ -240,7 +244,7 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 		}
 		if (!sortedContents.isEmpty()) {
 			topY = renderTooltipLine(poseStack, leftX, topY, font, blitOffset, Component.translatable(TranslationHelper.INSTANCE.translItemTooltip(STORAGE_ITEM) + ".inventory").withStyle(ChatFormatting.YELLOW));
-			renderContents(minecraft, leftX, topY, itemRenderer, font);
+			renderContents(minecraft, poseStack, leftX, topY, itemRenderer, font);
 		}
 	}
 
@@ -248,29 +252,29 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 		poseStack.pushPose();
 		poseStack.translate(0.0D, 0.0D, blitOffset + 200.0F);
 		MultiBufferSource.BufferSource renderTypeBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-		font.drawInBatch(tooltip, leftX, topY, 16777215, true, poseStack.last().pose(), renderTypeBuffer, false, 0, 15728880);
+		font.drawInBatch(tooltip, leftX, topY, 16777215, true, poseStack.last().pose(), renderTypeBuffer, Font.DisplayMode.NORMAL, 0, 15728880);
 		renderTypeBuffer.endBatch();
 		poseStack.translate(0.0D, 0.0D, -(blitOffset + 200.0F));
 		poseStack.popPose();
 		return topY + 10;
 	}
 
-	private int renderUpgrades(PoseStack matrixStack, int leftX, int topY, ItemRenderer itemRenderer) {
+	private int renderUpgrades(PoseStack poseStack, int leftX, int topY, ItemRenderer itemRenderer) {
 		int x = leftX;
 		for (IUpgradeWrapper upgradeWrapper : upgrades) {
 			if (upgradeWrapper.canBeDisabled()) {
 				RenderSystem.disableDepthTest();
-				GuiHelper.blit(matrixStack, x, topY + 3, upgradeWrapper.isEnabled() ? UPGRADE_ON : UPGRADE_OFF);
+				GuiHelper.blit(poseStack, x, topY + 3, upgradeWrapper.isEnabled() ? UPGRADE_ON : UPGRADE_OFF);
 				x += 4;
 			}
-			itemRenderer.renderAndDecorateItem(upgradeWrapper.getUpgradeStack(), x, topY);
+			itemRenderer.renderAndDecorateItem(poseStack, upgradeWrapper.getUpgradeStack(), x, topY);
 			x += DEFAULT_STACK_WIDTH;
 		}
 		topY += 20;
 		return topY;
 	}
 
-	private void renderContents(Minecraft minecraft, int leftX, int topY, ItemRenderer itemRenderer, Font font) {
+	private void renderContents(Minecraft minecraft, PoseStack poseStack, int leftX, int topY, ItemRenderer itemRenderer, Font font) {
 		int x = leftX;
 		for (int i = 0; i < sortedContents.size(); i++) {
 			int y = topY + i / MAX_STACKS_ON_LINE * 20;
@@ -280,8 +284,8 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 			ItemStack stack = sortedContents.get(i);
 			int stackWidth = Math.max(getStackCountWidth(minecraft.font, stack), DEFAULT_STACK_WIDTH);
 			int xOffset = stackWidth - DEFAULT_STACK_WIDTH;
-			itemRenderer.renderAndDecorateItem(stack, x + xOffset, y);
-			itemRenderer.renderGuiItemDecorations(font, stack, x + xOffset, y, CountAbbreviator.abbreviate(stack.getCount()));
+			itemRenderer.renderAndDecorateItem(poseStack, stack, x + xOffset, y);
+			itemRenderer.renderGuiItemDecorations(poseStack, font, stack, x + xOffset, y, CountAbbreviator.abbreviate(stack.getCount()));
 			x += stackWidth;
 		}
 	}

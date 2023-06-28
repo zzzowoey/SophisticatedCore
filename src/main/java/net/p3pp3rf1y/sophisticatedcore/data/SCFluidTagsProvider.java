@@ -1,21 +1,19 @@
 package net.p3pp3rf1y.sophisticatedcore.data;
 
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.tags.FluidTagsProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.minecraft.core.HolderLookup;
 import net.p3pp3rf1y.sophisticatedcore.init.ModFluids;
 
-import javax.annotation.Nullable;
+import java.util.concurrent.CompletableFuture;
 
-public class SCFluidTagsProvider extends FluidTagsProvider {
-	public SCFluidTagsProvider(DataGenerator generatorIn,
-			@Nullable ExistingFileHelper existingFileHelper) {
-		super(generatorIn, SophisticatedCore.ID, existingFileHelper);
+public class SCFluidTagsProvider extends FabricTagProvider.FluidTagProvider {
+	public SCFluidTagsProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> completableFuture) {
+		super(output, completableFuture);
 	}
 
 	@Override
-	protected void addTags() {
-		tag(ModFluids.EXPERIENCE_TAG).add(ModFluids.XP_STILL.get());
+	protected void addTags(HolderLookup.Provider arg) {
+		getOrCreateTagBuilder(ModFluids.EXPERIENCE_TAG).add(ModFluids.XP_STILL.getId());
 	}
 }

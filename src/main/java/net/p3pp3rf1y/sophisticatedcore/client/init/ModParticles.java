@@ -1,13 +1,12 @@
 package net.p3pp3rf1y.sophisticatedcore.client.init;
 
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.JukeboxUpgradeNoteParticle;
 
-public class ModParticles {
-	private ModParticles() {}
+import static net.p3pp3rf1y.sophisticatedcore.init.ModParticles.JUKEBOX_NOTE;
 
-	@SuppressWarnings("unused") // need this to register the event correctly
-	public static void registerFactories(RegisterParticleProvidersEvent event) {
-		event.register(net.p3pp3rf1y.sophisticatedcore.init.ModParticles.JUKEBOX_NOTE.get(), JukeboxUpgradeNoteParticle.Factory::new);
+public class ModParticles {
+	public static void registerFactories() {
+		ParticleFactoryRegistry.getInstance().register(JUKEBOX_NOTE.get(), JukeboxUpgradeNoteParticle.Factory::new);
 	}
 }

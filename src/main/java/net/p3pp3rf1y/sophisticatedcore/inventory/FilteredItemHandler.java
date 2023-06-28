@@ -1,16 +1,22 @@
 package net.p3pp3rf1y.sophisticatedcore.inventory;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.FilterLogic;
+import org.apache.commons.lang3.NotImplementedException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class FilteredItemHandler<T extends IItemHandler> implements IItemHandler {
+public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotExposedStorage {
 	protected final T inventoryHandler;
 	protected final List<FilterLogic> inputFilters;
 	private final List<FilterLogic> outputFilters;
@@ -19,6 +25,11 @@ public class FilteredItemHandler<T extends IItemHandler> implements IItemHandler
 		this.inventoryHandler = inventoryHandler;
 		this.inputFilters = inputFilters;
 		this.outputFilters = outputFilters;
+	}
+
+	@Override
+	public Iterator<StorageView<ItemVariant>> iterator() {
+		return inventoryHandler.iterator();
 	}
 
 	@Override
@@ -32,7 +43,28 @@ public class FilteredItemHandler<T extends IItemHandler> implements IItemHandler
 		return inventoryHandler.getStackInSlot(slot);
 	}
 
-	@Nonnull
+	@Override
+	public long insert(ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		if (inputFilters.isEmpty()) {
+			return inventoryHandler.insertSlot(slot, resource, maxAmount, ctx);
+		}
+
+		ItemStack stack = resource.toStack((int) maxAmount);
+		for (FilterLogic filter : inputFilters) {
+			if (filter.matchesFilter(stack)) {
+				return inventoryHandler.insertSlot(slot, resource, maxAmount, ctx);
+			}
+		}
+
+		return maxAmount;
+	}
+
+	/*	@Nonnull
 	@Override
 	public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
 		if (inputFilters.isEmpty()) {
@@ -45,9 +77,28 @@ public class FilteredItemHandler<T extends IItemHandler> implements IItemHandler
 			}
 		}
 		return stack;
+	}*/
+
+	@Override
+	public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+		throw new NotImplementedException();
 	}
 
-	@Nonnull
+	@Override
+	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		if (outputFilters.isEmpty()) {
+			return inventoryHandler.extractSlot(slot, resource, maxAmount, ctx);
+		}
+
+		for (FilterLogic filter : outputFilters) {
+			if (filter.matchesFilter(getStackInSlot(slot))) {
+				return inventoryHandler.extractSlot(slot, resource, maxAmount, ctx);
+			}
+		}
+		return 0;
+	}
+
+/*	@Nonnull
 	@Override
 	public ItemStack extractItem(int slot, int amount, boolean simulate) {
 		if (outputFilters.isEmpty()) {
@@ -60,7 +111,7 @@ public class FilteredItemHandler<T extends IItemHandler> implements IItemHandler
 			}
 		}
 		return ItemStack.EMPTY;
-	}
+	}*/
 
 	@Override
 	public int getSlotLimit(int slot) {
@@ -68,9 +119,14 @@ public class FilteredItemHandler<T extends IItemHandler> implements IItemHandler
 	}
 
 	@Override
+	public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+		return inventoryHandler.isItemValid(slot, resource, amount);
+	}
+
+/*	@Override
 	public boolean isItemValid(int slot, ItemStack stack) {
 		return inventoryHandler.isItemValid(slot, stack);
-	}
+	}*/
 
 	public static class Modifiable extends FilteredItemHandler<ITrackedContentsItemHandler> implements ITrackedContentsItemHandler {
 		public Modifiable(ITrackedContentsItemHandler inventoryHandler, List<FilterLogic> inputFilters, List<FilterLogic> outputFilters) {
@@ -83,6 +139,21 @@ public class FilteredItemHandler<T extends IItemHandler> implements IItemHandler
 		}
 
 		@Override
+		public long insert(ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
+			if (inputFilters.isEmpty()) {
+				return inventoryHandler.insert(resource, maxAmount, ctx);
+			}
+
+			for (FilterLogic filter : inputFilters) {
+				if (filter.matchesFilter(resource.toStack((int) maxAmount))) {
+					return inventoryHandler.insert(resource, maxAmount, ctx);
+				}
+			}
+
+			return maxAmount;
+		}
+
+/*		@Override
 		public ItemStack insertItem(ItemStack stack, boolean simulate) {
 			if (inputFilters.isEmpty()) {
 				return inventoryHandler.insertItem(stack, simulate);
@@ -94,7 +165,7 @@ public class FilteredItemHandler<T extends IItemHandler> implements IItemHandler
 				}
 			}
 			return stack;
-		}
+		}*/
 
 		@Override
 		public Set<ItemStackKey> getTrackedStacks() {

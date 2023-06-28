@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.stonecutter;
 
 import com.google.common.collect.Lists;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -138,7 +139,8 @@ public class StonecutterRecipeContainer {
 		if (!recipes.isEmpty() && isIndexInRecipeBounds(selectedRecipe.get())) {
 			StonecutterRecipe stonecuttingrecipe = recipes.get(selectedRecipe.get());
 			resultInventory.setRecipeUsed(stonecuttingrecipe);
-			outputSlot.set(stonecuttingrecipe.assemble(inputInventory));
+			Minecraft mc = Minecraft.getInstance();
+			outputSlot.set(stonecuttingrecipe.assemble(inputInventory, mc.level.registryAccess()));
 		} else {
 			outputSlot.set(ItemStack.EMPTY);
 		}

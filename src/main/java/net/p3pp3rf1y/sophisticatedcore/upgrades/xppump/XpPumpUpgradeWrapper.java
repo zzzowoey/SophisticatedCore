@@ -1,5 +1,8 @@
+// TODO: Reimplement
+/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.xppump;
 
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -9,8 +12,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.init.ModFluids;
@@ -67,13 +68,13 @@ public class XpPumpUpgradeWrapper extends UpgradeWrapperBase<XpPumpUpgradeWrappe
 		Map.Entry<EquipmentSlot, ItemStack> entry = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, player, ItemStack::isDamaged);
 		if (entry != null) {
 			ItemStack itemStack = entry.getValue();
-			if (!itemStack.isEmpty() && itemStack.isDamaged() && itemStack.getXpRepairRatio() > 0) {
-				float xpToTryDrain = Math.min(xpPumpUpgradeConfig.maxXpPointsPerMending.get(), itemStack.getDamageValue() / itemStack.getXpRepairRatio());
+			if (!itemStack.isEmpty() && itemStack.isDamaged() && XpHelper.getXpRepairRatio(itemStack) > 0) {
+				float xpToTryDrain = Math.min(xpPumpUpgradeConfig.maxXpPointsPerMending.get(), itemStack.getDamageValue() / XpHelper.getXpRepairRatio(itemStack));
 				if (xpToTryDrain > 0) {
 					storageWrapper.getFluidHandler().ifPresent(fluidHandler -> {
 						FluidStack drained = fluidHandler.drain(ModFluids.EXPERIENCE_TAG, XpHelper.experienceToLiquid(xpToTryDrain), IFluidHandler.FluidAction.EXECUTE, false);
-						float xpDrained = XpHelper.liquidToExperience(drained.getAmount());
-						int durationToRepair = (int) (xpDrained * itemStack.getXpRepairRatio());
+						float xpDrained = XpHelper.liquidToExperience((int) drained.getAmount());
+						int durationToRepair = (int) (xpDrained * XpHelper.getXpRepairRatio(itemStack));
 						itemStack.setDamageValue(itemStack.getDamageValue() - durationToRepair);
 					});
 				}
@@ -108,7 +109,7 @@ public class XpPumpUpgradeWrapper extends UpgradeWrapperBase<XpPumpUpgradeWrappe
 		FluidStack drained = fluidHandler.drain(ModFluids.EXPERIENCE_TAG, XpHelper.experienceToLiquid(maxXpPointsToGive), IFluidHandler.FluidAction.EXECUTE, ignoreInOutLimit);
 
 		if (!drained.isEmpty()) {
-			player.giveExperiencePoints((int) XpHelper.liquidToExperience(drained.getAmount()));
+			player.giveExperiencePoints((int) XpHelper.liquidToExperience((int) drained.getAmount()));
 		}
 	}
 
@@ -186,3 +187,4 @@ public class XpPumpUpgradeWrapper extends UpgradeWrapperBase<XpPumpUpgradeWrappe
 		save();
 	}
 }
+*/

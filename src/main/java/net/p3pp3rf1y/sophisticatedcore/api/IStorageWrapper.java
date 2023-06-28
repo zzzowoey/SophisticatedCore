@@ -8,6 +8,7 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
+import team.reborn.energy.api.EnergyStorage;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -74,11 +75,12 @@ public interface IStorageWrapper {
 		return 0;
 	}
 
-	default Optional<IStorageFluidHandler> getFluidHandler() {
+	// TODO: Reimplement
+/*	default Optional<IStorageFluidHandler> getFluidHandler() {
 		return Optional.empty();
-	}
+	}*/
 
-	default Optional<IEnergyStorage> getEnergyStorage() {return Optional.empty();}
+	default Optional<EnergyStorage> getEnergyStorage() {return Optional.empty();}
 
 	default ItemStack getWrappedStorageStack() {
 		return ItemStack.EMPTY;

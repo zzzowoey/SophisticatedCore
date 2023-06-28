@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -52,9 +53,13 @@ public class NoopStorageWrapper implements IStorageWrapper {
 		if (inventoryHandler == null) {
 			inventoryHandler = new InventoryHandler(0, this, new CompoundTag(), () -> {}, 64, new StackUpgradeConfig(new ForgeConfigSpec.Builder())) {
 				@Override
-				protected boolean isAllowed(ItemStack stack) {
+				protected boolean isAllowed(ItemVariant resource, long amount) {
 					return true;
 				}
+/*				@Override
+				protected boolean isAllowed(ItemStack stack) {
+					return true;
+				}*/
 			};
 		}
 		return inventoryHandler;

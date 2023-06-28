@@ -1,5 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.cooking;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.registry.FuelRegistry;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -9,8 +12,6 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.items.IItemHandlerModifiable;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
@@ -50,12 +51,12 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 		inputFilterLogic = new FilterLogic(upgrade, upgradeSaveHandler, autoCookingUpgradeConfig.inputFilterSlots.get(),
 				s -> RecipeHelper.getCookingRecipe(s, recipeType).isPresent(), "inputFilter");
 		fuelFilterLogic = new FilterLogic(upgrade, upgradeSaveHandler, autoCookingUpgradeConfig.fuelFilterSlots.get(),
-				s -> ForgeHooks.getBurnTime(s, recipeType) > 0, "fuelFilter");
+				s -> s.getBurnTime(recipeType) > 0, "fuelFilter");
 		fuelFilterLogic.setAllowByDefault(true);
 		fuelFilterLogic.setEmptyAllowListMatchesEverything();
 
 		isValidInput = s -> RecipeHelper.getCookingRecipe(s, recipeType).isPresent() && inputFilterLogic.matchesFilter(s);
-		isValidFuel = s -> ForgeHooks.getBurnTime(s, recipeType) > 0 && fuelFilterLogic.matchesFilter(s);
+		isValidFuel = s -> s.getBurnTime(recipeType) > 0 && fuelFilterLogic.matchesFilter(s);
 		cookingLogic = new CookingLogic<>(upgrade, upgradeSaveHandler, isValidFuel, isValidInput, autoCookingUpgradeConfig, recipeType, burnTimeModifier);
 	}
 
@@ -85,18 +86,20 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 		}
 
 		ItemStack output = cookingLogic.getCookOutput();
+		ItemVariant outputResource = ItemVariant.of(output);
 		IItemHandlerSimpleInserter inventory = storageWrapper.getInventoryForUpgradeProcessing();
-		if (!output.isEmpty() && inventory.insertItem(output, true).getCount() < output.getCount()) {
-			ItemStack ret = inventory.insertItem(output, false);
-			cookingLogic.getCookingInventory().extractItem(CookingLogic.COOK_OUTPUT_SLOT, output.getCount() - ret.getCount(), false);
+		if (!output.isEmpty() && inventory.simulateInsert(outputResource, output.getCount(), null) < output.getCount()) {
+			long ret = inventory.insert(outputResource, output.getCount(), null);
+			cookingLogic.getCookingInventory().extractSlot(CookingLogic.COOK_OUTPUT_SLOT, outputResource,output.getCount() - ret, null);
 		} else {
 			outputCooldown = NO_INVENTORY_SPACE_COOLDOWN;
 		}
 
 		ItemStack fuel = cookingLogic.getFuel();
-		if (!fuel.isEmpty() && ForgeHooks.getBurnTime(fuel, recipeType) <= 0 && inventory.insertItem(fuel, true).getCount() < fuel.getCount()) {
-			ItemStack ret = inventory.insertItem(fuel, false);
-			cookingLogic.getCookingInventory().extractItem(CookingLogic.FUEL_SLOT, fuel.getCount() - ret.getCount(), false);
+		ItemVariant fuelResource = ItemVariant.of(fuel);
+		if (!fuel.isEmpty() && fuel.getBurnTime(recipeType) <= 0 && inventory.simulateInsert(fuelResource, fuel.getCount(), null) < fuel.getCount()) {
+			long ret = inventory.insert(fuelResource, fuel.getCount(), null);
+			cookingLogic.getCookingInventory().extractSlot(CookingLogic.FUEL_SLOT, fuelResource, fuel.getCount() - ret, null);
 		}
 	}
 
@@ -147,7 +150,7 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 
 	private boolean tryPullingGetUnsucessful(ItemStack stack, Consumer<ItemStack> setSlot, Predicate<ItemStack> isItemValid) {
 		ItemStack toExtract;
-		IItemHandlerModifiable inventory = storageWrapper.getInventoryForUpgradeProcessing();
+		SlotExposedStorage inventory = storageWrapper.getInventoryForUpgradeProcessing();
 		if (stack.isEmpty()) {
 			AtomicReference<ItemStack> ret = new AtomicReference<>(ItemStack.EMPTY);
 			InventoryHelper.iterate(inventory, (slot, st) -> {
@@ -168,8 +171,8 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 			toExtract.setCount(stack.getMaxStackSize() - stack.getCount());
 		}
 
-		if (InventoryHelper.extractFromInventory(toExtract, inventory, true).getCount() > 0) {
-			ItemStack toSet = InventoryHelper.extractFromInventory(toExtract, inventory, false);
+		if (InventoryHelper.simulateExtractFromInventory(toExtract, inventory, null).getCount() > 0) {
+			ItemStack toSet = InventoryHelper.extractFromInventory(toExtract, inventory, null);
 			toSet.grow(stack.getCount());
 			setSlot.accept(toSet);
 		} else {

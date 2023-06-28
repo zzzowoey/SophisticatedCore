@@ -1,12 +1,12 @@
 package net.p3pp3rf1y.sophisticatedcore.api;
 
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 
-public interface IStorageFluidHandler extends IFluidHandlerItem {
-	default int fill(TagKey<Fluid> fluidTag, int maxFill, Fluid fallbackFluid, FluidAction action) {
+public interface IStorageFluidHandler /*extends IFluidHandlerItem*/ {
+    // TODO: Reimplement
+/*	default int fill(TagKey<Fluid> fluidTag, int maxFill, Fluid fallbackFluid, FluidAction action) {
 		return fill(fluidTag, maxFill, fallbackFluid, action, false);
 	}
 
@@ -26,5 +26,5 @@ public interface IStorageFluidHandler extends IFluidHandlerItem {
 
 	FluidStack drain(FluidStack resource, FluidAction action, boolean ignoreInOutLimit);
 
-	FluidStack drain(int maxDrain, FluidAction action, boolean ignoreInOutLimit);
+	FluidStack drain(int maxDrain, FluidAction action, boolean ignoreInOutLimit);*/
 }

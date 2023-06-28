@@ -11,8 +11,8 @@ public class FeedingUpgradeItem extends UpgradeItemBase<FeedingUpgradeWrapper> {
 
 	private final IntSupplier filterSlotCount;
 
-	public FeedingUpgradeItem(IntSupplier filterSlotCount, CreativeModeTab itemGroup) {
-		super(itemGroup);
+	public FeedingUpgradeItem(IntSupplier filterSlotCount) {
+		super();
 		this.filterSlotCount = filterSlotCount;
 	}
 

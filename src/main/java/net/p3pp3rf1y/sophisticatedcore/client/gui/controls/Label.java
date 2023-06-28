@@ -28,7 +28,7 @@ public class Label extends WidgetBase {
 	}
 
 	@Override
-	protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		minecraft.font.draw(matrixStack, labelText, x, y, color);
 	}
 

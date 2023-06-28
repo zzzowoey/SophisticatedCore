@@ -1,3 +1,5 @@
+// TODO: Reimplement
+/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.xppump;
 
 import net.minecraft.nbt.CompoundTag;
@@ -123,3 +125,4 @@ public class XpPumpUpgradeContainer extends UpgradeContainerBase<XpPumpUpgradeWr
 		}
 	}
 }
+*/

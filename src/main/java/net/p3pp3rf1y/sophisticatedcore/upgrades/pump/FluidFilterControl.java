@@ -1,13 +1,16 @@
+// TODO: Reimplement
+/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.pump;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidStack;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.WidgetBase;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Dimension;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper;
@@ -33,10 +36,10 @@ public class FluidFilterControl extends WidgetBase {
 		for (int i = 0; i < container.getNumberOfFluidFilters(); i++) {
 			FluidStack fluid = container.getFluid(i);
 			if (!fluid.isEmpty()) {
-				IClientFluidTypeExtensions renderProperties = IClientFluidTypeExtensions.of(fluid.getFluid());
-				ResourceLocation texture = renderProperties.getStillTexture(fluid);
-				TextureAtlasSprite still = minecraft.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
-				GuiHelper.renderTiledFluidTextureAtlas(matrixStack, still, renderProperties.getTintColor(fluid), x + i * 18 + 1, y + 1, 16);
+				FluidRenderHandler handler = FluidRenderHandlerRegistry.INSTANCE.get(fluid.getFluid());
+				TextureAtlasSprite[] sprites = handler.getFluidSprites(null, null, fluid.getFluid().defaultFluidState());
+				int tint = handler.getFluidColor(null, null,fluid.getFluid().defaultFluidState());
+				GuiHelper.renderTiledFluidTextureAtlas(matrixStack, sprites[0], tint, x + i * 18 + 1, y + 1, 16);
 			}
 		}
 	}
@@ -65,3 +68,4 @@ public class FluidFilterControl extends WidgetBase {
 		//TODO narration
 	}
 }
+*/

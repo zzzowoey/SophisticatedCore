@@ -1,5 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -9,8 +12,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.RecordItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
@@ -26,7 +27,7 @@ import java.util.function.Consumer;
 public class JukeboxUpgradeItem extends UpgradeItemBase<JukeboxUpgradeItem.Wrapper> {
 	public static final UpgradeType<Wrapper> TYPE = new UpgradeType<>(Wrapper::new);
 
-	public JukeboxUpgradeItem(CreativeModeTab itemGroup) {super(itemGroup);}
+	public JukeboxUpgradeItem() {super();}
 
 	@Override
 	public UpgradeType<Wrapper> getType() {
@@ -50,8 +51,8 @@ public class JukeboxUpgradeItem extends UpgradeItemBase<JukeboxUpgradeItem.Wrapp
 				}
 
 				@Override
-				public boolean isItemValid(int slot, ItemStack stack) {
-					return stack.getItem() instanceof RecordItem;
+				public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+					return resource.getItem() instanceof RecordItem;
 				}
 			};
 			NBTHelper.getCompound(upgrade, "discInventory").ifPresent(discInventory::deserializeNBT);
@@ -110,7 +111,7 @@ public class JukeboxUpgradeItem extends UpgradeItemBase<JukeboxUpgradeItem.Wrapp
 			setIsPlaying(false);
 		}
 
-		public IItemHandler getDiscInventory() {
+		public SlotExposedStorage getDiscInventory() {
 			return discInventory;
 		}
 

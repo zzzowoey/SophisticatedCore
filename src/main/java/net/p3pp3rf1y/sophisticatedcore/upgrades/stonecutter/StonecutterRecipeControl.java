@@ -11,7 +11,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.WidgetBase;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Dimension;
@@ -51,10 +50,10 @@ public class StonecutterRecipeControl extends WidgetBase {
 
 	public void moveSlotsToView() {
 		Slot inputSlot = container.getInputSlot();
-		inputSlot.x = x + getCenteredX(16) - screen.getGuiLeft();
-		inputSlot.y = y - screen.getGuiTop() + 1;
+		inputSlot.x = x + getCenteredX(16) - GuiHelper.getGuiLeft(screen);
+		inputSlot.y = y - GuiHelper.getGuiTop(screen) + 1;
 		Slot outputSlot = container.getOutputSlot();
-		outputSlot.x = x + getCenteredX(16) - screen.getGuiLeft();
+		outputSlot.x = x + getCenteredX(16) - GuiHelper.getGuiLeft(screen);
 		outputSlot.y = inputSlot.y + INPUT_SLOT_HEIGHT + SPACING + LIST_BACKGROUND.getHeight() + SPACING + 4;
 	}
 
@@ -81,7 +80,7 @@ public class StonecutterRecipeControl extends WidgetBase {
 			int k = listInnerLeftX + j % 4 * 16;
 			int l = j / 4;
 			int i1 = top + l * 18 + 2;
-			GuiHelper.renderItemInGUI(matrixStack, minecraft, list.get(i).getResultItem(), k, i1);
+			GuiHelper.renderItemInGUI(matrixStack, minecraft, list.get(i).getResultItem(minecraft.level.registryAccess()), k, i1);
 		}
 
 	}
@@ -113,7 +112,7 @@ public class StonecutterRecipeControl extends WidgetBase {
 	}
 
 	@Override
-	protected void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		//noop - everything is rendered in background or after screen render is done
 	}
 
@@ -134,15 +133,14 @@ public class StonecutterRecipeControl extends WidgetBase {
 				int recipeLeftX = x + inviewRecipeIndex % 4 * 16;
 				int k1 = listTopY + inviewRecipeIndex / 4 * 18 + 2;
 				if (mouseX >= recipeLeftX && mouseX < recipeLeftX + 16 && mouseY >= k1 && mouseY < k1 + 18) {
-					renderTooltip(matrixStack, list.get(recipeIndex).getResultItem(), mouseX, mouseY);
+					renderTooltip(matrixStack, list.get(recipeIndex).getResultItem(minecraft.level.registryAccess()), mouseX, mouseY);
 				}
 			}
 		}
 	}
 
 	private void renderTooltip(PoseStack poseStack, ItemStack itemStack, int mouseX, int mouseY) {
-		Font font = IClientItemExtensions.of(itemStack).getFont(itemStack, IClientItemExtensions.FontContext.TOOLTIP);
-		screen.renderComponentTooltip(poseStack, screen.getTooltipFromItem(itemStack), mouseX, mouseY, (font == null ? this.font : font));
+		screen.renderComponentTooltip(poseStack, screen.getTooltipFromItem(itemStack), mouseX, mouseY);
 	}
 
 	private void onInventoryUpdate() {

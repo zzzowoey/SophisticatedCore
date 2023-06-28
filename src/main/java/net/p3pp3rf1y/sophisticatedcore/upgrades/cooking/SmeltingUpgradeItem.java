@@ -9,7 +9,8 @@ public class SmeltingUpgradeItem extends UpgradeItemBase<CookingUpgradeWrapper.S
 
 	private final CookingUpgradeConfig smeltingUpgradeConfig;
 
-	public SmeltingUpgradeItem(CreativeModeTab itemGroup, CookingUpgradeConfig smeltingUpgradeConfig) {super(itemGroup);
+	public SmeltingUpgradeItem(CookingUpgradeConfig smeltingUpgradeConfig) {
+		super();
 		this.smeltingUpgradeConfig = smeltingUpgradeConfig;
 	}
 

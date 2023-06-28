@@ -1,12 +1,14 @@
+// TODO: Reimplement
+/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.INameableEmptySlot;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
@@ -44,7 +46,7 @@ public class TankUpgradeContainer extends UpgradeContainerBase<TankUpgradeWrappe
 	private static class TankIOSlot extends SlotSuppliedHandler implements INameableEmptySlot {
 		private final Component emptyTooltip;
 
-		public TankIOSlot(Supplier<IItemHandler> itemHandlerSupplier, int slot, int xPosition, int yPosition, Component emptyTooltip) {
+		public TankIOSlot(Supplier<SlotExposedStorage> itemHandlerSupplier, int slot, int xPosition, int yPosition, Component emptyTooltip) {
 			super(itemHandlerSupplier, slot, xPosition, yPosition);
 			this.emptyTooltip = emptyTooltip;
 		}
@@ -60,3 +62,4 @@ public class TankUpgradeContainer extends UpgradeContainerBase<TankUpgradeWrappe
 		}
 	}
 }
+*/

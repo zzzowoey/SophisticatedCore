@@ -11,8 +11,8 @@ public class PickupUpgradeItem extends UpgradeItemBase<PickupUpgradeWrapper> {
 
 	private final IntSupplier filterSlotCount;
 
-	public PickupUpgradeItem(IntSupplier filterSlotCount, CreativeModeTab itemGroup) {
-		super(itemGroup);
+	public PickupUpgradeItem(IntSupplier filterSlotCount) {
+		super();
 		this.filterSlotCount = filterSlotCount;
 	}
 

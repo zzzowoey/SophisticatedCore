@@ -19,8 +19,8 @@ public class StackUpgradeItem extends UpgradeItemBase<StackUpgradeItem.Wrapper> 
 	public static final UpgradeType<Wrapper> TYPE = new UpgradeType<>(Wrapper::new);
 	private final int stackSizeMultiplier;
 
-	public StackUpgradeItem(int stackSizeMultiplier, CreativeModeTab itemGroup) {
-		super(itemGroup);
+	public StackUpgradeItem(int stackSizeMultiplier) {
+		super();
 		this.stackSizeMultiplier = stackSizeMultiplier;
 	}
 

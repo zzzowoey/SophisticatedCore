@@ -1,3 +1,4 @@
+/*
 package net.p3pp3rf1y.sophisticatedcore.compat.craftingtweaks;
 
 import net.blay09.mods.craftingtweaks.api.CraftingTweaksAPI;
@@ -12,3 +13,4 @@ public class CraftingTweaksCompat implements ICompat {
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> CraftingUpgradeTweakUIPart::register);
 	}
 }
+*/

@@ -1,22 +1,23 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.crafting;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandlerModifiable;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class CraftingItemHandler extends CraftingContainer {
-	private final Supplier<IItemHandlerModifiable> supplyInventory;
+	private final Supplier<SlotExposedStorage> supplyInventory;
 	private final Consumer<Container> onCraftingMatrixChanged;
 
-	public CraftingItemHandler(Supplier<IItemHandlerModifiable> supplyInventory, Consumer<Container> onCraftingMatrixChanged) {
+	public CraftingItemHandler(Supplier<SlotExposedStorage> supplyInventory, Consumer<Container> onCraftingMatrixChanged) {
 		super(new AbstractContainerMenu(null, -1) {
 			@Override
 			public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
@@ -44,7 +45,7 @@ public class CraftingItemHandler extends CraftingContainer {
 
 	@Override
 	public ItemStack getItem(int index) {
-		IItemHandlerModifiable itemHandler = supplyInventory.get();
+		SlotExposedStorage itemHandler = supplyInventory.get();
 		return index >= itemHandler.getSlots() ? ItemStack.EMPTY : itemHandler.getStackInSlot(index);
 	}
 
@@ -55,12 +56,14 @@ public class CraftingItemHandler extends CraftingContainer {
 
 	@Override
 	public ItemStack removeItem(int index, int count) {
-		ItemStack itemstack = supplyInventory.get().extractItem(index, count, false);
-		if (!itemstack.isEmpty()) {
+		ItemVariant resource = ItemVariant.of(supplyInventory.get().getStackInSlot(index));
+
+		long amount = supplyInventory.get().extractSlot(index, resource, count, null);
+		if (amount > 0) {
 			onCraftingMatrixChanged.accept(this);
 		}
 
-		return itemstack;
+		return resource.toStack((int) amount);
 	}
 
 	@Override

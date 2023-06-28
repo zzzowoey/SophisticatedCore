@@ -1,12 +1,14 @@
 package net.p3pp3rf1y.sophisticatedcore.settings.memory;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
@@ -53,7 +55,7 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 	private void deserialize() {
 		NBTHelper.getMap(categoryNbt, SLOT_FILTER_ITEMS_TAG,
 						Integer::valueOf,
-						(k, v) -> Optional.ofNullable(ForgeRegistries.ITEMS.getValue(new ResourceLocation(v.getAsString()))))
+						(k, v) -> Optional.of(BuiltInRegistries.ITEM.get(new ResourceLocation(v.getAsString()))))
 				.ifPresent(map -> map.forEach(this::addSlotItem));
 
 		NBTHelper.getMap(categoryNbt, SLOT_FILTER_STACKS_TAG,
@@ -61,6 +63,17 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 						(k, v) -> v instanceof CompoundTag tag ? Optional.of(ItemStack.of(tag)) : Optional.empty())
 				.ifPresent(map -> map.forEach(this::addSlotStack));
 		ignoreNbt = NBTHelper.getBoolean(categoryNbt, IGNORE_NBT_TAG).orElse(true);
+	}
+
+	public boolean matchesFilter(int slotNumber, ItemVariant resource, long amount) {
+		if (slotFilterItems.containsKey(slotNumber)) {
+			return amount > 0 && !resource.isBlank() && resource.getItem() == slotFilterItems.get(slotNumber);
+		}
+		if (slotFilterStacks.containsKey(slotNumber)) {
+			return amount > 0 && !resource.isBlank() && slotFilterStacks.get(slotNumber).matches(resource);
+		}
+
+		return true;
 	}
 
 	public boolean matchesFilter(int slotNumber, ItemStack stack) {
@@ -241,7 +254,7 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 
 	private void serializeFilterItems() {
 		//noinspection ConstantConditions - item registry name exists in this content otherwise player wouldn't be able to work with it
-		NBTHelper.putMap(categoryNbt, SLOT_FILTER_ITEMS_TAG, slotFilterItems, String::valueOf, i -> StringTag.valueOf(ForgeRegistries.ITEMS.getKey(i).toString()));
+		NBTHelper.putMap(categoryNbt, SLOT_FILTER_ITEMS_TAG, slotFilterItems, String::valueOf, i -> StringTag.valueOf(BuiltInRegistries.ITEM.getKey(i).toString()));
 		NBTHelper.putMap(categoryNbt, SLOT_FILTER_STACKS_TAG, slotFilterStacks, String::valueOf, isk -> isk.stack().save(new CompoundTag()));
 		saveNbt.accept(categoryNbt);
 	}
@@ -280,12 +293,38 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 			}
 
 			ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
-			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, stackInSlot)) {
+			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, ItemVariant.of(stackInSlot), stackInSlot.getCount())) {
 				addSlotStack(slot, isk.getStack());
 			}});
 	}
 
+/*	private void overwriteFilterStacks(MemorySettingsCategory otherCategory) {
+		InventoryHandler inventoryHandler = getInventoryHandler();
+		otherCategory.slotFilterStacks.forEach((slot, isk) -> {
+			if(slot >= inventoryHandler.getSlots()) {
+				return;
+			}
+
+			ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
+			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, stackInSlot)) {
+				addSlotStack(slot, isk.getStack());
+			}});
+	}*/
+
 	private void overwriteFilterItems(MemorySettingsCategory otherCategory) {
+		InventoryHandler inventoryHandler = getInventoryHandler();
+		otherCategory.slotFilterItems.forEach((slot, item) -> {
+			if(slot >= inventoryHandler.getSlots()) {
+				return;
+			}
+
+			ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
+			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, ItemVariant.of(stackInSlot), stackInSlot.getCount())) {
+				addSlotItem(slot, item);
+			}});
+	}
+
+/*	private void overwriteFilterItems(MemorySettingsCategory otherCategory) {
 		InventoryHandler inventoryHandler = getInventoryHandler();
 		otherCategory.slotFilterItems.forEach((slot, item) -> {
 			if(slot >= inventoryHandler.getSlots()) {
@@ -296,7 +335,7 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, stackInSlot)) {
 				addSlotItem(slot, item);
 			}});
-	}
+	}*/
 
 	public Set<Integer> getSlotIndexes() {
 		HashSet<Integer> slots = new HashSet<>(slotFilterItems.keySet());

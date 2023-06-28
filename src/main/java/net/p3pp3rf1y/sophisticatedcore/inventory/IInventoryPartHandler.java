@@ -1,6 +1,11 @@
 package net.p3pp3rf1y.sophisticatedcore.inventory;
 
+import com.mojang.datafixers.util.Function4;
 import com.mojang.datafixers.util.Pair;
+import io.github.fabricators_of_create.porting_lib.PortingConstants;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,24 +31,41 @@ public interface IInventoryPartHandler {
 		return false;
 	}
 
-	default int getStackLimit(int slot, ItemStack stack) {
+
+	default int getStackLimit(int slot, ItemVariant resource) {
 		return 0;
 	}
+/*	default int getStackLimit(int slot, ItemStack stack) {
+		return 0;
+	}*/
 
-	default ItemStack extractItem(int slot, int amount, boolean simulate) {
+	default long extractItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext transaction) {
+		return 0;
+	}
+/*	default ItemStack extractItem(int slot, int amount, boolean simulate) {
 		return ItemStack.EMPTY;
-	}
+	}*/
 
-	default ItemStack insertItem(int slot, ItemStack stack, boolean simulate, TriFunction<Integer, ItemStack, Boolean, ItemStack> insertSuper) {
-		return stack;
+	default long insertItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext transaction, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
+		return maxAmount;
 	}
+/*	default ItemStack insertItem(int slot, ItemStack stack, boolean simulate, TriFunction<Integer, ItemStack, Boolean, ItemStack> insertSuper) {
+		return stack;
+	}*/
 
 	default void setStackInSlot(int slot, ItemStack stack, BiConsumer<Integer, ItemStack> setStackInSlotSuper) {
 		//noop
 	}
 
-	default boolean isItemValid(int slot, ItemStack stack) {
+	default boolean isItemValid(int slot, ItemVariant resource, long amount) {
 		return false;
+	}
+/*	default boolean isItemValid(int slot, ItemStack stack) {
+		return false;
+	}*/
+
+	default ItemVariant getVariantInSlot(int slot, IntFunction<ItemVariant> getVariantInSlotSuper) {
+		return ItemVariant.blank();
 	}
 
 	default ItemStack getStackInSlot(int slot, IntFunction<ItemStack> getStackInSlotSuper) {
@@ -107,19 +129,34 @@ public interface IInventoryPartHandler {
 		}
 
 		@Override
+		public int getStackLimit(int slot, ItemVariant resource) {
+			return parent.getBaseStackLimit(resource);
+		}
+
+/*		@Override
 		public int getStackLimit(int slot, ItemStack stack) {
 			return parent.getBaseStackLimit(stack);
-		}
+		}*/
 
 		@Override
+		public long extractItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext transaction) {
+			return parent.extractItemInternal(slot, resource, maxAmount, transaction);
+		}
+
+/*		@Override
 		public ItemStack extractItem(int slot, int amount, boolean simulate) {
 			return parent.extractItemInternal(slot, amount, simulate);
-		}
+		}*/
 
 		@Override
+		public long insertItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext transaction, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
+			return insertSuper.apply(slot, resource, maxAmount, transaction);
+		}
+
+		/*		@Override
 		public ItemStack insertItem(int slot, ItemStack stack, boolean simulate, TriFunction<Integer, ItemStack, Boolean, ItemStack> insertSuper) {
 			return insertSuper.apply(slot, stack, simulate);
-		}
+		}*/
 
 		@Override
 		public void setStackInSlot(int slot, ItemStack stack, BiConsumer<Integer, ItemStack> setStackInSlotSuper) {
@@ -127,8 +164,18 @@ public interface IInventoryPartHandler {
 		}
 
 		@Override
+		public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+			return true;
+		}
+
+/*		@Override
 		public boolean isItemValid(int slot, ItemStack stack) {
 			return true;
+		}*/
+
+		@Override
+		public ItemVariant getVariantInSlot(int slot, IntFunction<ItemVariant> getVariantInSlotSuper) {
+			return getVariantInSlotSuper.apply(slot);
 		}
 
 		@Override

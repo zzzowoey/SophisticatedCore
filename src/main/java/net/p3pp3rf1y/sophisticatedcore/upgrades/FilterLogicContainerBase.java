@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -234,11 +235,11 @@ public class FilterLogicContainerBase<T extends FilterLogicBase, S extends Slot>
 					return true;
 				}
 				case DATA_ADD_TAG_NAME -> {
-					addTagName(TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation(data.getString(DATA_ADD_TAG_NAME))));
+					addTagName(TagKey.create(Registries.ITEM, new ResourceLocation(data.getString(DATA_ADD_TAG_NAME))));
 					return true;
 				}
 				case DATA_REMOVE_TAG_NAME -> {
-					removeSelectedTag(TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation(data.getString(DATA_REMOVE_TAG_NAME))));
+					removeSelectedTag(TagKey.create(Registries.ITEM, new ResourceLocation(data.getString(DATA_REMOVE_TAG_NAME))));
 					return true;
 				}
 				case DATA_MATCH_ANY_TAG -> {
@@ -310,10 +311,10 @@ public class FilterLogicContainerBase<T extends FilterLogicBase, S extends Slot>
 			onUpdate.run();
 		}
 
-		@Override
+/*		@Override
 		public void initialize(ItemStack stack) {
 			set(stack);
-		}
+		}*/
 
 		@Override
 		public void setChanged() {

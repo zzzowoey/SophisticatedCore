@@ -8,7 +8,8 @@ public class SmokingUpgradeItem extends UpgradeItemBase<CookingUpgradeWrapper.Sm
 	public static final UpgradeType<CookingUpgradeWrapper.SmokingUpgradeWrapper> TYPE = new UpgradeType<>(CookingUpgradeWrapper.SmokingUpgradeWrapper::new);
 	private final CookingUpgradeConfig smokingUpgradeConfig;
 
-	public SmokingUpgradeItem(CreativeModeTab itemGroup, CookingUpgradeConfig smokingUpgradeConfig) {super(itemGroup);
+	public SmokingUpgradeItem(CookingUpgradeConfig smokingUpgradeConfig) {
+		super();
 		this.smokingUpgradeConfig = smokingUpgradeConfig;
 	}
 

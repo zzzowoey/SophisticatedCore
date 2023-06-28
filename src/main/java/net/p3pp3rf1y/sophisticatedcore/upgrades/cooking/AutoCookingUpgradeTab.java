@@ -6,6 +6,7 @@ import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.UpgradeSettingsTab;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.FilterLogic;
@@ -30,7 +31,7 @@ public abstract class AutoCookingUpgradeTab<R extends AbstractCookingRecipe, W e
 	@Override
 	protected void moveSlotsToTab() {
 		inputFilterLogicControl.moveSlotsToView();
-		cookingLogicControl.moveSlotsToView(screen.getGuiLeft(), screen.getGuiTop());
+		cookingLogicControl.moveSlotsToView(GuiHelper.getGuiLeft(screen), GuiHelper.getGuiTop(screen));
 		fuelFilterLogicControl.moveSlotsToView();
 	}
 

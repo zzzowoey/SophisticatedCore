@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedcore.client.gui;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.Rect2i;
@@ -105,7 +106,10 @@ public abstract class SettingsTabControl<C extends AbstractContainerScreen<?>, T
 
 	public List<Rect2i> getTabRectangles() {
 		List<Rect2i> ret = new ArrayList<>();
-		children.forEach(child -> child.getRectangle().ifPresent(ret::add));
+		children.forEach(child -> {
+			ScreenRectangle rect = child.getRectangle();
+			ret.add(new Rect2i(rect.left(), rect.top(), rect.width(), rect.height()));
+		});
 		return ret;
 	}
 

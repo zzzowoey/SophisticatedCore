@@ -52,14 +52,14 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 			public void onTake(Player thePlayer, ItemStack stack) {
 				ItemStack remainingStack = getItem();
 				checkTakeAchievements(stack);
-				net.minecraftforge.common.ForgeHooks.setCraftingPlayer(thePlayer);
+				//net.minecraftforge.common.ForgeHooks.setCraftingPlayer(thePlayer); // TODO: is this necessary?
 				NonNullList<ItemStack> nonnulllist;
 				if (lastRecipe != null && lastRecipe.matches(craftMatrix, player.level)) {
 					nonnulllist = lastRecipe.getRemainingItems(craftMatrix);
 				} else {
 					nonnulllist = craftMatrix.items;
 				}
-				net.minecraftforge.common.ForgeHooks.setCraftingPlayer(null);
+				//net.minecraftforge.common.ForgeHooks.setCraftingPlayer(null); // TODO: is this necessary?
 				for (int i = 0; i < nonnulllist.size(); ++i) {
 					ItemStack itemstack = craftMatrix.getItem(i);
 					ItemStack itemstack1 = nonnulllist.get(i);
@@ -107,7 +107,7 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 			ServerPlayer serverplayerentity = (ServerPlayer) player;
 			ItemStack itemstack = ItemStack.EMPTY;
 			if (lastRecipe != null && lastRecipe.matches(inventory, world)) {
-				itemstack = lastRecipe.assemble(inventory);
+				itemstack = lastRecipe.assemble(inventory, world.registryAccess());
 			} else {
 				//noinspection ConstantConditions - we're on server and for sure in the world so getServer can't return null here
 				Optional<CraftingRecipe> optional = RecipeHelper.safeGetRecipeFor(RecipeType.CRAFTING, inventory, world);
@@ -115,7 +115,7 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 					CraftingRecipe craftingRecipe = optional.get();
 					if (inventoryResult.setRecipeUsed(world, serverplayerentity, craftingRecipe)) {
 						lastRecipe = craftingRecipe;
-						itemstack = lastRecipe.assemble(inventory);
+						itemstack = lastRecipe.assemble(inventory, world.registryAccess());
 					} else {
 						lastRecipe = null;
 					}

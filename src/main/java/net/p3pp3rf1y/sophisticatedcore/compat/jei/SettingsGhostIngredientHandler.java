@@ -1,9 +1,11 @@
 package net.p3pp3rf1y.sophisticatedcore.compat.jei;
 
 import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
+import mezz.jei.api.ingredients.ITypedIngredient;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsTab;
 
@@ -14,23 +16,23 @@ public class SettingsGhostIngredientHandler<S extends SettingsScreen> implements
 	private S targetedScreen;
 
 	@Override
-	public <I> List<Target<I>> getTargets(S screen, I i, boolean b) {
+	public <I> List<Target<I>> getTargetsTyped(S gui, ITypedIngredient<I> ingredient, boolean doStart) {
 		List<Target<I>> targets = new ArrayList<>();
-		if (!(i instanceof ItemStack ghostStack)) {
+		if (!(ingredient.getIngredient() instanceof ItemStack ghostStack)) {
 			return targets;
 		}
 
-		screen.startMouseDragHandledByOther();
-		targetedScreen = screen;
+		gui.startMouseDragHandledByOther();
+		targetedScreen = gui;
 
-		screen.getSettingsTabControl().getOpenTab().ifPresent(tab -> {
+		gui.getSettingsTabControl().getOpenTab().ifPresent(tab -> {
 			if (tab instanceof MemorySettingsTab) {
-				screen.getMenu().getStorageInventorySlots().forEach(s -> {
+				gui.getMenu().getStorageInventorySlots().forEach(s -> {
 					if (s.getItem().isEmpty()) {
 						targets.add(new Target<>() {
 							@Override
 							public Rect2i getArea() {
-								return new Rect2i(screen.getGuiLeft() + s.x, screen.getGuiTop() + s.y, 17, 17);
+								return new Rect2i(GuiHelper.getGuiLeft(gui) + s.x, GuiHelper.getGuiTop(gui) + s.y, 17, 17);
 							}
 
 							@Override

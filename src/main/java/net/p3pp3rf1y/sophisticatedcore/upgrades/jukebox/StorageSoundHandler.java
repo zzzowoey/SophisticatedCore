@@ -6,12 +6,12 @@ import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 
 import java.util.Map;
@@ -39,9 +39,9 @@ public class StorageSoundHandler {
 		}
 	}
 
-	public static void tick(TickEvent.LevelTickEvent event) {
-		if (!storageSounds.isEmpty() && lastPlaybackChecked < event.level.getGameTime() - SOUND_STOP_CHECK_INTERVAL) {
-			lastPlaybackChecked = event.level.getGameTime();
+	public static void tick(Minecraft world) {
+		if (!storageSounds.isEmpty() && lastPlaybackChecked < world.level.getGameTime() - SOUND_STOP_CHECK_INTERVAL) {
+			lastPlaybackChecked = world.level.getGameTime();
 			storageSounds.entrySet().removeIf(entry -> {
 				if (!Minecraft.getInstance().getSoundManager().isActive(entry.getValue())) {
 					PacketHandler.sendToServer(new SoundStopNotificationMessage(entry.getKey()));
@@ -53,7 +53,7 @@ public class StorageSoundHandler {
 	}
 
 	public static void playStorageSound(SoundEvent soundEvent, UUID storageUuid, BlockPos pos) {
-		playStorageSound(storageUuid, SimpleSoundInstance.forRecord(soundEvent, pos.getX(), pos.getY(), pos.getZ()));
+		playStorageSound(storageUuid, SimpleSoundInstance.forRecord(soundEvent, pos.getCenter()));
 	}
 
 	public static void playStorageSound(SoundEvent soundEvent, UUID storageUuid, int entityId) {
@@ -69,8 +69,7 @@ public class StorageSoundHandler {
 		playStorageSound(storageUuid, new EntityBoundSoundInstance(soundEvent, SoundSource.RECORDS, 2, 1, entity, level.random.nextLong()));
 	}
 
-	@SuppressWarnings({"unused", "java:S1172"}) // needs to be here for addListener to recognize which event this method should be subscribed to
-	public static void onWorldUnload(LevelEvent.Unload evt) {
+	public static void onWorldUnload(MinecraftServer minecraftServer, ServerLevel serverLevel) {
 		storageSounds.clear();
 		lastPlaybackChecked = 0;
 	}

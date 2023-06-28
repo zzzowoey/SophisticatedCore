@@ -10,8 +10,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.util.Either;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -19,34 +18,35 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.event.RenderTooltipEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ToggleButton;
+import org.joml.Matrix4f;
+import org.lwjgl.system.MemoryUtil;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Field;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -102,18 +102,21 @@ public class GuiHelper {
 			@Nullable String countText) {
 		RenderSystem.enableDepthTest();
 		ItemRenderer itemRenderer = minecraft.getItemRenderer();
-		float originalZLevel = itemRenderer.blitOffset;
-		itemRenderer.blitOffset += getZOffset(matrixStack);
-		itemRenderer.renderAndDecorateItem(stack, xPosition, yPosition);
+		//float originalZLevel = itemRenderer.blitOffset;
+		//itemRenderer.blitOffset += getZOffset(matrixStack);
+		itemRenderer.renderAndDecorateItem(matrixStack, stack, xPosition, yPosition);
 		if (renderOverlay) {
-			itemRenderer.renderGuiItemDecorations(minecraft.font, stack, xPosition, yPosition, countText);
+			itemRenderer.renderGuiItemDecorations(matrixStack, minecraft.font, stack, xPosition, yPosition, countText);
 		}
-		itemRenderer.blitOffset = originalZLevel;
+		//itemRenderer.blitOffset = originalZLevel;
 	}
 
 	private static int getZOffset(PoseStack matrixStack) {
-		Float zOffset = ObfuscationReflectionHelper.getPrivateValue(Matrix4f.class, matrixStack.last().pose(), "f_27614_");
-		return zOffset == null ? 0 : zOffset.intValue();
+		FloatBuffer buf = MemoryUtil.memAllocFloat(16);
+		matrixStack.last().pose().get(buf);
+		return (int) buf.get(11);
+		//Float zOffset = ObfuscationReflectionHelper.getPrivateValue(Matrix4f.class, matrixStack.last().pose(), "f_27614_");
+		//return zOffset == null ? 0 : zOffset.intValue();
 	}
 
 	public static void blit(PoseStack matrixStack, int x, int y, TextureBlitData texData) {
@@ -153,8 +156,8 @@ public class GuiHelper {
 		Tesselator tessellator = Tesselator.getInstance();
 		BufferBuilder bufferbuilder = tessellator.getBuilder();
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
-		bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
+		bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 		fillGradient(matrix4f, bufferbuilder, leftX - 3, topY - 4, leftX + tooltipWidth + 3, topY - 3, backgroundColor, backgroundColor);
 		fillGradient(matrix4f, bufferbuilder, leftX - 3, topY + tooltipHeight + 3, leftX + tooltipWidth + 3, topY + tooltipHeight + 4, backgroundColor, backgroundColor);
 		fillGradient(matrix4f, bufferbuilder, leftX - 3, topY - 3, leftX + tooltipWidth + 3, topY + tooltipHeight + 3, backgroundColor, backgroundColor);
@@ -165,19 +168,17 @@ public class GuiHelper {
 		fillGradient(matrix4f, bufferbuilder, leftX - 3, topY - 3, leftX + tooltipWidth + 3, topY - 3 + 1, borderColorStart, borderColorStart);
 		fillGradient(matrix4f, bufferbuilder, leftX - 3, topY + tooltipHeight + 2, leftX + tooltipWidth + 3, topY + tooltipHeight + 3, borderColorEnd, borderColorEnd);
 		RenderSystem.enableDepthTest();
-		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		BufferUploader.drawWithShader(bufferbuilder.end());
 		RenderSystem.disableBlend();
-		RenderSystem.enableTexture();
 	}
 
 	public static void writeTooltipLines(List<? extends FormattedText> textLines, Font font, float leftX, int topY, Matrix4f matrix4f, MultiBufferSource.BufferSource renderTypeBuffer, int color) {
 		for (int i = 0; i < textLines.size(); ++i) {
 			FormattedText line = textLines.get(i);
 			if (line != null) {
-				font.drawInBatch(Language.getInstance().getVisualOrder(line), leftX, topY, color, true, matrix4f, renderTypeBuffer, false, 0, 15728880);
+				font.drawInBatch(Language.getInstance().getVisualOrder(line), leftX, topY, color, true, matrix4f, renderTypeBuffer, Font.DisplayMode.NORMAL, 0, 15728880);
 			}
 
 			if (i == 0) {
@@ -230,14 +231,14 @@ public class GuiHelper {
 
 	public static void renderTiledFluidTextureAtlas(PoseStack matrixStack, TextureAtlasSprite sprite, int color, int x, int y, int height) {
 		RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-		RenderSystem.setShaderTexture(0, sprite.atlas().location());
+		RenderSystem.setShaderTexture(0, sprite.atlasLocation());
 		BufferBuilder builder = Tesselator.getInstance().getBuilder();
 		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
 		float u1 = sprite.getU0();
 		float v1 = sprite.getV0();
-		int spriteHeight = sprite.getHeight();
-		int spriteWidth = sprite.getWidth();
+		int spriteHeight = sprite.getY();
+		int spriteWidth = sprite.getX();
 		int startY = y;
 		float red = (color >> 16 & 255) / 255.0F;
 		float green = (color >> 8 & 255) / 255.0F;
@@ -278,45 +279,47 @@ public class GuiHelper {
 		GuiComponent.blit(matrixStack, x + halfWidth, y + halfHeight, (float) u + textureBgWidth - halfWidth, (float) v + textureBgHeight - halfHeight, halfWidth, halfHeight, GUI_CONTROLS_TEXTURE_WIDTH, GUI_CONTROLS_TEXTURE_HEIGHT);
 	}
 
-	public static void tryRenderGuiItem(ItemRenderer itemRenderer, TextureManager textureManager,
+	public static void tryRenderGuiItem(PoseStack poseStack, ItemRenderer itemRenderer, TextureManager textureManager,
 			@Nullable LivingEntity livingEntity, ItemStack stack, int x, int y, int rotation) {
 		if (!stack.isEmpty()) {
 			BakedModel bakedmodel = itemRenderer.getModel(stack, null, livingEntity, 0);
-			itemRenderer.blitOffset += 50.0F;
+
+			poseStack.pushPose();
+			poseStack.translate(0, 0, 50);
 
 			try {
-				renderGuiItem(itemRenderer, textureManager, stack, x, y, bakedmodel, rotation);
+				renderGuiItem(poseStack, itemRenderer, textureManager, stack, x, y, bakedmodel, rotation);
 			}
 			catch (Throwable throwable) {
 				CrashReport crashreport = CrashReport.forThrowable(throwable, "Rendering item");
 				CrashReportCategory crashreportcategory = crashreport.addCategory("Item being rendered");
 				crashreportcategory.setDetail("Item Type", () -> String.valueOf(stack.getItem()));
-				crashreportcategory.setDetail("Registry Name", () -> String.valueOf(ForgeRegistries.ITEMS.getKey(stack.getItem())));
+				crashreportcategory.setDetail("Registry Name", () -> String.valueOf(BuiltInRegistries.ITEM.getKey(stack.getItem())));
 				crashreportcategory.setDetail("Item Damage", () -> String.valueOf(stack.getDamageValue()));
 				crashreportcategory.setDetail("Item NBT", () -> String.valueOf(stack.getTag()));
 				crashreportcategory.setDetail("Item Foil", () -> String.valueOf(stack.hasFoil()));
 				throw new ReportedException(crashreport);
 			}
 
-			itemRenderer.blitOffset -= 50.0F;
+			poseStack.popPose();
 		}
 	}
 
-	private static void renderGuiItem(ItemRenderer itemRenderer, TextureManager textureManager, ItemStack stack, int x, int y, BakedModel bakedModel, int rotation) {
+	private static void renderGuiItem(PoseStack poseStack, ItemRenderer itemRenderer, TextureManager textureManager, ItemStack stack, int x, int y, BakedModel bakedModel, int rotation) {
 		textureManager.getTexture(InventoryMenu.BLOCK_ATLAS).setFilter(false, false);
 		RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
 		RenderSystem.enableBlend();
 		RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		PoseStack posestack = RenderSystem.getModelViewStack();
-		posestack.pushPose();
-		posestack.translate(x, y, 100.0F + itemRenderer.blitOffset);
-		posestack.translate(8.0D, 8.0D, 0.0D);
+		poseStack.pushPose();
+		poseStack.translate(x + 8, y + 8, 100.0F);
+
 		if (rotation != 0) {
-			posestack.mulPose(Vector3f.ZP.rotationDegrees(rotation));
+			poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
 		}
-		posestack.scale(1.0F, -1.0F, 1.0F);
-		posestack.scale(16.0F, 16.0F, 16.0F);
+
+		poseStack.scale(1.0F, -1.0F, 1.0F);
+		poseStack.scale(16.0F, 16.0F, 16.0F);
 		RenderSystem.applyModelViewMatrix();
 		PoseStack posestack1 = new PoseStack();
 		MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
@@ -325,18 +328,40 @@ public class GuiHelper {
 			Lighting.setupForFlatItems();
 		}
 
-		itemRenderer.render(stack, ItemTransforms.TransformType.GUI, false, posestack1, bufferSource, 15728880, OverlayTexture.NO_OVERLAY, bakedModel);
+		itemRenderer.render(stack, ItemDisplayContext.GUI, false, posestack1, bufferSource, 15728880, OverlayTexture.NO_OVERLAY, bakedModel);
 		bufferSource.endBatch();
 		RenderSystem.enableDepthTest();
 		if (flag) {
 			Lighting.setupFor3DItems();
 		}
 
-		posestack.popPose();
+		poseStack.popPose();
 		RenderSystem.applyModelViewMatrix();
 	}
 
-	private static final Field TOOLTIP_FONT = ObfuscationReflectionHelper.findField(Screen.class, "tooltipFont");
+	public static Optional<Slot> getSlotUnderMouse(AbstractContainerScreen<?> containerScreen) {
+		Slot slot = containerScreen.hoveredSlot;
+		return Optional.ofNullable(slot);
+	}
+
+	public static int getGuiLeft(AbstractContainerScreen<?> containerScreen) {
+		return containerScreen.leftPos;
+	}
+
+	public static int getGuiTop(AbstractContainerScreen<?> containerScreen) {
+		return containerScreen.topPos;
+	}
+
+	public static int getXSize(AbstractContainerScreen<?> containerScreen) {
+		return containerScreen.imageWidth;
+	}
+
+	public static int getYSize(AbstractContainerScreen<?> containerScreen) {
+		return containerScreen.imageHeight;
+	}
+
+	// TODO: Reimplement
+	/*private static final Field TOOLTIP_FONT = ObfuscationReflectionHelper.findField(Screen.class, "tooltipFont");
 
 	@Nullable
 	private static Font getTooltipFont(Screen screen) {
@@ -347,29 +372,28 @@ public class GuiHelper {
 			SophisticatedCore.LOGGER.error("Unable to get value from field tooltipFont in Screen class: ", e);
 			return null;
 		}
-	}
+	}*/
 
 	public static void renderTooltip(Screen screen, PoseStack poseStack, List<Component> components, int x, int y) {
-		List<ClientTooltipComponent> list = gatherTooltipComponents(components, x, screen.width, screen.height, getTooltipFont(screen), screen.font);
-		screen.renderTooltipInternal(poseStack, list, x, y);
+		List<ClientTooltipComponent> list = gatherTooltipComponents(components, x, screen.width, screen.height, screen.font);
+		screen.renderTooltipInternal(poseStack, list, x, y, DefaultTooltipPositioner.INSTANCE);
 	}
 
 	//copy of ForgeHooksClient.gatherTooltipComponents with splitting always called so that new lines in translation are properly wrapped
-	public static List<ClientTooltipComponent> gatherTooltipComponents(List<? extends FormattedText> textElements, int mouseX, int screenWidth, int screenHeight,
-			@Nullable Font forcedFont, Font fallbackFont) {
-		Font font = ForgeHooksClient.getTooltipFont(forcedFont, ItemStack.EMPTY, fallbackFont);
+	public static List<ClientTooltipComponent> gatherTooltipComponents(List<? extends FormattedText> textElements, int mouseX, int screenWidth, int screenHeight, Font font) {
 		List<Either<FormattedText, TooltipComponent>> elements = textElements.stream()
 				.map((Function<FormattedText, Either<FormattedText, TooltipComponent>>) Either::left)
 				.collect(Collectors.toCollection(ArrayList::new));
 
-		var event = new RenderTooltipEvent.GatherComponents(ItemStack.EMPTY, screenWidth, screenHeight, elements, -1);
+
+		/*var event = new RenderTooltipEvent.GatherComponents(ItemStack.EMPTY, screenWidth, screenHeight, elements, -1);
 		MinecraftForge.EVENT_BUS.post(event);
 		if (event.isCanceled()) {
 			return List.of();
-		}
+		}*/
 
 		// text wrapping
-		int tooltipTextWidth = event.getTooltipElements().stream()
+		int tooltipTextWidth = elements.stream()
 				.mapToInt(either -> either.map(font::width, component -> 0))
 				.max()
 				.orElse(0);
@@ -387,12 +411,12 @@ public class GuiHelper {
 			}
 		}
 
-		if (event.getMaxWidth() > 0 && tooltipTextWidth > event.getMaxWidth()) {
+		/*if (event.getMaxWidth() > 0 && tooltipTextWidth > event.getMaxWidth()) {
 			tooltipTextWidth = event.getMaxWidth();
-		}
+		}*/
 
 		int tooltipTextWidthF = tooltipTextWidth;
-		return event.getTooltipElements().stream()
+		return elements.stream()
 				.flatMap(either -> either.map(
 						text -> font.split(text, tooltipTextWidthF).stream().map(ClientTooltipComponent::create),
 						component -> Stream.of(ClientTooltipComponent.create(component))

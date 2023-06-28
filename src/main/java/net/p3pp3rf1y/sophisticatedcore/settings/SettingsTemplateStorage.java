@@ -43,15 +43,16 @@ public class SettingsTemplateStorage extends SavedData {
 	}
 
 	public static SettingsTemplateStorage get() {
-		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
-			MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-			if (server != null) {
-				ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-				//noinspection ConstantConditions - by this time overworld is loaded
-				DimensionDataStorage storage = overworld.getDataStorage();
-				return storage.computeIfAbsent(SettingsTemplateStorage::load, SettingsTemplateStorage::new, SAVED_DATA_NAME);
-			}
+		// TODO: Reimplement?
+		/*if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {*/
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+		if (server != null) {
+			ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+			//noinspection ConstantConditions - by this time overworld is loaded
+			DimensionDataStorage storage = overworld.getDataStorage();
+			return storage.computeIfAbsent(SettingsTemplateStorage::load, SettingsTemplateStorage::new, SAVED_DATA_NAME);
 		}
+		//}
 		return clientStorageCopy;
 	}
 

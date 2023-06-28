@@ -8,7 +8,8 @@ public class AutoSmeltingUpgradeItem extends UpgradeItemBase<AutoCookingUpgradeW
 	public static final UpgradeType<AutoCookingUpgradeWrapper.AutoSmeltingUpgradeWrapper> TYPE = new UpgradeType<>(AutoCookingUpgradeWrapper.AutoSmeltingUpgradeWrapper::new);
 	private final AutoCookingUpgradeConfig autoSmeltingUpgradeConfig;
 
-	public AutoSmeltingUpgradeItem(CreativeModeTab itemGroup, AutoCookingUpgradeConfig autoSmeltingUpgradeConfig) {super(itemGroup);
+	public AutoSmeltingUpgradeItem(AutoCookingUpgradeConfig autoSmeltingUpgradeConfig) {
+		super();
 		this.autoSmeltingUpgradeConfig = autoSmeltingUpgradeConfig;
 	}
 

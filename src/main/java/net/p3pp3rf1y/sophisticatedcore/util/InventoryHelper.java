@@ -2,6 +2,16 @@ package net.p3pp3rf1y.sophisticatedcore.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AtomicDouble;
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.minecraft.CrashReport;
+import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -12,10 +22,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
@@ -25,16 +31,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -58,7 +55,7 @@ public class InventoryHelper {
 		return Optional.empty();
 	}
 
-	public static boolean hasItem(IItemHandler inventory, Predicate<ItemStack> matches) {
+	public static boolean hasItem(SlotExposedStorage inventory, Predicate<ItemStack> matches) {
 		AtomicBoolean result = new AtomicBoolean(false);
 		iterate(inventory, (slot, stack) -> {
 			if (!stack.isEmpty() && matches.test(stack)) {
@@ -68,7 +65,7 @@ public class InventoryHelper {
 		return result.get();
 	}
 
-	public static Set<Integer> getItemSlots(IItemHandler inventory, Predicate<ItemStack> matches) {
+	public static Set<Integer> getItemSlots(SlotExposedStorage inventory, Predicate<ItemStack> matches) {
 		Set<Integer> slots = new HashSet<>();
 		iterate(inventory, (slot, stack) -> {
 			if (!stack.isEmpty() && matches.test(stack)) {
@@ -78,7 +75,7 @@ public class InventoryHelper {
 		return slots;
 	}
 
-	public static void copyTo(IItemHandlerModifiable handlerA, IItemHandlerModifiable handlerB) {
+	public static void copyTo(SlotExposedStorage handlerA, SlotExposedStorage handlerB) {
 		int slotsA = handlerA.getSlots();
 		int slotsB = handlerB.getSlots();
 		for (int slot = 0; slot < slotsA && slot < slotsB; slot++) {
@@ -89,34 +86,53 @@ public class InventoryHelper {
 		}
 	}
 
-	public static List<ItemStack> insertIntoInventory(List<ItemStack> stacks, IItemHandler inventory, boolean simulate) {
+	public static List<ItemStack> insertIntoInventory(List<ItemStack> stacks, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
 		if (stacks.isEmpty()) {
 			return stacks;
 		}
-		IItemHandler targetInventory = inventory;
-		if (simulate) {
-			targetInventory = cloneInventory(inventory);
-		}
-
-		List<ItemStack> remaining = new ArrayList<>();
+		List<ItemStack> remainingStacks = new ArrayList<>();
 		for (ItemStack stack : stacks) {
-			ItemStack result = insertIntoInventory(stack, targetInventory, false);
-			if (!result.isEmpty()) {
-				remaining.add(result);
+			ItemVariant resource = ItemVariant.of(stack);
+
+			long remaining = stack.getCount() - insertIntoInventory(resource, stack.getCount(), inventory, ctx);
+			if (remaining > 0) {
+				remainingStacks.add(resource.toStack((int) remaining));
 			}
 		}
-		return remaining;
+		return remainingStacks;
 	}
 
-	public static IItemHandler cloneInventory(IItemHandler inventory) {
-		IItemHandler cloned = new ItemStackHandler(inventory.getSlots());
+	public static SlotExposedStorage cloneInventory(SlotExposedStorage inventory) {
+		SlotExposedStorage cloned = new ItemStackHandler(inventory.getSlots());
 		for (int slot = 0; slot < inventory.getSlots(); slot++) {
-			cloned.insertItem(slot, inventory.getStackInSlot(slot).copy(), false);
+			ItemStack stack = inventory.getStackInSlot(slot);
+			cloned.insertSlot(slot, ItemVariant.of(stack), stack.getCount(), null);
 		}
 		return cloned;
 	}
 
-	public static ItemStack insertIntoInventory(ItemStack stack, IItemHandler inventory, boolean simulate) {
+/*	public static SlotExposedStorage cloneInventory(SlotExposedStorage inventory) {
+		SlotExposedStorage cloned = new ItemStackHandler(inventory.getSlots());
+		for (int slot = 0; slot < inventory.getSlots(); slot++) {
+			cloned.insertItem(slot, inventory.getStackInSlot(slot).copy(), false);
+		}
+		return cloned;
+	}*/
+
+	public static long insertIntoInventory(ItemVariant resource, long maxAmount, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
+		if (inventory instanceof IItemHandlerSimpleInserter itemHandlerSimpleInserter) {
+			return itemHandlerSimpleInserter.insert(resource, maxAmount, ctx);
+		}
+
+		long remaining = maxAmount;
+		int slots = inventory.getSlots();
+		for (int slot = 0; slot < slots && remaining > 0; slot++) {
+			remaining -= inventory.insertSlot(slot, resource, remaining, ctx);
+		}
+		return remaining;
+	}
+
+/*	public static ItemStack insertIntoInventory(ItemStack stack, SlotExposedStorage inventory, boolean simulate) {
 		if (inventory instanceof IItemHandlerSimpleInserter itemHandlerSimpleInserter) {
 			return itemHandlerSimpleInserter.insertItem(stack, simulate);
 		}
@@ -127,9 +143,24 @@ public class InventoryHelper {
 			remainingStack = inventory.insertItem(slot, remainingStack, simulate);
 		}
 		return remainingStack;
+	}*/
+
+	public static long extractFromInventory(Item item, int count, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
+		long ret = 0;
+		int slots = inventory.getSlots();
+		for (int slot = 0; slot < slots && ret < count; slot++) {
+			ItemStack slotStack = inventory.getStackInSlot(slot);
+			ItemVariant resource = ItemVariant.of(slotStack);
+			if (slotStack.getItem() == item && (ret == 0 || ItemHandlerHelper.canItemStacksStack(resource.toStack((int) ret), slotStack))) {
+				long toExtract = Math.min(slotStack.getCount(), count - ret);
+				ret += inventory.extractSlot(slot, resource, toExtract, ctx);
+			}
+		}
+
+		return ret;
 	}
 
-	public static ItemStack extractFromInventory(Item item, int count, IItemHandler inventory, boolean simulate) {
+/*	public static ItemStack extractFromInventory(Item item, int count, SlotExposedStorage inventory, boolean simulate) {
 		ItemStack ret = ItemStack.EMPTY;
 		int slots = inventory.getSlots();
 		for (int slot = 0; slot < slots && ret.getCount() < count; slot++) {
@@ -145,9 +176,37 @@ public class InventoryHelper {
 			}
 		}
 		return ret;
+	}*/
+
+	public static ItemStack simulateExtractFromInventory(ItemStack stack, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
+		try (Transaction transaction = Transaction.openNested(ctx)) {
+			return extractFromInventory(stack, inventory, transaction);
+		}
 	}
 
-	public static ItemStack extractFromInventory(ItemStack stack, IItemHandler inventory, boolean simulate) {
+	public static ItemStack extractFromInventory(ItemStack stack, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
+		long extractedCount = 0;
+		int slots = inventory.getSlots();
+		for (int slot = 0; slot < slots && extractedCount < stack.getCount(); slot++) {
+			ItemStack slotStack = inventory.getStackInSlot(slot);
+			ItemVariant resource = ItemVariant.of(slotStack);
+			if (ItemHandlerHelper.canItemStacksStack(stack, slotStack)) {
+				long toExtract = Math.min(slotStack.getCount(), stack.getCount() - extractedCount);
+				extractedCount += inventory.extractSlot(slot, resource, toExtract, ctx);
+			}
+		}
+
+		if (extractedCount == 0) {
+			return ItemStack.EMPTY;
+		}
+
+		ItemStack result = stack.copy();
+		result.setCount((int) extractedCount);
+
+		return result;
+	}
+
+/*	public static ItemStack extractFromInventory(ItemStack stack, SlotExposedStorage inventory, boolean simulate) {
 		int extractedCount = 0;
 		int slots = inventory.getSlots();
 		for (int slot = 0; slot < slots && extractedCount < stack.getCount(); slot++) {
@@ -166,21 +225,29 @@ public class InventoryHelper {
 		result.setCount(extractedCount);
 
 		return result;
-	}
+	}*/
 
-	public static ItemStack runPickupOnPickupResponseUpgrades(Level world, UpgradeHandler upgradeHandler, ItemStack remainingStack, boolean simulate) {
-		return runPickupOnPickupResponseUpgrades(world, null, upgradeHandler, remainingStack, simulate);
+	public static ItemStack runPickupOnPickupResponseUpgrades(Level world, UpgradeHandler upgradeHandler, ItemStack remainingStack, @Nullable TransactionContext ctx) {
+		return runPickupOnPickupResponseUpgrades(world, null, upgradeHandler, remainingStack, ctx);
 	}
 
 	public static ItemStack runPickupOnPickupResponseUpgrades(Level world,
-			@Nullable Player player, UpgradeHandler upgradeHandler, ItemStack remainingStack, boolean simulate) {
+			@Nullable Player player, UpgradeHandler upgradeHandler, ItemStack remainingStack, @Nullable TransactionContext ctx) {
 		List<IPickupResponseUpgrade> pickupUpgrades = upgradeHandler.getWrappersThatImplement(IPickupResponseUpgrade.class);
 
 		for (IPickupResponseUpgrade pickupUpgrade : pickupUpgrades) {
 			int countBeforePickup = remainingStack.getCount();
-			remainingStack = pickupUpgrade.pickup(world, remainingStack, simulate);
-			if (!simulate && player != null && remainingStack.getCount() != countBeforePickup) {
-				playPickupSound(world, player);
+			try (Transaction pickupTransaction = Transaction.openNested(ctx)) {
+				remainingStack = pickupUpgrade.pickup(world, remainingStack, pickupTransaction);
+
+				ItemStack finalRemainingStack = remainingStack;
+				TransactionCallback.onSuccess(ctx, () -> {
+					if (player != null && finalRemainingStack.getCount() != countBeforePickup) {
+						playPickupSound(world, player);
+					}
+				});
+
+				pickupTransaction.commit();
 			}
 
 			if (remainingStack.isEmpty()) {
@@ -195,11 +262,11 @@ public class InventoryHelper {
 		level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, RandHelper.getRandomMinusOneToOne(level.random) * 1.4F + 2.0F);
 	}
 
-	public static void iterate(IItemHandler handler, BiConsumer<Integer, ItemStack> actOn) {
+	public static void iterate(SlotExposedStorage handler, BiConsumer<Integer, ItemStack> actOn) {
 		iterate(handler, actOn, () -> false);
 	}
 
-	public static void iterate(IItemHandler handler, BiConsumer<Integer, ItemStack> actOn, BooleanSupplier shouldExit) {
+	public static void iterate(SlotExposedStorage handler, BiConsumer<Integer, ItemStack> actOn, BooleanSupplier shouldExit) {
 		int slots = handler.getSlots();
 		for (int slot = 0; slot < slots; slot++) {
 			ItemStack stack = handler.getStackInSlot(slot);
@@ -210,7 +277,7 @@ public class InventoryHelper {
 		}
 	}
 
-	public static int getCountMissingInHandler(IItemHandler itemHandler, ItemStack filter, int expectedCount) {
+	public static int getCountMissingInHandler(SlotExposedStorage itemHandler, ItemStack filter, int expectedCount) {
 		MutableInt missingCount = new MutableInt(expectedCount);
 		iterate(itemHandler, (slot, stack) -> {
 			if (ItemHandlerHelper.canItemStacksStack(stack, filter)) {
@@ -220,7 +287,7 @@ public class InventoryHelper {
 		return missingCount.getValue();
 	}
 
-	public static <T> T iterate(IItemHandler handler, BiFunction<Integer, ItemStack, T> getFromSlotStack, Supplier<T> supplyDefault, Predicate<T> shouldExit) {
+	public static <T> T iterate(SlotExposedStorage handler, BiFunction<Integer, ItemStack, T> getFromSlotStack, Supplier<T> supplyDefault, Predicate<T> shouldExit) {
 		T ret = supplyDefault.get();
 		int slots = handler.getSlots();
 		for (int slot = 0; slot < slots; slot++) {
@@ -233,7 +300,45 @@ public class InventoryHelper {
 		return ret;
 	}
 
-	public static void transfer(IItemHandler handlerA, IItemHandler handlerB, Consumer<Supplier<ItemStack>> onInserted) {
+	public static void transfer(SlotExposedStorage handlerA, SlotExposedStorage handlerB, Consumer<Supplier<ItemStack>> onInserted) {
+		if (handlerA == null || handlerB == null) {
+			return;
+		}
+
+		try (Transaction iterationTransaction = Transaction.openNested(null)) {
+			for (StorageView<ItemVariant> view : handlerA.nonEmptyViews()) {
+				ItemVariant resource = view.getResource();
+				long maxExtracted;
+
+				// check how much can be extracted
+				try (Transaction extractionTestTransaction = iterationTransaction.openNested()) {
+					maxExtracted = view.extract(resource, view.getAmount(), extractionTestTransaction);
+					extractionTestTransaction.abort();
+				}
+
+				try (Transaction transferTransaction = iterationTransaction.openNested()) {
+					// check how much can be inserted
+					long accepted = handlerB.insert(resource, maxExtracted, transferTransaction);
+
+					// extract it, or rollback if the amounts don't match
+					if (view.extract(resource, accepted, transferTransaction) == accepted) {
+						transferTransaction.commit();
+						TransactionCallback.onSuccess(transferTransaction, () -> onInserted.accept(() -> resource.toStack((int) accepted)));
+					}
+				}
+			}
+
+			iterationTransaction.commit();
+		} catch (Exception e) {
+			CrashReport report = CrashReport.forThrowable(e, "Moving resources between storages");
+			report.addCategory("Move details")
+					.setDetail("Input storage", handlerA::toString)
+					.setDetail("Output storage", handlerB::toString);
+			throw new ReportedException(report);
+		}
+	}
+
+/*	public static void transfer(SlotExposedStorage handlerA, SlotExposedStorage handlerB, Consumer<Supplier<ItemStack>> onInserted) {
 		int slotsA = handlerA.getSlots();
 		for (int slot = 0; slot < slotsA; slot++) {
 			ItemStack slotStack = handlerA.getStackInSlot(slot);
@@ -266,9 +371,9 @@ public class InventoryHelper {
 				countToTransfer -= extractedStack.getCount();
 			}
 		}
-	}
+	}*/
 
-	public static boolean isEmpty(IItemHandler itemHandler) {
+	public static boolean isEmpty(SlotExposedStorage itemHandler) {
 		int slots = itemHandler.getSlots();
 		for (int slot = 0; slot < slots; slot++) {
 			if (!itemHandler.getStackInSlot(slot).isEmpty()) {
@@ -278,31 +383,46 @@ public class InventoryHelper {
 		return true;
 	}
 
-	public static ItemStack getAndRemove(IItemHandler itemHandler, int slot) {
+	public static ItemStack getAndRemove(SlotExposedStorage itemHandler, int slot) {
+		if (slot >= itemHandler.getSlots()) {
+			return ItemStack.EMPTY;
+		}
+
+		ItemStack stack = itemHandler.getStackInSlot(slot);
+		ItemVariant resource = ItemVariant.of(stack);
+		long extracted = itemHandler.extractSlot(slot, resource, stack.getCount(), null);
+		return resource.toStack((int) extracted);
+	}
+
+/*
+	public static ItemStack getAndRemove(SlotExposedStorage itemHandler, int slot) {
 		if (slot >= itemHandler.getSlots()) {
 			return ItemStack.EMPTY;
 		}
 		return itemHandler.extractItem(slot, itemHandler.getStackInSlot(slot).getCount(), false);
 	}
+*/
 
-	public static void insertOrDropItem(Player player, ItemStack stack, IItemHandler... inventories) {
-		ItemStack ret = stack;
-		for (IItemHandler inventory : inventories) {
-			ret = insertIntoInventory(ret, inventory, false);
-			if (ret.isEmpty()) {
+	public static void insertOrDropItem(Player player, ItemStack stack, SlotExposedStorage... inventories) {
+		ItemVariant resource = ItemVariant.of(stack);
+		long toInsert = stack.getCount();
+		for (SlotExposedStorage inventory : inventories) {
+			toInsert -= insertIntoInventory(resource, toInsert, inventory, null);
+			if (toInsert == 0) {
 				return;
 			}
 		}
-		if (!ret.isEmpty()) {
-			player.drop(ret, true);
+
+		if (toInsert > 0) {
+			player.drop(resource.toStack((int) toInsert), true);
 		}
 	}
 
-	static Map<ItemStackKey, Integer> getCompactedStacks(IItemHandler handler) {
+	static Map<ItemStackKey, Integer> getCompactedStacks(SlotExposedStorage handler) {
 		return getCompactedStacks(handler, new HashSet<>());
 	}
 
-	static Map<ItemStackKey, Integer> getCompactedStacks(IItemHandler handler, Set<Integer> ignoreSlots) {
+	static Map<ItemStackKey, Integer> getCompactedStacks(SlotExposedStorage handler, Set<Integer> ignoreSlots) {
 		Map<ItemStackKey, Integer> ret = new HashMap<>();
 		iterate(handler, (slot, stack) -> {
 			if (stack.isEmpty() || ignoreSlots.contains(slot)) {
@@ -314,7 +434,7 @@ public class InventoryHelper {
 		return ret;
 	}
 
-	public static List<ItemStack> getCompactedStacksSortedByCount(IItemHandler handler) {
+	public static List<ItemStack> getCompactedStacksSortedByCount(SlotExposedStorage handler) {
 		Map<ItemStackKey, Integer> compactedStacks = getCompactedStacks(handler);
 		List<Map.Entry<ItemStackKey, Integer>> sortedList = new ArrayList<>(compactedStacks.entrySet());
 		sortedList.sort(InventorySorter.BY_COUNT);
@@ -328,7 +448,7 @@ public class InventoryHelper {
 		return ret;
 	}
 
-	public static Set<ItemStackKey> getUniqueStacks(IItemHandler handler) {
+	public static Set<ItemStackKey> getUniqueStacks(SlotExposedStorage handler) {
 		Set<ItemStackKey> uniqueStacks = new HashSet<>();
 		iterate(handler, (slot, stack) -> {
 			if (stack.isEmpty()) {
@@ -340,7 +460,7 @@ public class InventoryHelper {
 		return uniqueStacks;
 	}
 
-	public static List<Integer> getEmptySlotsRandomized(IItemHandler inventory) {
+	public static List<Integer> getEmptySlotsRandomized(SlotExposedStorage inventory) {
 		List<Integer> list = Lists.newArrayList();
 
 		for (int i = 0; i < inventory.getSlots(); ++i) {
@@ -397,13 +517,29 @@ public class InventoryHelper {
 			if (stack.isEmpty()) {
 				return;
 			}
-			ItemStack extractedStack = inventoryHandler.extractItem(slot, stack.getCount(), false);
+
+			ItemVariant resource = ItemVariant.of(stack);
+			long extracted = inventoryHandler.extractSlot(slot, resource, stack.getCount(), null);
+			ItemStack extractedStack = resource.toStack((int) extracted);
 			while (!extractedStack.isEmpty()) {
 				Containers.dropItemStack(level, x, y, z, extractedStack.split(Math.min(extractedStack.getCount(), extractedStack.getMaxStackSize())));
 				inventoryHandler.setStackInSlot(slot, ItemStack.EMPTY);
 			}
 		});
 	}
+
+/*	public static void dropItems(ItemStackHandler inventoryHandler, Level level, double x, double y, double z) {
+		iterate(inventoryHandler, (slot, stack) -> {
+			if (stack.isEmpty()) {
+				return;
+			}
+			ItemStack extractedStack = inventoryHandler.extractItem(slot, stack.getCount(), false);
+			while (!extractedStack.isEmpty()) {
+				Containers.dropItemStack(level, x, y, z, extractedStack.split(Math.min(extractedStack.getCount(), extractedStack.getMaxStackSize())));
+				inventoryHandler.setStackInSlot(slot, ItemStack.EMPTY);
+			}
+		});
+	}*/
 
 	public static int getAnalogOutputSignal(ITrackedContentsItemHandler handler) {
 		AtomicDouble totalFilled = new AtomicDouble(0);

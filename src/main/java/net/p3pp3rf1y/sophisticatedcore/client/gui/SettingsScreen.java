@@ -68,7 +68,7 @@ public abstract class SettingsScreen extends AbstractContainerScreen<SettingsCon
 
 		int numberOfVisibleRows = getNumberOfVisibleRows();
 		if (numberOfVisibleRows < getMenu().getNumberOfRows()) {
-			inventoryScrollPanel = new InventoryScrollPanel(Minecraft.getInstance(), this, 0, getMenu().getNumberOfStorageInventorySlots(), getSlotsOnLine(), numberOfVisibleRows * 18, getGuiTop() + 17, getGuiLeft() + 7);
+			inventoryScrollPanel = new InventoryScrollPanel(Minecraft.getInstance(), this, 0, getMenu().getNumberOfStorageInventorySlots(), getSlotsOnLine(), numberOfVisibleRows * 18, GuiHelper.getGuiTop(this) + 17, GuiHelper.getGuiLeft(this) + 7);
 			addRenderableWidget(inventoryScrollPanel);
 			inventoryScrollPanel.updateSlotsYPosition();
 		} else {
@@ -169,28 +169,24 @@ public abstract class SettingsScreen extends AbstractContainerScreen<SettingsCon
 	protected void renderSlot(PoseStack poseStack, Slot slot) {
 		ItemStack itemstack = slot.getItem() != ItemStack.EMPTY ? slot.getItem() : settingsTabControl.getSlotStackDisplayOverride(slot.getSlotIndex());
 
-		setBlitOffset(100);
-		itemRenderer.blitOffset = 100.0F;
-
 		RenderSystem.enableDepthTest();
 		poseStack.pushPose();
-		if (!settingsTabControl.renderGuiItem(itemRenderer, itemstack, slot)) {
+		poseStack.translate(0, 0, 100);
+		if (!settingsTabControl.renderGuiItem(poseStack, itemRenderer, itemstack, slot)) {
 			if (!getMenu().getSlotFilterItem(slot.index).isEmpty()) {
-				itemRenderer.renderAndDecorateItem(getMenu().getSlotFilterItem(slot.index), slot.x, slot.y);
+				itemRenderer.renderAndDecorateItem(poseStack, getMenu().getSlotFilterItem(slot.index), slot.x, slot.y);
 			} else {
 				Pair<ResourceLocation, ResourceLocation> pair = slot.getNoItemIcon();
 				if (pair != null) {
 					//noinspection ConstantConditions - by this point minecraft isn't null
 					TextureAtlasSprite textureatlassprite = minecraft.getTextureAtlas(pair.getFirst()).apply(pair.getSecond());
 					RenderSystem.setShader(GameRenderer::getPositionTexShader);
-					RenderSystem.setShaderTexture(0, textureatlassprite.atlas().location());
-					blit(poseStack, slot.x, slot.y, getBlitOffset(), 16, 16, textureatlassprite);
+					RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
+					blit(poseStack, slot.x, slot.y, 0, 16, 16, textureatlassprite);
 				}
 			}
 		}
 		poseStack.popPose();
-		itemRenderer.blitOffset = 0.0F;
-		setBlitOffset(0);
 
 		settingsTabControl.drawSlotStackOverlay(poseStack, slot);
 	}
@@ -283,12 +279,12 @@ public abstract class SettingsScreen extends AbstractContainerScreen<SettingsCon
 
 	@Override
 	public int getTopY() {
-		return getGuiTop();
+		return GuiHelper.getGuiTop(this);
 	}
 
 	@Override
 	public int getLeftX() {
-		return getGuiLeft();
+		return GuiHelper.getGuiLeft(this);
 	}
 
 	@Override

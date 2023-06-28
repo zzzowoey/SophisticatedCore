@@ -5,14 +5,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Dimension;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 
-public abstract class WidgetBase extends GuiComponent implements Widget, GuiEventListener, NarratableEntry {
+public abstract class WidgetBase extends GuiComponent implements Renderable, GuiEventListener, NarratableEntry {
 	protected final int x;
 
 	protected final int y;
@@ -23,6 +23,7 @@ public abstract class WidgetBase extends GuiComponent implements Widget, GuiEven
 	private int width;
 	protected boolean isHovered;
 	private boolean visible = true;
+	private boolean isFocused = false;
 
 	protected WidgetBase(Position position, Dimension dimension) {
 		x = position.x();
@@ -31,6 +32,16 @@ public abstract class WidgetBase extends GuiComponent implements Widget, GuiEven
 		height = dimension.height();
 		minecraft = Minecraft.getInstance();
 		font = minecraft.font;
+	}
+
+	@Override
+	public void setFocused(boolean focused) {
+		isFocused = focused;
+	}
+
+	@Override
+	public boolean isFocused() {
+		return isFocused;
 	}
 
 	public void setVisible(boolean visible) {
@@ -63,7 +74,7 @@ public abstract class WidgetBase extends GuiComponent implements Widget, GuiEven
 
 	protected abstract void renderBg(PoseStack matrixStack, Minecraft minecraft, int mouseX, int mouseY);
 
-	protected abstract void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks);
+	public abstract void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks);
 
 	public int getWidth() {
 		return width;
