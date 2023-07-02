@@ -1,7 +1,9 @@
 package net.p3pp3rf1y.sophisticatedcore.extensions.item;
 
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
@@ -40,5 +42,13 @@ public interface SophisticatedItemStack {
      */
     default int getBurnTime(@Nullable RecipeType<?> recipeType) {
         return self().getItem().getBurnTime(self(), recipeType);
+    }
+
+    /**
+     * Called to tick armor in the armor slot. Override to do something
+     */
+    default void onArmorTick(Level level, Player player)
+    {
+        self().getItem().onArmorTick(self(), level, player);
     }
 }
