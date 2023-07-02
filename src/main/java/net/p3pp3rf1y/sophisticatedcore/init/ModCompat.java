@@ -1,5 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.init;
 
+import net.fabricmc.loader.api.FabricLoader;
+import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.compat.CompatModIds;
 import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.JeiCompat;
@@ -22,8 +24,8 @@ public class ModCompat {
 	}
 
 	public static void initCompats() {
-		/*for (Map.Entry<String, Supplier<Callable<ICompat>>> entry : compatFactories.entrySet()) {
-			if (ModList.get().isLoaded(entry.getKey())) {
+		for (Map.Entry<String, Supplier<Callable<ICompat>>> entry : compatFactories.entrySet()) {
+			if (FabricLoader.getInstance().isModLoaded(entry.getKey())) {
 				try {
 					entry.getValue().get().call().setup();
 				}
@@ -31,6 +33,6 @@ public class ModCompat {
 					SophisticatedCore.LOGGER.error("Error instantiating compatibility ", e);
 				}
 			}
-		}*/
+		}
 	}
 }

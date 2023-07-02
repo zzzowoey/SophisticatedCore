@@ -93,13 +93,13 @@ def dependencies(DependencyHandler deps) {
 }
 
 def compat(DependencyHandler deps) {
-//    deps.compileOnly fg.deobf("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
-//    deps.runtimeOnly fg.deobf("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
-//    deps.compileOnly fg.deobf("curse.maven:balm-531761:${balm_cf_file_id}")
-//    deps.runtimeOnly fg.deobf("curse.maven:balm-531761:${balm_cf_file_id}")
-//    deps.compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
-//    deps.compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
-//    deps.runtimeOnly fg.deobf("curse.maven:balm-531761:${balm_cf_file_id}")
+//    deps.modCompileOnly("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
+//    deps.modCompileOnly("curse.maven:balm-531761:${balm_cf_file_id}")
+//    deps.modLocalRuntime("curse.maven:balm-531761:${balm_cf_file_id}")
+//    deps.modCompileOnly("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
+//    deps.modLocalRuntime("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
+//    deps.modCompileOnly("curse.maven:quark-243121:${quark_cf_file_id}")
+//    deps.modLocalRuntime("curse.maven:quark-243121:${quark_cf_file_id}")
 
     deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-base:$cca_version")
     deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-block:$cca_version")
@@ -121,7 +121,7 @@ def recipeViewers(DependencyHandler deps) {
     switch (recipe_viewer.toLowerCase(Locale.ROOT)) {
         case "emi": deps.modLocalRuntime("dev.emi:emi-fabric:$emi_version"); break
         case "jei": deps.modLocalRuntime("mezz.jei:jei-$minecraft_version-fabric:$jei_version"); break
-        case "rei": deps.modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:$rei_version"); break
+        //case "rei": deps.modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:$rei_version"); break
         case "disabled": break
         default: println("Unknown recipe viewer specified: $recipe_viewer. Must be JEI, REI, EMI, or disabled.")
     }
@@ -160,6 +160,7 @@ loom {
             vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"
             vmArg "-Dfabric-api.datagen.modid=$mod_id"
             vmArg "-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}"
+            runDir "run/test_client"
         }
 
         client {
