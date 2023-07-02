@@ -78,20 +78,10 @@ public interface ISlotTracker {
 			return maxAmount;
 		}
 
-		/*		@Override
-		public ItemStack insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, ItemStack stack, boolean simulate) {
-			return stack;
-		}*/
-
 		@Override
 		public long insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
 			return inserter.insertItem(slot, resource, maxAmount, ctx);
 		}
-
-/*		@Override
-		public ItemStack insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, int slot, ItemStack stack, boolean simulate) {
-			return inserter.insertItem(slot, stack, simulate);
-		}*/
 
 		@Override
 		public void registerListeners(Consumer<ItemStackKey> onAddStackKey, Consumer<ItemStackKey> onRemoveStackKey, Runnable onAddFirstEmptySlot, Runnable onRemoveLastEmptySlot) {

@@ -56,10 +56,6 @@ public class NoopStorageWrapper implements IStorageWrapper {
 				protected boolean isAllowed(ItemVariant resource, long amount) {
 					return true;
 				}
-/*				@Override
-				protected boolean isAllowed(ItemStack stack) {
-					return true;
-				}*/
 			};
 		}
 		return inventoryHandler;

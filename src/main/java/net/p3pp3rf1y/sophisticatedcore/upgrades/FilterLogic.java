@@ -141,11 +141,6 @@ public class FilterLogic extends FilterLogicBase {
 			return stack.isEmpty() || (doesNotContain(stack) && isItemValid.test(stack));
 		}
 
-/*		@Override
-		public boolean isItemValid(int slot, ItemStack stack) {
-			return stack.isEmpty() || (doesNotContain(stack) && isItemValid.test(stack));
-		}*/
-
 		private boolean doesNotContain(ItemStack stack) {
 			return !InventoryHelper.hasItem(this, s -> ItemHandlerHelper.canItemStacksStack(s, stack));
 		}

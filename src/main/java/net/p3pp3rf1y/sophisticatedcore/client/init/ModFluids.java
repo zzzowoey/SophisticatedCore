@@ -14,10 +14,5 @@ public class ModFluids {
                 new ResourceLocation(SophisticatedCore.ID, "fluids/xp_still"),
                 new ResourceLocation(SophisticatedCore.ID, "fluids/xp_flowing")
         ));
-
-/*        ClientSpriteRegistryCallback.event(InventoryMenu.BLOCK_ATLAS).register((atlasTexture, registry) -> {
-            registry.register(new ResourceLocation(SophisticatedCore.ID, "fluids/xp_still"));
-            registry.register(new ResourceLocation(SophisticatedCore.ID, "fluids/xp_flowing"));
-        });*/
     }
 }

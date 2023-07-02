@@ -16,7 +16,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.p3pp3rf1y.sophisticatedcore.common.compontents.Components;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
@@ -39,6 +38,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+
+import static net.p3pp3rf1y.sophisticatedcore.common.compontents.Components.ITEM_HANDLER;
 
 public abstract class ControllerBlockEntityBase extends BlockEntity implements SlotExposedStorage, ChunkUnloadListeningBlockEntity {
 	public static final int SEARCH_RANGE = 15;
@@ -594,54 +595,6 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		return remaining;
 	}
 
-	/*protected ItemStack insertItem(ItemStack stack, boolean simulate, boolean insertIntoAnyEmpty) {
-		ItemStackKey stackKey = new ItemStackKey(stack);
-		ItemStack remaining = stack;
-
-		if (stackStorages.containsKey(stackKey)) {
-			Set<BlockPos> positions = stackStorages.get(stackKey);
-			remaining = insertIntoStorages(positions, remaining, simulate);
-			if (remaining.isEmpty()) {
-				return remaining;
-			}
-		}
-
-		if (memorizedItemStorages.containsKey(stack.getItem())) {
-			remaining = insertIntoStorages(memorizedItemStorages.get(stack.getItem()), remaining, simulate);
-			if (remaining.isEmpty()) {
-				return remaining;
-			}
-		}
-		int stackHash = ItemStackKey.getHashCode(stack);
-		if (memorizedStackStorages.containsKey(stackHash)) {
-			remaining = insertIntoStorages(memorizedStackStorages.get(stackHash), remaining, simulate);
-			if (remaining.isEmpty()) {
-				return remaining;
-			}
-		}
-
-		if (filterItemStorages.containsKey(stack.getItem())) {
-			remaining = insertIntoStorages(filterItemStorages.get(stack.getItem()), remaining, simulate);
-			if (remaining.isEmpty()) {
-				return remaining;
-			}
-		}
-
-		return insertIntoAnyEmpty ? insertIntoStorages(emptySlotsStorages, remaining, simulate) : remaining;
-	}
-
-	private ItemStack insertIntoStorages(Set<BlockPos> positions, ItemStack stack, boolean simulate) {
-		ItemStack remaining = stack;
-		for (BlockPos storagePos : positions) {
-			ItemStack finalRemaining = remaining;
-			remaining = getInventoryHandlerValueFromHolder(storagePos, ins -> ins.insertItem(finalRemaining, simulate)).orElse(remaining);
-			if (remaining.isEmpty()) {
-				return ItemStack.EMPTY;
-			}
-		}
-		return remaining;
-	}*/
-
 	@Override
 	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
 		if (isSlotIndexInvalid(slot)) {
@@ -662,23 +615,6 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 	public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
 		throw new NotImplementedException();
 	}
-
-/*	@Nonnull
-	@Override
-	public ItemStack extractItem(int slot, int amount, boolean simulate) {
-		if (isSlotIndexInvalid(slot)) {
-			return ItemStack.EMPTY;
-		}
-
-		int handlerIndex = getIndexForSlot(slot);
-		SlotExposedStorage handler = getHandlerFromIndex(handlerIndex);
-		slot = getSlotFromIndex(slot, handlerIndex);
-		if (validateHandlerSlotIndex(handler, handlerIndex, slot, "extractItem(int slot, int amount, boolean simulate)")) {
-			return handler.extractSlot(slot, amount, simulate);
-		}
-
-		return ItemStack.EMPTY;
-	}*/
 
 	@Override
 	public int getSlotLimit(int slot) {

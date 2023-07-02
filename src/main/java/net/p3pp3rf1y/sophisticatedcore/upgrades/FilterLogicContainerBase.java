@@ -311,11 +311,6 @@ public class FilterLogicContainerBase<T extends FilterLogicBase, S extends Slot>
 			onUpdate.run();
 		}
 
-/*		@Override
-		public void initialize(ItemStack stack) {
-			set(stack);
-		}*/
-
 		@Override
 		public void setChanged() {
 			//noop

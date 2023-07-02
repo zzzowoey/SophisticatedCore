@@ -111,14 +111,6 @@ public class InventoryHelper {
 		return cloned;
 	}
 
-/*	public static SlotExposedStorage cloneInventory(SlotExposedStorage inventory) {
-		SlotExposedStorage cloned = new ItemStackHandler(inventory.getSlots());
-		for (int slot = 0; slot < inventory.getSlots(); slot++) {
-			cloned.insertItem(slot, inventory.getStackInSlot(slot).copy(), false);
-		}
-		return cloned;
-	}*/
-
 	public static long insertIntoInventory(ItemVariant resource, long maxAmount, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
 		if (inventory instanceof IItemHandlerSimpleInserter itemHandlerSimpleInserter) {
 			return maxAmount - itemHandlerSimpleInserter.insert(resource, maxAmount, ctx);
@@ -131,19 +123,6 @@ public class InventoryHelper {
 		}
 		return maxAmount - remaining;
 	}
-
-/*	public static ItemStack insertIntoInventory(ItemStack stack, SlotExposedStorage inventory, boolean simulate) {
-		if (inventory instanceof IItemHandlerSimpleInserter itemHandlerSimpleInserter) {
-			return itemHandlerSimpleInserter.insertItem(stack, simulate);
-		}
-
-		ItemStack remainingStack = stack.copy();
-		int slots = inventory.getSlots();
-		for (int slot = 0; slot < slots && !remainingStack.isEmpty(); slot++) {
-			remainingStack = inventory.insertItem(slot, remainingStack, simulate);
-		}
-		return remainingStack;
-	}*/
 
 	public static long extractFromInventory(Item item, int count, SlotExposedStorage inventory, TransactionContext ctx) {
 		long ret = 0;
@@ -159,24 +138,6 @@ public class InventoryHelper {
 
 		return ret;
 	}
-
-/*	public static ItemStack extractFromInventory(Item item, int count, SlotExposedStorage inventory, boolean simulate) {
-		ItemStack ret = ItemStack.EMPTY;
-		int slots = inventory.getSlots();
-		for (int slot = 0; slot < slots && ret.getCount() < count; slot++) {
-			ItemStack slotStack = inventory.getStackInSlot(slot);
-			if (slotStack.getItem() == item && (ret.isEmpty() || ItemHandlerHelper.canItemStacksStack(ret, slotStack))) {
-				int toExtract = Math.min(slotStack.getCount(), count - ret.getCount());
-				ItemStack extractedStack = inventory.extractItem(slot, toExtract, simulate);
-				if (ret.isEmpty()) {
-					ret = extractedStack;
-				} else {
-					ret.setCount(ret.getCount() + extractedStack.getCount());
-				}
-			}
-		}
-		return ret;
-	}*/
 
 	public static ItemStack simulateExtractFromInventory(ItemStack stack, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
 		try (Transaction transaction = Transaction.openNested(ctx)) {
@@ -205,27 +166,6 @@ public class InventoryHelper {
 
 		return result;
 	}
-
-/*	public static ItemStack extractFromInventory(ItemStack stack, SlotExposedStorage inventory, boolean simulate) {
-		int extractedCount = 0;
-		int slots = inventory.getSlots();
-		for (int slot = 0; slot < slots && extractedCount < stack.getCount(); slot++) {
-			ItemStack slotStack = inventory.getStackInSlot(slot);
-			if (ItemHandlerHelper.canItemStacksStack(stack, slotStack)) {
-				int toExtract = Math.min(slotStack.getCount(), stack.getCount() - extractedCount);
-				extractedCount += inventory.extractItem(slot, toExtract, simulate).getCount();
-			}
-		}
-
-		if (extractedCount == 0) {
-			return ItemStack.EMPTY;
-		}
-
-		ItemStack result = stack.copy();
-		result.setCount(extractedCount);
-
-		return result;
-	}*/
 
 	public static ItemStack runPickupOnPickupResponseUpgrades(Level world, UpgradeHandler upgradeHandler, ItemStack remainingStack, @Nullable TransactionContext ctx) {
 		return runPickupOnPickupResponseUpgrades(world, null, upgradeHandler, remainingStack, ctx);
@@ -338,41 +278,6 @@ public class InventoryHelper {
 		}
 	}
 
-/*	public static void transfer(SlotExposedStorage handlerA, SlotExposedStorage handlerB, Consumer<Supplier<ItemStack>> onInserted) {
-		int slotsA = handlerA.getSlots();
-		for (int slot = 0; slot < slotsA; slot++) {
-			ItemStack slotStack = handlerA.getStackInSlot(slot);
-			if (slotStack.isEmpty()) {
-				continue;
-			}
-
-			int countToTransfer = slotStack.getCount();
-			while (countToTransfer > 0) {
-				ItemStack toInsert = slotStack.copy();
-				toInsert.setCount(Math.min(slotStack.getMaxStackSize(), countToTransfer));
-				ItemStack remainingAfterInsert = insertIntoInventory(toInsert, handlerB, true);
-				if (remainingAfterInsert.getCount() == toInsert.getCount()) {
-					break;
-				}
-				int toExtract = toInsert.getCount() - remainingAfterInsert.getCount();
-
-				ItemStack extractedStack = handlerA.extractItem(slot, toExtract, true);
-				if (extractedStack.isEmpty()) {
-					break;
-				}
-
-				insertIntoInventory(handlerA.extractItem(slot, extractedStack.getCount(), false), handlerB, false);
-
-				onInserted.accept(() -> {
-					ItemStack copiedStack = slotStack.copy();
-					copiedStack.setCount(extractedStack.getCount());
-					return copiedStack;
-				});
-				countToTransfer -= extractedStack.getCount();
-			}
-		}
-	}*/
-
 	public static boolean isEmpty(SlotExposedStorage itemHandler) {
 		int slots = itemHandler.getSlots();
 		for (int slot = 0; slot < slots; slot++) {
@@ -393,15 +298,6 @@ public class InventoryHelper {
 		long extracted = itemHandler.extractSlot(slot, resource, stack.getCount(), null);
 		return resource.toStack((int) extracted);
 	}
-
-/*
-	public static ItemStack getAndRemove(SlotExposedStorage itemHandler, int slot) {
-		if (slot >= itemHandler.getSlots()) {
-			return ItemStack.EMPTY;
-		}
-		return itemHandler.extractItem(slot, itemHandler.getStackInSlot(slot).getCount(), false);
-	}
-*/
 
 	public static void insertOrDropItem(Player player, ItemStack stack, SlotExposedStorage... inventories) {
 		ItemVariant resource = ItemVariant.of(stack);
@@ -527,19 +423,6 @@ public class InventoryHelper {
 			}
 		});
 	}
-
-/*	public static void dropItems(ItemStackHandler inventoryHandler, Level level, double x, double y, double z) {
-		iterate(inventoryHandler, (slot, stack) -> {
-			if (stack.isEmpty()) {
-				return;
-			}
-			ItemStack extractedStack = inventoryHandler.extractItem(slot, stack.getCount(), false);
-			while (!extractedStack.isEmpty()) {
-				Containers.dropItemStack(level, x, y, z, extractedStack.split(Math.min(extractedStack.getCount(), extractedStack.getMaxStackSize())));
-				inventoryHandler.setStackInSlot(slot, ItemStack.EMPTY);
-			}
-		});
-	}*/
 
 	public static int getAnalogOutputSignal(ITrackedContentsItemHandler handler) {
 		AtomicDouble totalFilled = new AtomicDouble(0);

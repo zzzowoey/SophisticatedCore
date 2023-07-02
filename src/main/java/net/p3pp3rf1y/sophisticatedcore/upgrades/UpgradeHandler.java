@@ -64,11 +64,6 @@ public class UpgradeHandler extends ItemStackHandler {
 		return amount == 0 || resource.getItem() instanceof IUpgradeItem;
 	}
 
-/*	@Override
-	public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-		return stack.isEmpty() || stack.getItem() instanceof IUpgradeItem;
-	}*/
-
 	@Override
 	protected void onContentsChanged(int slot) {
 		super.onContentsChanged(slot);
@@ -149,17 +144,6 @@ public class UpgradeHandler extends ItemStackHandler {
 		return inserted;
 	}
 
-/*	@Nonnull
-	@Override
-	public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-		ItemStack result = super.insertItem(slot, stack, simulate);
-		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && result.isEmpty() && !stack.isEmpty()) {
-			onUpgradeAdded(slot);
-		}
-
-		return result;
-	}*/
-
 	private void onUpgradeAdded(int slot) {
 		Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
 		if (wrappers.containsKey(slot)) {
@@ -213,20 +197,6 @@ public class UpgradeHandler extends ItemStackHandler {
 		}
 		return super.extractSlot(slot, resource, maxAmount, transaction);
 	}
-
-/*	@Override
-	public ItemStack extractItem(int slot, int amount, boolean simulate) {
-		if (!simulate && Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
-			ItemStack slotStack = getStackInSlot(slot);
-			if (persistent && !slotStack.isEmpty() && amount == 1) {
-				Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
-				if (wrappers.containsKey(slot)) {
-					wrappers.get(slot).onBeforeRemoved();
-				}
-			}
-		}
-		return super.extractItem(slot, amount, simulate);
-	}*/
 
 	private void initializeTypeWrappers() {
 		if (typeWrappersInitialized) {
@@ -385,16 +355,6 @@ public class UpgradeHandler extends ItemStackHandler {
 		saveInventory();
 		setRenderUpgradeItems();
 	}
-
-/*	public void increaseSize(int diff) {
-		NonNullList<ItemStack> previousStacks = stacks;
-		stacks = NonNullList.withSize(previousStacks.size() + diff, ItemStack.EMPTY);
-		for (int slot = 0; slot < previousStacks.size(); slot++) {
-			stacks.set(slot, previousStacks.get(slot));
-		}
-		saveInventory();
-		setRenderUpgradeItems();
-	}*/
 
 	@Override
 	public int getSlotLimit(int slot) {

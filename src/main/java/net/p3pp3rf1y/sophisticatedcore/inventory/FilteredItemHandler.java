@@ -64,21 +64,6 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 		return 0;
 	}
 
-	/*	@Nonnull
-	@Override
-	public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-		if (inputFilters.isEmpty()) {
-			return inventoryHandler.insertItem(slot, stack, simulate);
-		}
-
-		for (FilterLogic filter : inputFilters) {
-			if (filter.matchesFilter(stack)) {
-				return inventoryHandler.insertItem(slot, stack, simulate);
-			}
-		}
-		return stack;
-	}*/
-
 	@Override
 	public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
 		throw new NotImplementedException();
@@ -98,21 +83,6 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 		return 0;
 	}
 
-/*	@Nonnull
-	@Override
-	public ItemStack extractItem(int slot, int amount, boolean simulate) {
-		if (outputFilters.isEmpty()) {
-			return inventoryHandler.extractItem(slot, amount, simulate);
-		}
-
-		for (FilterLogic filter : outputFilters) {
-			if (filter.matchesFilter(getStackInSlot(slot))) {
-				return inventoryHandler.extractItem(slot, amount, simulate);
-			}
-		}
-		return ItemStack.EMPTY;
-	}*/
-
 	@Override
 	public int getSlotLimit(int slot) {
 		return inventoryHandler.getSlotLimit(slot);
@@ -122,11 +92,6 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 	public boolean isItemValid(int slot, ItemVariant resource, long amount) {
 		return inventoryHandler.isItemValid(slot, resource, amount);
 	}
-
-/*	@Override
-	public boolean isItemValid(int slot, ItemStack stack) {
-		return inventoryHandler.isItemValid(slot, stack);
-	}*/
 
 	public static class Modifiable extends FilteredItemHandler<ITrackedContentsItemHandler> implements ITrackedContentsItemHandler {
 		public Modifiable(ITrackedContentsItemHandler inventoryHandler, List<FilterLogic> inputFilters, List<FilterLogic> outputFilters) {
@@ -152,20 +117,6 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 
 			return 0;
 		}
-
-/*		@Override
-		public ItemStack insertItem(ItemStack stack, boolean simulate) {
-			if (inputFilters.isEmpty()) {
-				return inventoryHandler.insertItem(stack, simulate);
-			}
-
-			for (FilterLogic filter : inputFilters) {
-				if (filter.matchesFilter(stack)) {
-					return inventoryHandler.insertItem(stack, simulate);
-				}
-			}
-			return stack;
-		}*/
 
 		@Override
 		public Set<ItemStackKey> getTrackedStacks() {

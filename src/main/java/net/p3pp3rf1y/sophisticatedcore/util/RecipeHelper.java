@@ -264,7 +264,6 @@ public class RecipeHelper {
 	public static class CompactingResult {
 		public static final CompactingResult EMPTY = new CompactingResult(ItemVariant.blank(), 0, Collections.emptyList());
 
-/*		private final ItemStack result;*/
 		private final ItemVariant result;
 		private final long count;
 		private final List<ItemStack> remainingItems;
@@ -274,15 +273,6 @@ public class RecipeHelper {
 			this.count = count;
 			this.remainingItems = remainingItems;
 		}
-
-/*		private CompactingResult(ItemStack result, List<ItemStack> remainingItems) {
-			this.result = result;
-			this.remainingItems = remainingItems;
-		}*/
-
-/*		public ItemStack getResult() {
-			return result;
-		}*/
 
 		public ItemVariant getResult() {
 			return result;

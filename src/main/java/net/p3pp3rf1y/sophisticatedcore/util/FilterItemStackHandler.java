@@ -20,21 +20,10 @@ public class FilterItemStackHandler extends ItemStackHandler {
 		return 0;
 	}
 
-/*	@Override
-	public ItemStack extractItem(int slot, int amount, boolean simulate) {
-		return ItemStack.EMPTY;
-	}*/
-
 	@Override
 	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
 		return 0;
 	}
-
-/*	@Override
-	public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-		return ItemStack.EMPTY;
-	}*/
-
 	@Override
 	protected void onContentsChanged(int slot) {
 		super.onContentsChanged(slot);

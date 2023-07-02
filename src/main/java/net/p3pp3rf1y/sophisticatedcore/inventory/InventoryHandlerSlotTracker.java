@@ -237,23 +237,6 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		return (int)maxAmount - remaining;
 	}
 
-/*	@Override
-	public ItemStack insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, ItemStack stack, boolean simulate) {
-		ItemStackKey stackKey = new ItemStackKey(stack);
-		ItemStack remainingStack = handleOverflow(overflowHandler, stackKey, stack);
-		if (remainingStack.isEmpty()) {
-			return remainingStack;
-		}
-		remainingStack = insertIntoSlotsThatMatchStack(inserter, remainingStack, simulate, stackKey);
-		if (!remainingStack.isEmpty()) {
-			remainingStack = insertIntoEmptySlots(inserter, remainingStack, simulate);
-		}
-		if (!remainingStack.isEmpty()) {
-			remainingStack = handleOverflow(overflowHandler, stackKey, remainingStack);
-		}
-		return remainingStack;
-	}*/
-
 	@Override
 	public long insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
 		ItemStackKey stackKey = new ItemStackKey(resource);
@@ -285,36 +268,6 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		return (int)maxAmount - remaining;
 	}
 
-/*	@Override
-	public ItemStack insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, int slot, ItemStack stack, boolean simulate) {
-		ItemStackKey stackKey = new ItemStackKey(stack);
-		ItemStack remainingStack = stack;
-		remainingStack = handleOverflow(overflowHandler, stackKey, remainingStack);
-		if (remainingStack.isEmpty()) {
-			return remainingStack;
-		}
-
-		ItemStack existing = itemHandler.getStackInSlot(slot);
-		boolean wasEmpty = existing.isEmpty();
-
-		boolean doesNotMatchCurrentSlot = !ItemHandlerHelper.canItemStacksStack(stack, existing);
-		if (wasEmpty || doesNotMatchCurrentSlot) {
-			remainingStack = insertIntoSlotsThatMatchStack(inserter, remainingStack, simulate, stackKey);
-		}
-		if (!remainingStack.isEmpty() && doesNotMatchCurrentSlot) {
-			remainingStack = insertIntoEmptySlots(inserter, remainingStack, simulate);
-		}
-		if (!remainingStack.isEmpty() && (!emptySlots.contains(slot) || shouldInsertIntoEmpty.getAsBoolean())) {
-			remainingStack = inserter.insertItem(slot, remainingStack, simulate);
-		}
-
-		if (!remainingStack.isEmpty()) {
-			remainingStack = handleOverflow(overflowHandler, stackKey, remainingStack);
-		}
-
-		return remainingStack;
-	}*/
-
 	@Override
 	public void registerListeners(Consumer<ItemStackKey> onAddStackKey, Consumer<ItemStackKey> onRemoveStackKey, Runnable onAddFirstEmptySlot, Runnable onRemoveLastEmptySlot) {
 		this.onAddStackKey = onAddStackKey;
@@ -342,13 +295,6 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		return (int)maxAmount - remainingStack.getCount();
 	}
 
-/*	private ItemStack handleOverflow(UnaryOperator<ItemStack> overflowHandler, ItemStackKey stackKey, ItemStack remainingStack) {
-		if (fullStackSlots.containsKey(stackKey) && !fullStackSlots.get(stackKey).isEmpty()) {
-			remainingStack = overflowHandler.apply(remainingStack);
-		}
-		return remainingStack;
-	}*/
-
 	private long insertIntoSlotsThatMatchStack(IItemHandlerInserter inserter, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx, ItemStackKey stackKey) {
 		long remaining = maxAmount;
 
@@ -367,25 +313,6 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		}
 		return (int)maxAmount - remaining;
 	}
-
-/*	private ItemStack insertIntoSlotsThatMatchStack(IItemHandlerInserter inserter, ItemStack stack, boolean simulate, ItemStackKey stackKey) {
-		ItemStack remainingStack = stack;
-
-		Set<Integer> slots = partiallyFilledStackSlots.get(stackKey);
-		int sizeBefore = slots == null ? 0 : slots.size();
-		int i = 0;
-		// Always taking first element here and iterating while not empty as iterating using iterator would produce CME due to void/compacting reacting to inserts
-		// and going into this logic as well and because of that causing collection to be updated outside of first level iterator. The increment is here just
-		// in case updating cache fails to prevent infinite loop
-		while (partiallyFilledStackSlots.get(stackKey) != null && !partiallyFilledStackSlots.get(stackKey).isEmpty() && i++ < sizeBefore) {
-			int matchingSlot = partiallyFilledStackSlots.get(stackKey).iterator().next();
-			remainingStack = inserter.insertItem(matchingSlot, remainingStack, simulate);
-			if (remainingStack.isEmpty()) {
-				break;
-			}
-		}
-		return remainingStack;
-	}*/
 
 	private long insertIntoEmptySlots(IItemHandlerInserter inserter, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
 		long remaining = maxAmount;
@@ -417,36 +344,6 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		return (int)maxAmount - remaining;
 	}
 
-/*	private ItemStack insertIntoEmptySlots(IItemHandlerInserter inserter, ItemStack stack, boolean simulate) {
-		ItemStack remainingStack = stack;
-		remainingStack = insertIntoEmptyMemorySlots(inserter, simulate, remainingStack);
-		remainingStack = insertIntoEmptyFilterSlots(inserter, simulate, remainingStack);
-		if (shouldInsertIntoEmpty.getAsBoolean() && !remainingStack.isEmpty()) {
-			int sizeBefore = emptySlots.size();
-			int i = 0;
-			// Always taking first element here and iterating while not empty as iterating using iterator would produce CME due to void/compacting reacting to inserts
-			// and going into this logic as well and because of that causing collection to be updated outside of first level iterator. The increment is here just
-			// in case updating cache fails to prevent infinite loop
-			while (!emptySlots.isEmpty() && i++ < sizeBefore) {
-				Iterator<Integer> it = emptySlots.iterator();
-				int slot = it.next();
-				while (memorySettings.isSlotSelected(slot)) {
-					if (!it.hasNext()) {
-						return remainingStack;
-					}
-					slot = it.next();
-				}
-
-				remainingStack = inserter.insertItem(slot, remainingStack, simulate);
-				if (remainingStack.isEmpty()) {
-					break;
-				}
-			}
-		}
-
-		return remainingStack;
-	}*/
-
 	private long insertIntoEmptyFilterSlots(IItemHandlerInserter inserter, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
 		Item item = resource.getItem();
 		long remaining = maxAmount;
@@ -463,21 +360,6 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 
 		return (int)maxAmount - remaining;
 	}
-
-/*	private ItemStack insertIntoEmptyFilterSlots(IItemHandlerInserter inserter, boolean simulate, ItemStack remainingStack) {
-		Item item = remainingStack.getItem();
-		if (filterItemSlots.containsKey(item)) {
-			for (int filterSlot : filterItemSlots.get(item)) {
-				if (emptySlots.contains(filterSlot)) {
-					remainingStack = inserter.insertItem(filterSlot, remainingStack, simulate);
-					if (remainingStack.isEmpty()) {
-						break;
-					}
-				}
-			}
-		}
-		return remainingStack;
-	}*/
 
 	private long insertIntoEmptyMemorySlots(IItemHandlerInserter inserter, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
 		Map<Item, Set<Integer>> memoryFilterItemSlots = memorySettings.getFilterItemSlots();
@@ -510,36 +392,4 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		}
 		return (int)maxAmount - remaining;
 	}
-
-/*	private ItemStack insertIntoEmptyMemorySlots(IItemHandlerInserter inserter, boolean simulate, ItemStack stack) {
-		ItemStack remainingStack = stack;
-		Map<Item, Set<Integer>> memoryFilterItemSlots = memorySettings.getFilterItemSlots();
-		Item item = remainingStack.getItem();
-		if (memoryFilterItemSlots.containsKey(item)) {
-			for (int memorySlot : memoryFilterItemSlots.get(item)) {
-				if (emptySlots.contains(memorySlot)) {
-					remainingStack = inserter.insertItem(memorySlot, remainingStack, simulate);
-					if (remainingStack.isEmpty()) {
-						break;
-					}
-				}
-			}
-		}
-
-		Map<Integer, Set<Integer>> memoryFilterStackSlots = memorySettings.getFilterStackSlots();
-		if (!memoryFilterStackSlots.isEmpty()) {
-			int stackHash = ItemStackKey.getHashCode(remainingStack);
-			if (memoryFilterStackSlots.containsKey(stackHash)) {
-				for (int memorySlot : memoryFilterStackSlots.get(stackHash)) {
-					if (emptySlots.contains(memorySlot)) {
-						remainingStack = inserter.insertItem(memorySlot, remainingStack, simulate);
-						if (remainingStack.isEmpty()) {
-							break;
-						}
-					}
-				}
-			}
-		}
-		return remainingStack;
-	}*/
 }
