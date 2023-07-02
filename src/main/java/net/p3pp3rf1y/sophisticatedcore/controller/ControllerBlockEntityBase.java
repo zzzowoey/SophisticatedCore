@@ -16,8 +16,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.p3pp3rf1y.sophisticatedcore.common.compontents.Components;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
-import net.p3pp3rf1y.sophisticatedcore.SophisticatedCoreComponents;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
@@ -459,7 +459,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 	@Override
 	public void invalidateCaps() {
 		super.invalidateCaps();
-		getComponent(SophisticatedCoreComponents.ITEM_HANDLER).invalidate();
+		getComponent(ITEM_HANDLER).invalidate();
 	}
 
 	@Override

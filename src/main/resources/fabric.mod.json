@@ -33,7 +33,7 @@
       "net.p3pp3rf1y.sophisticatedcore.compat.jei.CorePlugin"
     ],
     "cardinal-components": [
-      "net.p3pp3rf1y.sophisticatedcore.SophisticatedCoreComponents"
+      "net.p3pp3rf1y.sophisticatedcore.common.compontents.Components"
     ]
   },
 

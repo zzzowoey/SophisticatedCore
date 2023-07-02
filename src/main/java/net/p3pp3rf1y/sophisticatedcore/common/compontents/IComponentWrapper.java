@@ -4,9 +4,7 @@ import dev.onyxstudios.cca.api.v3.component.Component;
 import dev.onyxstudios.cca.api.v3.component.TransientComponent;
 import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
 
-import javax.annotation.Nullable;
-
-import static net.p3pp3rf1y.sophisticatedcore.SophisticatedCoreComponents.ITEM_HANDLER;
+import static net.p3pp3rf1y.sophisticatedcore.common.compontents.Components.ITEM_HANDLER;
 
 public interface IComponentWrapper<T> extends Component {
     IComponentWrapper<Void> EMPTY = new EmptyComponentWrapper<>();
@@ -23,8 +21,9 @@ public interface IComponentWrapper<T> extends Component {
         return (IComponentWrapper<X>) this;
     }
 
-    @Nullable
-    T get();
+    default T get() {
+        return getWrapped().getValueUnsafer();
+    }
 
     LazyOptional<T> getWrapped();
 
