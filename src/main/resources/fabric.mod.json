@@ -24,10 +24,10 @@
       "net.p3pp3rf1y.sophisticatedcore.SophisticatedCore"
     ],
     "client": [
-      "net.p3pp3rf1y.sophisticatedcore.SophisticatedCoreClient"
+      "net.p3pp3rf1y.sophisticatedcore.client.SophisticatedCoreClient"
     ],
     "fabric-datagen": [
-      "net.p3pp3rf1y.sophisticatedcore.SophisticatedCoreData"
+      "net.p3pp3rf1y.sophisticatedcore.data.SophisticatedCoreData"
     ],
     "jei_mod_plugin": [
       "net.p3pp3rf1y.sophisticatedcore.compat.jei.CorePlugin"

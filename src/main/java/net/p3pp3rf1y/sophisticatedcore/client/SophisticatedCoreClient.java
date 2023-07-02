@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedcore;
+package net.p3pp3rf1y.sophisticatedcore.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.fabricators_of_create.porting_lib.util.ScreenHelper;
