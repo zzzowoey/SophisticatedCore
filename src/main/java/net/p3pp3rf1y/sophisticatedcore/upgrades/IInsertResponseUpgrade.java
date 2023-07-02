@@ -11,5 +11,5 @@ public interface IInsertResponseUpgrade {
 	long onBeforeInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx);
 //	ItemStack onBeforeInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, ItemStack stack, boolean simulate);
 
-	void onAfterInsert(IItemHandlerSimpleInserter inventoryHandler, int slot);
+	void onAfterInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, @Nullable TransactionContext ctx);
 }

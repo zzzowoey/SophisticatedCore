@@ -80,7 +80,7 @@ public interface IStorageWrapper {
 		return Optional.empty();
 	}*/
 
-	default Optional<EnergyStorage> getEnergyStorage() {return Optional.empty();}
+	default Optional<EnergyStorage> getEnergyStorage() { return Optional.empty(); }
 
 	default ItemStack getWrappedStorageStack() {
 		return ItemStack.EMPTY;

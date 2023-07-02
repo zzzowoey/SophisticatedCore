@@ -166,7 +166,7 @@ loom {
             client()
             ideConfigGenerated = true
 
-            property "mixin.env.disableRefMap", "true"
+            //property "mixin.env.disableRefMap", "true"
             //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             source sourceSets.main
             runDir "run/test_client"
@@ -175,7 +175,7 @@ loom {
             server()
             ideConfigGenerated = true
 
-            property "mixin.env.disableRefMap", "true"
+            //property "mixin.env.disableRefMap", "true"
             //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             source sourceSets.main
             runDir "run/test_server"

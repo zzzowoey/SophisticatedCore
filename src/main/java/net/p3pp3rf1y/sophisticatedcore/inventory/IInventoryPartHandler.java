@@ -139,7 +139,7 @@ public interface IInventoryPartHandler {
 		}*/
 
 		@Override
-		public long extractItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext transaction) {
+		public long extractItem(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
 			return parent.extractItemInternal(slot, resource, maxAmount, transaction);
 		}
 
@@ -149,7 +149,7 @@ public interface IInventoryPartHandler {
 		}*/
 
 		@Override
-		public long insertItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext transaction, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
+		public long insertItem(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
 			return insertSuper.apply(slot, resource, maxAmount, transaction);
 		}
 

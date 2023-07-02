@@ -21,15 +21,15 @@ public class SyncSlotStackMessage  extends SimplePacketBase{
 	}
 
 	public SyncSlotStackMessage(FriendlyByteBuf buffer) {
-		this(buffer.readInt(), buffer.readVarInt(), buffer.readShort(), buffer.readItem());
+		this(buffer.readInt(), buffer.readVarInt(), buffer.readShort(), PacketHelper.readItemStack(buffer));
 	}
 
 	@Override
 	public void write(FriendlyByteBuf buffer) {
-		buffer.writeByte(windowId);
+		buffer.writeInt(windowId);
 		buffer.writeVarInt(stateId);
 		buffer.writeShort(slotNumber);
-		buffer.writeItem(stack);
+		PacketHelper.writeItemStack(stack, buffer);
 	}
 
 	@Override

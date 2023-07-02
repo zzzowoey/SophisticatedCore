@@ -68,8 +68,8 @@ public class MagnetUpgradeWrapper extends UpgradeWrapperBase<MagnetUpgradeWrappe
 		}
 
 		ItemVariant resource = ItemVariant.of(stack);
-		long result = storageWrapper.getInventoryForUpgradeProcessing().insert(resource, stack.getCount(), ctx);
-		return resource.toStack((int) result);
+		long inserted = storageWrapper.getInventoryForUpgradeProcessing().insert(resource, stack.getCount(), ctx);
+		return resource.toStack(stack.getCount() - (int) inserted);
 	}
 
 	@Override

@@ -121,7 +121,7 @@ public class InventoryHelper {
 
 	public static long insertIntoInventory(ItemVariant resource, long maxAmount, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
 		if (inventory instanceof IItemHandlerSimpleInserter itemHandlerSimpleInserter) {
-			return itemHandlerSimpleInserter.insert(resource, maxAmount, ctx);
+			return maxAmount - itemHandlerSimpleInserter.insert(resource, maxAmount, ctx);
 		}
 
 		long remaining = maxAmount;
@@ -129,7 +129,7 @@ public class InventoryHelper {
 		for (int slot = 0; slot < slots && remaining > 0; slot++) {
 			remaining -= inventory.insertSlot(slot, resource, remaining, ctx);
 		}
-		return remaining;
+		return maxAmount - remaining;
 	}
 
 /*	public static ItemStack insertIntoInventory(ItemStack stack, SlotExposedStorage inventory, boolean simulate) {
@@ -145,7 +145,7 @@ public class InventoryHelper {
 		return remainingStack;
 	}*/
 
-	public static long extractFromInventory(Item item, int count, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
+	public static long extractFromInventory(Item item, int count, SlotExposedStorage inventory, TransactionContext ctx) {
 		long ret = 0;
 		int slots = inventory.getSlots();
 		for (int slot = 0; slot < slots && ret < count; slot++) {
@@ -241,7 +241,7 @@ public class InventoryHelper {
 				remainingStack = pickupUpgrade.pickup(world, remainingStack, pickupTransaction);
 
 				ItemStack finalRemainingStack = remainingStack;
-				TransactionCallback.onSuccess(ctx, () -> {
+				TransactionCallback.onSuccess(pickupTransaction, () -> {
 					if (player != null && finalRemainingStack.getCount() != countBeforePickup) {
 						playPickupSound(world, player);
 					}

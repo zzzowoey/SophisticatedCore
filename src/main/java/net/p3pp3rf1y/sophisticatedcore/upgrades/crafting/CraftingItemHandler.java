@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.upgrades.crafting;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
@@ -58,7 +59,11 @@ public class CraftingItemHandler extends CraftingContainer {
 	public ItemStack removeItem(int index, int count) {
 		ItemVariant resource = ItemVariant.of(supplyInventory.get().getStackInSlot(index));
 
-		long amount = supplyInventory.get().extractSlot(index, resource, count, null);
+		long amount;
+		try (Transaction ctx = Transaction.openOuter()) {
+			amount = supplyInventory.get().extractSlot(index, resource, count, ctx);
+			ctx.commit();
+		}
 		if (amount > 0) {
 			onCraftingMatrixChanged.accept(this);
 		}

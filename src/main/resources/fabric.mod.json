@@ -31,6 +31,9 @@
     ],
     "jei_mod_plugin": [
       "net.p3pp3rf1y.sophisticatedcore.compat.jei.CorePlugin"
+    ],
+    "cardinal-components": [
+      "net.p3pp3rf1y.sophisticatedcore.SophisticatedCoreComponents"
     ]
   },
 
@@ -44,6 +47,11 @@
   },
 
   "custom": {
+    "cardinal-components": [
+      "sophisticatedcore:item_handler_component",
+      "sophisticatedcore:fluid_handler_component",
+      "sophisticatedcore:energy_component"
+    ],
     "loom:injected_interfaces": {
       "net/minecraft/class_465": ["net/p3pp3rf1y/sophisticatedcore/extensions/client/gui/screens/inventory/SophisticatedAbstractContainerScreen"],
       "net/minecraft/class_1735": ["net/p3pp3rf1y/sophisticatedcore/extensions/inventory/SophisticatedSlot"],

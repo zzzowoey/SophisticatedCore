@@ -6,6 +6,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 
 import java.util.List;
 
@@ -23,13 +24,13 @@ public class SyncContainerStacksMessage extends SimplePacketBase {
 	}
 
 	public SyncContainerStacksMessage(FriendlyByteBuf buffer) {
-		this.windowId = buffer.readUnsignedByte();
+		this.windowId = buffer.readByte();
 		this.stateId = buffer.readVarInt();
 		int slots = buffer.readShort();
 		this.itemStacks = NonNullList.withSize(slots, ItemStack.EMPTY);
 
 		for (int j = 0; j < slots; ++j) {
-			this.itemStacks.set(j, buffer.readItem());
+			this.itemStacks.set(j, PacketHelper.readItemStack(buffer));
 		}
 
 		this.carriedStack = buffer.readItem();
@@ -42,7 +43,7 @@ public class SyncContainerStacksMessage extends SimplePacketBase {
 		buffer.writeShort(itemStacks.size());
 
 		for (ItemStack itemstack : itemStacks) {
-			buffer.writeItem(itemstack);
+			PacketHelper.writeItemStack(itemstack, buffer);
 		}
 		buffer.writeItem(carriedStack);
 	}

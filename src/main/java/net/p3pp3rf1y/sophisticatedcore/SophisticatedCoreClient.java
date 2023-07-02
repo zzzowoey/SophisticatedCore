@@ -22,6 +22,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.client.init.ModFluids;
 import net.p3pp3rf1y.sophisticatedcore.client.init.ModParticles;
+import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.StorageSoundHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 
@@ -38,18 +39,7 @@ public class SophisticatedCoreClient implements ClientModInitializer {
         ServerWorldEvents.UNLOAD.register(StorageSoundHandler::onWorldUnload);
         ClientTickEvents.START_CLIENT_TICK.register(StorageSoundHandler::tick);
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            RecipeHelper.setWorld(client.level);
-        });
-
-/*        ClientSpriteRegistryCallback.event(InventoryMenu.BLOCK_ATLAS).register((atlasTexture, registry) -> {
-            registry.register(StorageContainerMenuBase.EMPTY_UPGRADE_SLOT_BACKGROUND);
-            registry.register(StorageContainerMenuBase.INACCESSIBLE_SLOT_BACKGROUND.getSecond());
-            registry.register(TankUpgradeContainer.EMPTY_TANK_INPUT_SLOT_BACKGROUND);
-            registry.register(TankUpgradeContainer.EMPTY_TANK_OUTPUT_SLOT_BACKGROUND);
-            registry.register(BatteryUpgradeContainer.EMPTY_BATTERY_INPUT_SLOT_BACKGROUND);
-            registry.register(BatteryUpgradeContainer.EMPTY_BATTERY_OUTPUT_SLOT_BACKGROUND);
-        });*/
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> RecipeHelper.setWorld(client.level));
 
         ScreenEvents.AFTER_INIT.register((Minecraft client, Screen screen, int windowWidth, int windowHeight) -> {
             if (!(screen instanceof AbstractContainerScreen<?> containerGui) || screen instanceof CreativeModeInventoryScreen || client.player == null) {
@@ -58,12 +48,13 @@ public class SophisticatedCoreClient implements ClientModInitializer {
 
             ScreenEvents.afterRender(screen).register(SophisticatedCoreClient::onDrawScreen);
         });
+
+        PacketHandler.getChannel().initClientListener();
     }
 
     private static void onDrawScreen(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float tickDelta) {
         Minecraft mc = ScreenHelper.getClient(screen);
         AbstractContainerScreen<?> containerGui = (AbstractContainerScreen<?>)screen;
-
 
         AbstractContainerMenu menu = containerGui.getMenu();
         ItemStack held = menu.getCarried();

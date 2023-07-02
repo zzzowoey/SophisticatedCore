@@ -246,8 +246,8 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 		slotLimit = slotLimitOverride.get();
 	}
 
-	public long extractItemInternal(int slot, ItemVariant resource, long amount, @Nullable TransactionContext ctx) {
-		long extracted =  super.extractSlot(slot, resource, amount, ctx);
+	public long extractItemInternal(int slot, ItemVariant resource, long amount, TransactionContext ctx) {
+		long extracted = super.extractSlot(slot, resource, amount, ctx);
 		if (ctx != null) TransactionCallback.onSuccess(ctx, () -> {
 			slotTracker.removeAndSetSlotIndexes(this, slot, getSlotStack(slot));
 			onContentsChanged(slot);
@@ -285,7 +285,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 
 	@Override
 	@Nonnull
-	public long extractSlot(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
+	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
 		return inventoryPartitioner.getPartBySlot(slot).extractItem(slot, resource, maxAmount, ctx);
 	}
 
@@ -366,26 +366,23 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 
 	private long insertItemInternal(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
 		try (Transaction nested = Transaction.openNested(ctx)) {
-			long inserted = runOnBeforeInsert(slot, resource, maxAmount, nested, this, storageWrapper);
-			if (inserted <= 0) {
+			long remaining = runOnBeforeInsert(slot, resource, maxAmount, nested, this, storageWrapper);
+			if (remaining <= 0) {
 				nested.commit();
+				return maxAmount;
+			}
+
+			remaining -= inventoryPartitioner.getPartBySlot(slot).insertItem(slot, resource, maxAmount, nested, super::insertSlot);
+			slotTracker.removeAndSetSlotIndexes(this, slot, getStackInSlot(slot));
+			TransactionCallback.onFail(nested, () -> slotTracker.removeAndSetSlotIndexes(this, slot, getStackInSlot(slot)));
+
+			if (remaining == maxAmount) {
 				return 0;
-			}
-
-			inserted = inventoryPartitioner.getPartBySlot(slot).insertItem(slot, resource, maxAmount, nested, super::insertSlot);
-
-			if (ctx != null) {
-				TransactionCallback.onSuccess(ctx, () -> slotTracker.removeAndSetSlotIndexes(this, slot, getStackInSlot(slot)));
-			}
-
-			if (inserted == maxAmount) {
-				nested.commit();
-				return inserted;
 			}
 
 			runOnAfterInsert(slot, nested, this, storageWrapper);
 			nested.commit();
-			return inserted;
+			return maxAmount - remaining;
 		}
 	}
 
@@ -421,9 +418,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	}
 
 	private void runOnAfterInsert(int slot, @Nullable TransactionContext ctx, IItemHandlerSimpleInserter handler, IStorageWrapper storageWrapper) {
-		if (ctx != null) {
-			TransactionCallback.onSuccess(ctx, () -> storageWrapper.getUpgradeHandler().getWrappersThatImplementFromMainStorage(IInsertResponseUpgrade.class).forEach(u -> u.onAfterInsert(handler, slot)));
-		}
+		storageWrapper.getUpgradeHandler().getWrappersThatImplementFromMainStorage(IInsertResponseUpgrade.class).forEach(u -> u.onAfterInsert(handler, slot, ctx));
 	}
 
 /*	private void runOnAfterInsert(int slot, boolean simulate, IItemHandlerSimpleInserter handler, IStorageWrapper storageWrapper) {
@@ -434,14 +429,14 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 
 	private long runOnBeforeInsert(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx, IItemHandlerSimpleInserter handler, IStorageWrapper storageWrapper) {
 		List<IInsertResponseUpgrade> wrappers = storageWrapper.getUpgradeHandler().getWrappersThatImplementFromMainStorage(IInsertResponseUpgrade.class);
-		long remaining = maxAmount;
+		long toInsert = maxAmount;
 		for (IInsertResponseUpgrade upgrade : wrappers) {
-			remaining = upgrade.onBeforeInsert(handler, slot, resource, remaining, ctx);
-			if (remaining <= 0) {
+			toInsert = upgrade.onBeforeInsert(handler, slot, resource, toInsert, ctx);
+			if (toInsert <= 0) {
 				return 0;
 			}
 		}
-		return remaining;
+		return toInsert;
 	}
 
 /*	private ItemStack runOnBeforeInsert(int slot, ItemStack stack, boolean simulate, IItemHandlerSimpleInserter handler, IStorageWrapper storageWrapper) {

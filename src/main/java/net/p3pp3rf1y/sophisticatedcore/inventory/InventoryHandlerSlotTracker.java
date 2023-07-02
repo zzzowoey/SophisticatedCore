@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedcore.inventory;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
@@ -220,17 +221,17 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		ItemStackKey stackKey = new ItemStackKey(resource);
 
 		long remaining = maxAmount;
-		remaining = handleOverflow(overflowHandler, stackKey, resource, remaining);
+		remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);
 		if (remaining <= 0) {
 			return 0;
 		}
 
-		remaining = insertIntoSlotsThatMatchStack(inserter, resource, remaining, ctx, stackKey);
-		if (remaining <= 0) {
-			remaining = insertIntoEmptySlots(inserter, resource, remaining, ctx);
+		remaining -= insertIntoSlotsThatMatchStack(inserter, resource, remaining, ctx, stackKey);
+		if (remaining > 0) {
+			remaining -= insertIntoEmptySlots(inserter, resource, remaining, ctx);
 		}
-		if (remaining <= 0) {
-			remaining = handleOverflow(overflowHandler, stackKey, resource, remaining);
+		if (remaining > 0) {
+			remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);
 		}
 
 		return (int)maxAmount - remaining;
@@ -258,7 +259,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		ItemStackKey stackKey = new ItemStackKey(resource);
 
 		long remaining = maxAmount;
-		remaining = handleOverflow(overflowHandler, stackKey, resource, remaining);
+		remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);
 		if (remaining <= 0) {
 			return 0;
 		}
@@ -268,17 +269,17 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 
 		boolean doesNotMatchCurrentSlot = !ItemHandlerHelper.canItemStacksStack(resource.toStack((int) remaining), existing);
 		if (wasEmpty || doesNotMatchCurrentSlot) {
-			remaining = insertIntoSlotsThatMatchStack(inserter, resource, remaining, ctx, stackKey);
+			remaining -= insertIntoSlotsThatMatchStack(inserter, resource, remaining, ctx, stackKey);
 		}
-		if (remaining <= 0 && doesNotMatchCurrentSlot) {
-			remaining = insertIntoEmptySlots(inserter, resource, remaining, ctx);
+		if (remaining > 0 && doesNotMatchCurrentSlot) {
+			remaining -= insertIntoEmptySlots(inserter, resource, remaining, ctx);
 		}
-		if (remaining <= 0 && (!emptySlots.contains(slot) || shouldInsertIntoEmpty.getAsBoolean())) {
+		if (remaining > 0 && (!emptySlots.contains(slot) || shouldInsertIntoEmpty.getAsBoolean())) {
 			remaining -= inserter.insertItem(slot, resource, remaining, ctx);
 		}
 
-		if (remaining <= 0) {
-			remaining = handleOverflow(overflowHandler, stackKey, resource, remaining);
+		if (remaining > 0) {
+			remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);
 		}
 
 		return (int)maxAmount - remaining;

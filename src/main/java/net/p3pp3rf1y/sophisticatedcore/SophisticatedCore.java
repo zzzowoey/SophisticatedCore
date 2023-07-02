@@ -30,10 +30,6 @@ public class SophisticatedCore implements ModInitializer {
 
 		commonEventHandler.registerHandlers();
 
-		init();
-	}
-
-	public static void init() {
 		PacketHandler.init();
 		ModCompat.initCompats();
 
@@ -43,6 +39,8 @@ public class SophisticatedCore implements ModInitializer {
 				RecipeHelper.setWorld(world);
 			}
 		});
+
+		PacketHandler.getChannel().initServerListener();
 	}
 
 	public static ResourceLocation getRL(String path) {

@@ -61,7 +61,7 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 			}
 		}
 
-		return maxAmount;
+		return 0;
 	}
 
 	/*	@Nonnull
@@ -150,7 +150,7 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 				}
 			}
 
-			return maxAmount;
+			return 0;
 		}
 
 /*		@Override

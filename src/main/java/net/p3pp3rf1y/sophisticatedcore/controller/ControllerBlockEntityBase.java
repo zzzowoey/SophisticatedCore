@@ -2,7 +2,6 @@ package net.p3pp3rf1y.sophisticatedcore.controller;
 
 import io.github.fabricators_of_create.porting_lib.block.ChunkUnloadListeningBlockEntity;
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
-import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
@@ -18,6 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
+import net.p3pp3rf1y.sophisticatedcore.SophisticatedCoreComponents;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
@@ -56,9 +56,6 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 	private final Map<Item, Set<BlockPos>> filterItemStorages = new HashMap<>();
 	private final Map<BlockPos, Set<Item>> storageFilterItems = new HashMap<>();
 	private Set<BlockPos> linkedBlocks = new LinkedHashSet<>();
-
-	@Nullable
-	private LazyOptional<SlotExposedStorage> itemHandlerCap;
 
 	public boolean addLinkedBlock(BlockPos linkedPos) {
 		if (level != null && !level.isClientSide() && isWithinRange(linkedPos) && !linkedBlocks.contains(linkedPos) && !storagePositions.contains(linkedPos)) {
@@ -459,26 +456,10 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		super(blockEntityType, pos, state);
 	}
 
-	// TODO: Reimplement
-	/*@Nonnull
-	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-		if (cap == ForgeCapabilities.ITEM_HANDLER) {
-			if (itemHandlerCap == null) {
-				itemHandlerCap = LazyOptional.of(() -> this);
-			}
-			return itemHandlerCap.cast();
-		}
-		return super.getCapability(cap, side);
-	}*/
-
 	@Override
 	public void invalidateCaps() {
 		super.invalidateCaps();
-		if (itemHandlerCap != null) {
-			itemHandlerCap.invalidate();
-			itemHandlerCap = null;
-		}
+		getComponent(SophisticatedCoreComponents.ITEM_HANDLER).invalidate();
 	}
 
 	@Override

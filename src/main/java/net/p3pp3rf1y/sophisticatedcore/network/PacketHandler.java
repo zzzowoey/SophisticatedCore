@@ -4,6 +4,8 @@ import io.github.fabricators_of_create.porting_lib.util.NetworkDirection;
 import me.pepperbell.simplenetworking.C2SPacket;
 import me.pepperbell.simplenetworking.S2CPacket;
 import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +29,7 @@ public class PacketHandler {
 
 	public static void init() {
 		channel = new SimpleChannel(CHANNEL_NAME);
+		channel.initServerListener();
 
 		registerMessage(SyncContainerClientDataMessage.class, SyncContainerClientDataMessage::new, PLAY_TO_SERVER);
 		registerMessage(TransferFullSlotMessage.class, TransferFullSlotMessage::new, PLAY_TO_SERVER);

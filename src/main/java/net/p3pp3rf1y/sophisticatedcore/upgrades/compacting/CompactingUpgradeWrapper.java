@@ -52,11 +52,11 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 	}*/
 
 	@Override
-	public void onAfterInsert(IItemHandlerSimpleInserter inventoryHandler, int slot) {
-		compactSlot(inventoryHandler, slot);
+	public void onAfterInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, TransactionContext ctx) {
+		compactSlot(inventoryHandler, slot, ctx);
 	}
 
-	private void compactSlot(IItemHandlerSimpleInserter inventoryHandler, int slot) {
+	private void compactSlot(IItemHandlerSimpleInserter inventoryHandler, int slot, TransactionContext ctx) {
 		ItemStack slotStack = inventoryHandler.getStackInSlot(slot);
 
 		if (slotStack.isEmpty() || slotStack.hasTag() || !filterLogic.matchesFilter(slotStack)) {
@@ -68,57 +68,53 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 		Set<CompactingShape> shapes = RecipeHelper.getItemCompactingShapes(item);
 
 		if (upgradeItem.shouldCompactThreeByThree() && (shapes.contains(CompactingShape.THREE_BY_THREE_UNCRAFTABLE) || (shouldCompactNonUncraftable() && shapes.contains(CompactingShape.THREE_BY_THREE)))) {
-			tryCompacting(inventoryHandler, item, 3, 3);
+			tryCompacting(inventoryHandler, item, 3, 3, ctx);
 		} else if (shapes.contains(CompactingShape.TWO_BY_TWO_UNCRAFTABLE) || (shouldCompactNonUncraftable() && shapes.contains(CompactingShape.TWO_BY_TWO))) {
-			tryCompacting(inventoryHandler, item, 2, 2);
+			tryCompacting(inventoryHandler, item, 2, 2, ctx);
 		}
 	}
 
-	private void tryCompacting(IItemHandlerSimpleInserter inventoryHandler, Item item, int width, int height) {
+	private void tryCompacting(IItemHandlerSimpleInserter inventoryHandler, Item item, int width, int height, TransactionContext ctx) {
 		int totalCount = width * height;
 		RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(item, width, height);
 		if (compactingResult.getCount() > 0) {
 			long maxExtracted;
-			try (Transaction extractionTransaction = Transaction.openOuter()) {
-				maxExtracted = InventoryHelper.extractFromInventory(item, totalCount, inventoryHandler, extractionTransaction);
-				extractionTransaction.abort();
+			try (Transaction nested = Transaction.openNested(ctx)) {
+				maxExtracted = InventoryHelper.extractFromInventory(item, totalCount, inventoryHandler, nested);
 			}
 
 			if (maxExtracted != totalCount) {
 				return;
 			}
 
+			ItemVariant resultCopy = compactingResult.getResult();
 			while (maxExtracted == totalCount) {
-				ItemVariant resultCopy = compactingResult.getResult();
 				List<ItemStack> remainingItemsCopy = compactingResult.getRemainingItems().isEmpty() ? Collections.emptyList() : compactingResult.getRemainingItems().stream().map(ItemStack::copy).toList();
 
-				if (!fitsResultAndRemainingItems(inventoryHandler, remainingItemsCopy, resultCopy, compactingResult.getCount())) {
+				if (!fitsResultAndRemainingItems(inventoryHandler, remainingItemsCopy, resultCopy, compactingResult.getCount(), ctx)) {
 					break;
 				}
 
-				InventoryHelper.extractFromInventory(item, totalCount, inventoryHandler, null);
-				inventoryHandler.insert(resultCopy, compactingResult.getCount(), null);
-				InventoryHelper.insertIntoInventory(remainingItemsCopy, inventoryHandler, null);
+				InventoryHelper.extractFromInventory(item, totalCount, inventoryHandler, ctx);
+				inventoryHandler.insert(resultCopy, compactingResult.getCount(), ctx);
+				InventoryHelper.insertIntoInventory(remainingItemsCopy, inventoryHandler, ctx);
 
-				try (Transaction extractionTransaction = Transaction.openOuter()) {
-					maxExtracted = InventoryHelper.extractFromInventory(item, totalCount, inventoryHandler, extractionTransaction);
-					extractionTransaction.abort();
+				try (Transaction nested = Transaction.openNested(ctx)) {
+					maxExtracted = InventoryHelper.extractFromInventory(item, totalCount, inventoryHandler, nested);
 				}
 			}
 		}
 	}
 
-	private boolean fitsResultAndRemainingItems(SlotExposedStorage inventoryHandler, List<ItemStack> remainingItems, ItemVariant result, long count) {
+	private boolean fitsResultAndRemainingItems(SlotExposedStorage inventoryHandler, List<ItemStack> remainingItems, ItemVariant result, long count, @Nullable TransactionContext ctx) {
 		if (!remainingItems.isEmpty()) {
 			SlotExposedStorage clonedHandler = InventoryHelper.cloneInventory(inventoryHandler);
-			return InventoryHelper.insertIntoInventory(result, count, clonedHandler, null) == 0
-					&& InventoryHelper.insertIntoInventory(remainingItems, clonedHandler, null).isEmpty();
+			return InventoryHelper.insertIntoInventory(result, count, clonedHandler, ctx) == count && InventoryHelper.insertIntoInventory(remainingItems, clonedHandler, ctx).isEmpty();
 		}
 
 		long ret;
-		try (Transaction insertionTransaction = Transaction.openOuter()) {
+		try (Transaction insertionTransaction = Transaction.openNested(ctx)) {
 			ret = InventoryHelper.insertIntoInventory(result, count, inventoryHandler, insertionTransaction);
-			insertionTransaction.abort();
 		}
 		return ret == 0;
 	}
@@ -159,8 +155,11 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 			return;
 		}
 
-		for (int slot : slotsToCompact) {
-			compactSlot(storageWrapper.getInventoryHandler(), slot);
+		try (Transaction ctx = Transaction.openOuter()) {
+			for (int slot : slotsToCompact) {
+				compactSlot(storageWrapper.getInventoryHandler(), slot, ctx);
+			}
+			ctx.commit();
 		}
 
 		slotsToCompact.clear();
