@@ -6,8 +6,6 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "${archivesBaseName}-refmap.json",
   "mixins": [
-    "ItemMixin",
-    "ItemStackMixin",
     "ItemEntityMixin"
   ],
   "client": [
