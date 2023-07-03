@@ -1,10 +1,10 @@
-package net.p3pp3rf1y.sophisticatedcore.common.compontents;
+package net.p3pp3rf1y.sophisticatedcore.common.components;
 
 import dev.onyxstudios.cca.api.v3.component.Component;
 import dev.onyxstudios.cca.api.v3.component.TransientComponent;
 import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
 
-import static net.p3pp3rf1y.sophisticatedcore.common.compontents.Components.ITEM_HANDLER;
+import static net.p3pp3rf1y.sophisticatedcore.common.components.Components.ITEM_HANDLER;
 
 public interface IComponentWrapper<T> extends Component {
     IComponentWrapper<Void> EMPTY = new EmptyComponentWrapper<>();

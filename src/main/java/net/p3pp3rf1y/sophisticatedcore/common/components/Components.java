@@ -1,13 +1,9 @@
-package net.p3pp3rf1y.sophisticatedcore.common.compontents;
+package net.p3pp3rf1y.sophisticatedcore.common.components;
 
 import dev.onyxstudios.cca.api.v3.block.BlockComponentFactoryRegistry;
 import dev.onyxstudios.cca.api.v3.block.BlockComponentInitializer;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
-import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry;
-import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer;
-import dev.onyxstudios.cca.api.v3.item.ItemComponentFactoryRegistry;
-import dev.onyxstudios.cca.api.v3.item.ItemComponentInitializer;
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
 import io.github.fabricators_of_create.porting_lib.util.LazyOptional;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
