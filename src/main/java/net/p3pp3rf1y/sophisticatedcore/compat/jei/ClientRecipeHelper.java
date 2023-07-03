@@ -48,6 +48,6 @@ public class ClientRecipeHelper {
 
 	public static CraftingRecipe copyShapedRecipe(ShapedRecipe recipe) {
 		Minecraft mc = Minecraft.getInstance();
-		return new ShapedRecipe(recipe.getId(), "", recipe.category(), recipe.getWidth(), recipe.getHeight(), recipe.getIngredients(), recipe.getResultItem(mc.level.registryAccess()));
+		return new ShapedRecipe(recipe.getId(), recipe.getGroup(), recipe.category(), recipe.getWidth(), recipe.getHeight(), recipe.getIngredients(), recipe.getResultItem(mc.level.registryAccess()));
 	}
 }

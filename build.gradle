@@ -103,7 +103,6 @@ def compat(DependencyHandler deps) {
 
     deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-base:$cca_version")
     deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-block:$cca_version")
-    deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:$cca_version")
     deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-item:$cca_version")
 
     recipeViewers(deps)
@@ -135,9 +134,10 @@ def testing(DependencyHandler deps) {
 }
 
 loom {
-    if(file("src/main/resources/${mod_id}.accesswidener").exists()){
+    if(file("src/main/resources/${mod_id}.accesswidener").exists()) {
         accessWidenerPath = file("src/main/resources/${mod_id}.accesswidener")
     }
+
     sourceSets {
         main {
             java {
