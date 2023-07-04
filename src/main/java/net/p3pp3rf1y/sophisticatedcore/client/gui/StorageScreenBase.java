@@ -639,7 +639,6 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 	@Override
 	protected void renderTooltip(PoseStack poseStack, int x, int y) {
 		poseStack.pushPose();
-		poseStack.translate(0, 0, -100);
 		inventoryParts.values().forEach(part -> part.renderTooltip(this, poseStack, x, y));
 		if (getMenu().getCarried().isEmpty() && hoveredSlot != null) {
 			if (hoveredSlot.hasItem()) {
