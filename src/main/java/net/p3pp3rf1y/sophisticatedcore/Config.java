@@ -99,7 +99,6 @@ public class Config {
 				}
 			}
 		}
-
 	}
 
 	private static <T extends BaseConfig> T register(Function<ForgeConfigSpec.Builder, T> factory, ModConfig.Type side) {

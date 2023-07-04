@@ -102,21 +102,10 @@ public class GuiHelper {
 			@Nullable String countText) {
 		RenderSystem.enableDepthTest();
 		ItemRenderer itemRenderer = minecraft.getItemRenderer();
-		//float originalZLevel = itemRenderer.blitOffset;
-		//itemRenderer.blitOffset += getZOffset(matrixStack);
 		itemRenderer.renderAndDecorateItem(matrixStack, stack, xPosition, yPosition);
 		if (renderOverlay) {
 			itemRenderer.renderGuiItemDecorations(matrixStack, minecraft.font, stack, xPosition, yPosition, countText);
 		}
-		//itemRenderer.blitOffset = originalZLevel;
-	}
-
-	private static int getZOffset(PoseStack matrixStack) {
-		FloatBuffer buf = MemoryUtil.memAllocFloat(16);
-		matrixStack.last().pose().get(buf);
-		return (int) buf.get(11);
-		//Float zOffset = ObfuscationReflectionHelper.getPrivateValue(Matrix4f.class, matrixStack.last().pose(), "f_27614_");
-		//return zOffset == null ? 0 : zOffset.intValue();
 	}
 
 	public static void blit(PoseStack matrixStack, int x, int y, TextureBlitData texData) {
