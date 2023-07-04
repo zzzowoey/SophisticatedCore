@@ -9,7 +9,8 @@
     "ItemEntityMixin"
   ],
   "client": [
-    "KeyMappingMixin"
+    "KeyMappingMixin",
+    "AbstractContainerScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
