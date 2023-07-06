@@ -11,8 +11,8 @@ import static net.p3pp3rf1y.sophisticatedcore.init.ModFluids.XP_STILL;
 public class ModFluids {
     public static void registerFluids() {
         FluidRenderHandlerRegistry.INSTANCE.register(XP_STILL.get(), XP_FLOWING.get(), new SimpleFluidRenderHandler(
-                new ResourceLocation(SophisticatedCore.ID, "fluids/xp_still"),
-                new ResourceLocation(SophisticatedCore.ID, "fluids/xp_flowing")
+                new ResourceLocation(SophisticatedCore.ID, "block/xp_still"),
+                new ResourceLocation(SophisticatedCore.ID, "block/xp_flowing")
         ));
     }
 }
