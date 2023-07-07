@@ -1,5 +1,3 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
@@ -39,7 +37,7 @@ public class TankUpgradeContainer extends UpgradeContainerBase<TankUpgradeWrappe
 		return upgradeWrapper.getContents();
 	}
 
-	public int getTankCapacity() {
+	public long getTankCapacity() {
 		return upgradeWrapper.getTankCapacity();
 	}
 
@@ -62,4 +60,3 @@ public class TankUpgradeContainer extends UpgradeContainerBase<TankUpgradeWrappe
 		}
 	}
 }
-*/

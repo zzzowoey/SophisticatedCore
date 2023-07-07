@@ -1,8 +1,10 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,6 +13,8 @@ import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerBase;
 import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
+
+import static net.p3pp3rf1y.sophisticatedcore.common.components.Components.FLUID_HANDLER_ITEM;
 
 public class TankClickMessage extends SimplePacketBase {
 	private final int upgradeSlot;
@@ -41,29 +45,30 @@ public class TankClickMessage extends SimplePacketBase {
 				return;
 			}
 			ItemStack cursorStack = containerMenu.getCarried();
-			cursorStack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).ifPresent(fluidHandler -> {
+			ContainerItemContext cic = ContainerItemContext.withInitial(cursorStack);
+			Storage<FluidVariant> storage = cic.find(FluidStorage.ITEM);
+			if (storage != null) {
 				TankUpgradeWrapper tankWrapper = tankContainer.getUpgradeWrapper();
 				FluidStack tankContents = tankWrapper.getContents();
 				if (tankContents.isEmpty()) {
-					drainHandler(sender, containerMenu, fluidHandler, tankWrapper);
+					drainHandler(sender, containerMenu, cic, storage, tankWrapper);
 				} else {
-					if (!tankWrapper.fillHandler(fluidHandler, itemStackIn -> {
+					if (!tankWrapper.fillHandler(cic, storage, itemStackIn -> {
 						containerMenu.setCarried(itemStackIn);
 						sender.connection.send(new ClientboundContainerSetSlotPacket(-1, containerMenu.incrementStateId(), -1, containerMenu.getCarried()));
 					})) {
-						drainHandler(sender, containerMenu, fluidHandler, tankWrapper);
+						drainHandler(sender, containerMenu, cic, storage, tankWrapper);
 					}
 				}
-			});
+			};
 		});
 		return true;
 	}
 
-	private static void drainHandler(ServerPlayer sender, AbstractContainerMenu containerMenu, IFluidHandlerItem fluidHandler, TankUpgradeWrapper tankWrapper) {
-		tankWrapper.drainHandler(fluidHandler, itemStackIn -> {
+	private static void drainHandler(ServerPlayer sender, AbstractContainerMenu containerMenu, ContainerItemContext cic, Storage<FluidVariant> storage, TankUpgradeWrapper tankWrapper) {
+		tankWrapper.drainHandler(cic, storage, itemStackIn -> {
 			containerMenu.setCarried(itemStackIn);
 			sender.connection.send(new ClientboundContainerSetSlotPacket(-1, containerMenu.incrementStateId(), -1, containerMenu.getCarried()));
 		});
 	}
 }
-*/

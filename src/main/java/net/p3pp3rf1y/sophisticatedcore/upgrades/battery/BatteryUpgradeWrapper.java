@@ -51,16 +51,6 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 				return false;
 			}
 
-/*			@Override
-			public boolean isItemValid(int slot, ItemStack stack) {
-				if (slot == INPUT_SLOT) {
-					return isValidInputItem(stack);
-				} else if (slot == OUTPUT_SLOT) {
-					return isValidOutputItem(stack);
-				}
-				return false;
-			}*/
-
 			private boolean isValidInputItem(ItemStack stack) {
 				return isValidEnergyItem(stack, false);
 			}
@@ -93,20 +83,6 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 		return energyStorage.insert(ret, ctx);
 	}
 
-/*	@Override
-	public int receiveEnergy(int maxReceive, boolean simulate) {
-		return innerReceiveEnergy(maxReceive, simulate);
-	}*/
-
-/*	private int innerReceiveEnergy(int maxReceive, boolean simulate) {
-		int ret = Math.min(getMaxEnergyStored() - energyStored, Math.min(getMaxInOut(), maxReceive));
-		if (!simulate) {
-			energyStored += ret;
-			serializeEnergyStored();
-		}
-		return ret;
-	}*/
-
 	private void serializeEnergyStored() {
 		NBTHelper.setInteger(upgrade, ENERGY_STORED_TAG, (int) energyStorage.amount);
 		save();
@@ -119,62 +95,25 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 		return energyStorage.extract(ret, ctx);
 	}
 
-/*	@Override
-	public int extractEnergy(int maxExtract, boolean simulate) {
-		return innerExtractEnergy(maxExtract, simulate);
-	}*/
-
-/*	private int innerExtractEnergy(int maxExtract, boolean simulate) {
-		int ret = Math.min(energyStored, Math.min(getMaxInOut(), maxExtract));
-
-		if (!simulate) {
-			energyStored -= ret;
-			serializeEnergyStored();
-		}
-		return ret;
-	}*/
-
 	@Override
 	public long getAmount() {
 		return energyStorage.getAmount();
 	}
-
-/*	@Override
-	public int getEnergyStored() {
-		return energyStored;
-	}*/
 
 	@Override
 	public long getCapacity() {
 		return upgradeItem.getMaxEnergyStored(storageWrapper);
 	}
 
-/*
-	@Override
-	public int getMaxEnergyStored() {
-		return upgradeItem.getMaxEnergyStored(storageWrapper);
-	}
-*/
-
 	@Override
 	public boolean supportsExtraction() {
 		return true;
 	}
 
-/*	@Override
-	public boolean canExtract() {
-		return true;
-	}*/
-
 	@Override
 	public boolean supportsInsertion() {
 		return true;
 	}
-
-	/*	@Override
-	public boolean canReceive() {
-		return true;
-	}*/
 
 	private int getMaxInOut() {
 		return upgradeItem.getBatteryUpgradeConfig().maxInputOutput.get() * storageWrapper.getNumberOfSlotRows() * upgradeItem.getAdjustedStackMultiplier(storageWrapper);
@@ -183,11 +122,6 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 	private boolean isValidEnergyItem(ItemStack stack, boolean isOutput) {
 		return isOutput || EnergyStorageUtil.isEnergyStorage(stack);
 	}
-
-	// TODO: Reimplement
-/*	private boolean isValidEnergyItem(ItemStack stack, boolean isOutput) {
-		return stack.getCapability(ForgeCapabilities.ENERGY).map(energyStorage -> isOutput || energyStorage.getEnergyStored() > 0).orElse(false);
-	}*/
 
 	@Override
 	public void setBatteryRenderInfoUpdateCallback(Consumer<BatteryRenderInfo> updateTankRenderInfoCallback) {
@@ -202,41 +136,22 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 	}
 
 	public void tick(@Nullable LivingEntity entity, Level world, BlockPos pos) {
-	}
-
-	// TODO: Reimplement
-/*	@Override
-	public void tick(@Nullable LivingEntity entity, Level world, BlockPos pos) {
 		if (getAmount() < getCapacity()) {
-			inventory.getStackInSlot(INPUT_SLOT).getCapability(ForgeCapabilities.ENERGY).ifPresent(this::receiveFromStorage);
+			EnergyStorage storage = ContainerItemContext.withConstant(inventory.getStackInSlot(INPUT_SLOT)).find(EnergyStorage.ITEM);
+			if (storage != null) {
+				EnergyStorageUtil.move(storage, energyStorage, storage.getAmount(), null);
+				// receiveFromStorage(storage);
+			}
 		}
 
 		if (getAmount() > 0) {
-			inventory.getStackInSlot(OUTPUT_SLOT).getCapability(ForgeCapabilities.ENERGY).ifPresent(this::extractToStorage);
-		}
-	}
-
-	private void extractToStorage(EnergyStorage energyStorage) {
-		int toExtract = innerExtractEnergy(getMaxInOut(), true);
-		if (toExtract > 0) {
-			toExtract = energyStorage.receiveEnergy(toExtract, true);
-			if (toExtract > 0) {
-				energyStorage.receiveEnergy(toExtract, false);
-				innerExtractEnergy(toExtract, false);
+			EnergyStorage storage = ContainerItemContext.withConstant(inventory.getStackInSlot(OUTPUT_SLOT)).find(EnergyStorage.ITEM);
+			if (storage != null) {
+				EnergyStorageUtil.move(energyStorage, storage, getAmount(), null);
+				// extractToStorage(storage);
 			}
 		}
 	}
-
-	private void receiveFromStorage(EnergyStorage energyStorage) {
-		int toReceive = innerReceiveEnergy(getMaxInOut(), true);
-		if (toReceive > 0) {
-			toReceive = energyStorage.extractEnergy(toReceive, true);
-			if (toReceive > 0) {
-				energyStorage.extractEnergy(toReceive, false);
-				innerReceiveEnergy(toReceive, false);
-			}
-		}
-	}*/
 
 	public SlotExposedStorage getInventory() {
 		return inventory;

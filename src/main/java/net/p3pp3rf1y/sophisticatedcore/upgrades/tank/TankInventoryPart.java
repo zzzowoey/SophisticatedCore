@@ -1,15 +1,14 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
-import net.minecraft.client.Minecraft;
+import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
+import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
+import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
@@ -27,6 +26,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.XpHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static net.p3pp3rf1y.sophisticatedcore.common.components.Components.FLUID_HANDLER_ITEM;
 
 public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeContainer> {
 	private static final TextureBlitData OVERLAY = new TextureBlitData(GuiHelper.GUI_CONTROLS, Dimension.SQUARE_256, new UV(47, 30), new Dimension(16, 18));
@@ -66,13 +67,13 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 
 	@Override
 	public boolean handleMouseReleased(double mouseX, double mouseY, int button) {
-		if (mouseX < screen.getGuiLeft() + getTankLeft() || mouseX >= screen.getGuiLeft() + getTankLeft() + 18 ||
-				mouseY < screen.getGuiTop() + pos.y() || mouseY >= screen.getGuiTop() + pos.y() + height) {
+		if (mouseX < GuiHelper.getGuiLeft(screen) + getTankLeft() || mouseX >= GuiHelper.getGuiLeft(screen) + getTankLeft() + 18 ||
+				mouseY < GuiHelper.getGuiLeft(screen) + pos.y() || mouseY >= GuiHelper.getGuiLeft(screen) + pos.y() + height) {
 			return false;
 		}
 
 		ItemStack cursorStack = screen.getMenu().getCarried();
-		if (cursorStack.getCount() > 1 || !cursorStack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).isPresent()) {
+		if (cursorStack.getCount() > 1 || FLUID_HANDLER_ITEM.maybeGet(cursorStack).isEmpty()) {
 			return false;
 		}
 
@@ -89,13 +90,13 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 	@Override
 	public void renderTooltip(StorageScreenBase<?> screen, PoseStack poseStack, int mouseX, int mouseY) {
 		FluidStack contents = container.getContents();
-		int capacity = container.getTankCapacity();
+		long capacity = container.getTankCapacity();
 		if (contents.isEmpty()) {
 			contents = FluidStack.EMPTY;
 		}
 
-		int screenX = screen.getGuiLeft() + pos.x() + 10;
-		int screenY = screen.getGuiTop() + pos.y() + 1;
+		int screenX = GuiHelper.getGuiLeft(screen) + pos.x() + 10;
+		int screenY = GuiHelper.getGuiTop(screen) + pos.y() + 1;
 		if (mouseX >= screenX && mouseX < screenX + 16 && mouseY >= screenY && mouseY < screenY + height - 2) {
 			List<Component> tooltip = new ArrayList<>();
 			if (!contents.isEmpty()) {
@@ -106,7 +107,7 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 		}
 	}
 
-	private MutableComponent getContentsTooltip(FluidStack contents, int capacity) {
+	private MutableComponent getContentsTooltip(FluidStack contents, long capacity) {
 		//noinspection deprecation
 		if (contents.getFluid().is(ModFluids.EXPERIENCE_TAG)) {
 			double contentsLevels = XpHelper.getLevelsForExperience((int) XpHelper.liquidToExperience(contents.getAmount()));
@@ -114,24 +115,22 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 
 			return Component.translatable(TranslationHelper.INSTANCE.translUpgradeKey("tank.xp_contents_tooltip"), String.format("%.1f", contentsLevels), String.format("%.1f", tankCapacityLevels));
 		}
-		return Component.translatable(TranslationHelper.INSTANCE.translUpgradeKey("tank.contents_tooltip"), String.format("%,d", contents.getAmount()), String.format("%,d", capacity));
+		return Component.translatable(TranslationHelper.INSTANCE.translUpgradeKey("tank.contents_tooltip"), FluidTextUtil.getUnicodeMillibuckets(contents.getAmount(), FluidUnit.MILIBUCKETS, true), FluidTextUtil.getUnicodeMillibuckets(capacity, FluidUnit.MILIBUCKETS, true));
 	}
 
 	private void renderFluid(PoseStack matrixStack) {
 		FluidStack contents = container.getContents();
-		int capacity = container.getTankCapacity();
+		long capacity = container.getTankCapacity();
 		if (contents.isEmpty()) {
 			return;
 		}
 
 		Fluid fluid = contents.getFluid();
-		int fill = contents.getAmount();
+		long fill = contents.getAmount();
 		int displayLevel = (int) ((height - 2) * ((float) fill / capacity));
-		IClientFluidTypeExtensions renderProperties = IClientFluidTypeExtensions.of(fluid);
-		ResourceLocation texture = renderProperties.getStillTexture(contents);
-		TextureAtlasSprite still = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
-		GuiHelper.renderTiledFluidTextureAtlas(matrixStack, still, renderProperties.getTintColor(contents), pos.x() + 10, pos.y() + 1 + height - 2 - displayLevel, displayLevel);
+		FluidVariant fluidVariant = FluidVariant.of(fluid);
+		TextureAtlasSprite still = FluidVariantRendering.getSprite(fluidVariant);
+		GuiHelper.renderTiledFluidTextureAtlas(matrixStack, still, FluidVariantRendering.getColor(fluidVariant), pos.x() + 10, pos.y() + 1 + height - 2 - displayLevel, displayLevel);
 	}
 
 }
-*/

@@ -1,5 +1,3 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -32,8 +30,8 @@ public class TankUpgradeTab extends UpgradeSettingsTab<TankUpgradeContainer> {
 	@Override
 	protected void moveSlotsToTab() {
 		List<Slot> slots = getContainer().getSlots();
-		positionSlot(slots.get(TankUpgradeWrapper.INPUT_SLOT), screen.getGuiLeft(), screen.getGuiTop(), 4);
-		positionSlot(slots.get(TankUpgradeWrapper.OUTPUT_SLOT), screen.getGuiLeft(), screen.getGuiTop(), 25);
+		positionSlot(slots.get(TankUpgradeWrapper.INPUT_SLOT), GuiHelper.getGuiLeft(screen), GuiHelper.getGuiTop(screen), 4);
+		positionSlot(slots.get(TankUpgradeWrapper.OUTPUT_SLOT), GuiHelper.getGuiLeft(screen), GuiHelper.getGuiTop(screen), 25);
 	}
 
 	private void positionSlot(Slot slot, int screenGuiLeft, int screenGuiTop, int xOffset) {
@@ -41,4 +39,3 @@ public class TankUpgradeTab extends UpgradeSettingsTab<TankUpgradeContainer> {
 		slot.y = y - screenGuiTop + 25;
 	}
 }
-*/

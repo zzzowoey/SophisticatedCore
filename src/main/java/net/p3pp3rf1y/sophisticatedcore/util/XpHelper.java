@@ -10,7 +10,7 @@ public class XpHelper {
 
 	private static final int RATIO = 20;
 
-	public static float liquidToExperience(int liquid) {
+	public static float liquidToExperience(long liquid) {
 		return (float) liquid / RATIO;
 	}
 

@@ -17,6 +17,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.jei.TransferRecipeMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.PlayDiscMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.SoundStopNotificationMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.StopDiscPlaybackMessage;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankClickMessage;
 
 import java.util.function.Function;
 
@@ -39,7 +40,7 @@ public class PacketHandler {
 		registerMessage(PlayDiscMessage.class, PlayDiscMessage::new, PLAY_TO_CLIENT);
 		registerMessage(StopDiscPlaybackMessage.class, StopDiscPlaybackMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SoundStopNotificationMessage.class, SoundStopNotificationMessage::new, PLAY_TO_SERVER);
-		// registerMessage(TankClickMessage.class, TankClickMessage::new, PLAY_TO_SERVER);
+		registerMessage(TankClickMessage.class, TankClickMessage::new, PLAY_TO_SERVER);
 		registerMessage(StorageInsertMessage.class, StorageInsertMessage::new, PLAY_TO_CLIENT);
 		registerMessage(InsertIntoHeldStorageMessage.class, InsertIntoHeldStorageMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SyncTemplateSettingsMessage.class, SyncTemplateSettingsMessage::new, PLAY_TO_CLIENT);

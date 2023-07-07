@@ -1,8 +1,7 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
-import net.minecraft.world.item.CreativeModeTab;
+import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
@@ -19,23 +18,24 @@ public class TankUpgradeItem extends UpgradeItemBase<TankUpgradeWrapper> {
 
 	private final TankUpgradeConfig tankUpgradeConfig;
 
-	public TankUpgradeItem(CreativeModeTab itemGroup, TankUpgradeConfig tankUpgradeConfig) {
-		super(itemGroup);
+	public TankUpgradeItem(TankUpgradeConfig tankUpgradeConfig) {
+		super();
 		this.tankUpgradeConfig = tankUpgradeConfig;
 	}
 
-	public int getBaseCapacity(IStorageWrapper storageWrapper) {
-		return tankUpgradeConfig.capacityPerSlotRow.get() * storageWrapper.getNumberOfSlotRows();
+	public long getBaseCapacity(IStorageWrapper storageWrapper) {
+		// Config values are in millibuckets so we devide the bucket constant by 1000 to get the correct multiplier
+		return (long) tankUpgradeConfig.capacityPerSlotRow.get() * storageWrapper.getNumberOfSlotRows() * (FluidConstants.BUCKET / 1000);
 	}
 
 	public int getAdjustedStackMultiplier(IStorageWrapper storageWrapper) {
 		return 1 + (int) (tankUpgradeConfig.stackMultiplierRatio.get() * (storageWrapper.getInventoryHandler().getStackSizeMultiplier() - 1));
 	}
 
-	public int getTankCapacity(IStorageWrapper storageWrapper) {
+	public long getTankCapacity(IStorageWrapper storageWrapper) {
 		int stackMultiplier = getAdjustedStackMultiplier(storageWrapper);
-		int baseCapacity = getBaseCapacity(storageWrapper);
-		return Integer.MAX_VALUE / stackMultiplier < baseCapacity ? Integer.MAX_VALUE : baseCapacity * stackMultiplier;
+		long baseCapacity = getBaseCapacity(storageWrapper);
+		return Long.MAX_VALUE / stackMultiplier < baseCapacity ? Integer.MAX_VALUE : baseCapacity * stackMultiplier;
 	}
 
 	public TankUpgradeConfig getTankUpgradeConfig() {
@@ -73,4 +73,3 @@ public class TankUpgradeItem extends UpgradeItemBase<TankUpgradeWrapper> {
 		return 2;
 	}
 }
-*/

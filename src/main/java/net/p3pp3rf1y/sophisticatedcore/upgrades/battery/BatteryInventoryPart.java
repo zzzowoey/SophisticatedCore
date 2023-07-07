@@ -1,6 +1,10 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.battery;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
@@ -12,6 +16,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TextureBlitData;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.UV;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankClickMessage;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -67,15 +72,14 @@ public class BatteryInventoryPart extends UpgradeInventoryPartBase<BatteryUpgrad
 
 	@Override
 	public boolean handleMouseReleased(double mouseX, double mouseY, int button) {
-
 		ItemStack cursorStack = screen.getMenu().getCarried();
-		// TODO: Reimplement
-/*		if (!cursorStack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).isPresent()) {
+
+		Storage<FluidVariant> storage = ContainerItemContext.withInitial(cursorStack).find(FluidStorage.ITEM);
+		if (storage == null) {
 			return false;
 		}
 
-		PacketHandler.sendToServer(new TankClickMessage(upgradeSlot));*/
-
+		PacketHandler.sendToServer(new TankClickMessage(upgradeSlot));
 		return true;
 	}
 
