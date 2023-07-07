@@ -253,7 +253,6 @@ public class InventoryHelper {
 				// check how much can be extracted
 				try (Transaction extractionTestTransaction = iterationTransaction.openNested()) {
 					maxExtracted = view.extract(resource, view.getAmount(), extractionTestTransaction);
-					extractionTestTransaction.abort();
 				}
 
 				try (Transaction transferTransaction = iterationTransaction.openNested()) {
