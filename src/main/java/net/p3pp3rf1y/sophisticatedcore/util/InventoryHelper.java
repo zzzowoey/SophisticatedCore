@@ -7,6 +7,8 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelp
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
@@ -111,17 +113,19 @@ public class InventoryHelper {
 		return cloned;
 	}
 
-	public static long insertIntoInventory(ItemVariant resource, long maxAmount, SlotExposedStorage inventory, @Nullable TransactionContext ctx) {
+	public static long insertIntoInventory(ItemVariant resource, long maxAmount, Storage<ItemVariant> inventory, @Nullable TransactionContext ctx) {
 		if (inventory instanceof IItemHandlerSimpleInserter itemHandlerSimpleInserter) {
 			return maxAmount - itemHandlerSimpleInserter.insert(resource, maxAmount, ctx);
 		}
 
-		long remaining = maxAmount;
-		int slots = inventory.getSlots();
-		for (int slot = 0; slot < slots && remaining > 0; slot++) {
-			remaining -= inventory.insertSlot(slot, resource, remaining, ctx);
+		long inserted = inventory.insert(resource, maxAmount, ctx);
+		return maxAmount - inserted;
+	}
+	public static ItemStack simulateInsertIntoInventory(ItemStack stack, Storage<ItemVariant> inventory, @Nullable TransactionContext ctx) {
+		try (Transaction transaction = Transaction.openNested(ctx)) {
+			ItemVariant resource = ItemVariant.of(stack);
+			return resource.toStack((int) insertIntoInventory(resource, stack.getCount(), inventory, transaction));
 		}
-		return maxAmount - remaining;
 	}
 
 	public static long extractFromInventory(Item item, int count, SlotExposedStorage inventory, TransactionContext ctx) {
@@ -298,10 +302,10 @@ public class InventoryHelper {
 		return resource.toStack((int) extracted);
 	}
 
-	public static void insertOrDropItem(Player player, ItemStack stack, SlotExposedStorage... inventories) {
+	public static void insertOrDropItem(Player player, ItemStack stack, Storage<ItemVariant>... inventories) {
 		ItemVariant resource = ItemVariant.of(stack);
 		long toInsert = stack.getCount();
-		for (SlotExposedStorage inventory : inventories) {
+		for (Storage<ItemVariant> inventory : inventories) {
 			toInsert -= insertIntoInventory(resource, toInsert, inventory, null);
 			if (toInsert == 0) {
 				return;

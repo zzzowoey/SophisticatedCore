@@ -75,10 +75,9 @@ public interface IStorageWrapper {
 		return 0;
 	}
 
-	// TODO: Reimplement
-/*	default Optional<IStorageFluidHandler> getFluidHandler() {
+	default Optional<IStorageFluidHandler> getFluidHandler() {
 		return Optional.empty();
-	}*/
+	}
 
 	default Optional<EnergyStorage> getEnergyStorage() { return Optional.empty(); }
 

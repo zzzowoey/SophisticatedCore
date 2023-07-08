@@ -5,7 +5,6 @@ import io.github.fabricators_of_create.porting_lib.transfer.callbacks.Transactio
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -13,6 +12,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, TankUpgradeItem>
-		implements IRenderedTankUpgrade, ITickableUpgrade, IStackableContentsUpgrade {
+		implements IRenderedTankUpgrade, ITickableUpgrade, IStackableContentsUpgrade, SingleSlotStorage<FluidVariant> {
 	public static final int INPUT_SLOT = 0;
 	public static final int OUTPUT_SLOT = 1;
 	private static final String CONTENTS_TAG = "contents";
@@ -256,5 +256,39 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 	@Override
 	public boolean canBeDisabled() {
 		return false;
+	}
+
+	@Override
+	public long insert(FluidVariant resource, long maxAmount, TransactionContext transaction) {
+		return fill(resource, maxAmount, transaction, false);
+	}
+
+	@Override
+	public long extract(FluidVariant resource, long maxAmount, TransactionContext transaction) {
+		if (contents == null || !resource.isOf(contents.getFluid())) {
+			return 0;
+		}
+
+		return drain(maxAmount, transaction, false);
+	}
+
+	@Override
+	public boolean isResourceBlank() {
+		return contents == null || contents.isEmpty();
+	}
+
+	@Override
+	public FluidVariant getResource() {
+		return contents.getType();
+	}
+
+	@Override
+	public long getAmount() {
+		return contents.getAmount();
+	}
+
+	@Override
+	public long getCapacity() {
+		return getMaxInOut();
 	}
 }

@@ -23,6 +23,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.UV;
 import net.p3pp3rf1y.sophisticatedcore.init.ModFluids;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
+import net.p3pp3rf1y.sophisticatedcore.util.FluidHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.XpHelper;
 
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 		}
 
 		ItemStack cursorStack = screen.getMenu().getCarried();
-		if (cursorStack.getCount() > 1 || ContainerItemContext.withConstant(cursorStack).find(FluidStorage.ITEM) == null) {
+		if (cursorStack.getCount() > 1 || !FluidHelper.isFluidStorage(cursorStack)) {
 			return false;
 		}
 

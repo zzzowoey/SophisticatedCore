@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
