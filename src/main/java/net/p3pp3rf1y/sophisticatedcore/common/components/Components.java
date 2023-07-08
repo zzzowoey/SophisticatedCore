@@ -12,8 +12,6 @@ import org.jetbrains.annotations.Nullable;
 
 public class Components implements BlockComponentInitializer {
     public static final ComponentKey<IComponentWrapper> ITEM_HANDLER = ComponentRegistry.getOrCreate(SophisticatedCore.getRL("item_handler_component"), IComponentWrapper.class);
-    public static final ComponentKey<IComponentWrapper> FLUID_HANDLER_ITEM = ComponentRegistry.getOrCreate(SophisticatedCore.getRL("fluid_handler_component"), IComponentWrapper.class);
-    public static final ComponentKey<IComponentWrapper> ENERGY = ComponentRegistry.getOrCreate(SophisticatedCore.getRL("energy_component"), IComponentWrapper.class);
 
     @Override
     public void registerBlockComponentFactories(BlockComponentFactoryRegistry registry) {

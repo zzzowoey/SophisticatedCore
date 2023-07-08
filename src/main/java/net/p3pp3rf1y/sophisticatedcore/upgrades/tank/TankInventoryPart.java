@@ -5,6 +5,8 @@ import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
 import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -26,8 +28,6 @@ import net.p3pp3rf1y.sophisticatedcore.util.XpHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static net.p3pp3rf1y.sophisticatedcore.common.components.Components.FLUID_HANDLER_ITEM;
 
 public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeContainer> {
 	private static final TextureBlitData OVERLAY = new TextureBlitData(GuiHelper.GUI_CONTROLS, Dimension.SQUARE_256, new UV(47, 30), new Dimension(16, 18));
@@ -73,7 +73,7 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 		}
 
 		ItemStack cursorStack = screen.getMenu().getCarried();
-		if (cursorStack.getCount() > 1 || FLUID_HANDLER_ITEM.maybeGet(cursorStack).isEmpty()) {
+		if (cursorStack.getCount() > 1 || ContainerItemContext.withConstant(cursorStack).find(FluidStorage.ITEM) == null) {
 			return false;
 		}
 

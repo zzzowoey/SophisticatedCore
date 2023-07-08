@@ -14,8 +14,6 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerBase;
 import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
 
-import static net.p3pp3rf1y.sophisticatedcore.common.components.Components.FLUID_HANDLER_ITEM;
-
 public class TankClickMessage extends SimplePacketBase {
 	private final int upgradeSlot;
 
