@@ -1,5 +1,3 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.pump;
 
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
@@ -92,4 +90,3 @@ public class FluidFilterLogic {
 		upgrade.getOrCreateTag().put("fluidFilters", fluids);
 	}
 }
-*/

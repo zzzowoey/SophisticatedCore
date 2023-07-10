@@ -1,5 +1,3 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.pump;
 
 import net.minecraft.nbt.CompoundTag;
@@ -62,4 +60,3 @@ public class PumpUpgradeContainer extends UpgradeContainerBase<PumpUpgradeWrappe
 		return upgradeWrapper.shouldInteractWithWorld();
 	}
 }
-*/

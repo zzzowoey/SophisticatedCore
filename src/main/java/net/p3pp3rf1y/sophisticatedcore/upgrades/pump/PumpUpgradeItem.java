@@ -1,5 +1,3 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.pump;
 
 import net.minecraft.world.item.CreativeModeTab;
@@ -12,8 +10,8 @@ public class PumpUpgradeItem extends UpgradeItemBase<PumpUpgradeWrapper> {
 	private final boolean interactWithWorldDefault;
 	private final PumpUpgradeConfig pumpUpgradeConfig;
 
-	public PumpUpgradeItem(boolean interactWithHandDefault, boolean interactWithWorldDefault, CreativeModeTab itemGroup, PumpUpgradeConfig pumpUpgradeConfig) {
-		super(itemGroup);
+	public PumpUpgradeItem(boolean interactWithHandDefault, boolean interactWithWorldDefault, PumpUpgradeConfig pumpUpgradeConfig) {
+		super();
 		this.interactWithHandDefault = interactWithHandDefault;
 		this.interactWithWorldDefault = interactWithWorldDefault;
 		this.pumpUpgradeConfig = pumpUpgradeConfig;
@@ -36,4 +34,3 @@ public class PumpUpgradeItem extends UpgradeItemBase<PumpUpgradeWrapper> {
 		return pumpUpgradeConfig;
 	}
 }
-*/

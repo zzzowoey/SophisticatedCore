@@ -131,7 +131,7 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 
 	private long getMaxInOut() {
 		// Config values are in millibuckets so we devide the bucket constant by 1000 to get the correct multiplier
-		return Math.max(FluidConstants.BUCKET, (long) upgradeItem.getTankUpgradeConfig().maxInputOutput.get() * storageWrapper.getNumberOfSlotRows() * upgradeItem.getAdjustedStackMultiplier(storageWrapper) * (FluidConstants.BUCKET / 1000));
+		return Math.max(FluidConstants.BUCKET, upgradeItem.getTankUpgradeConfig().maxInputOutput.get() * storageWrapper.getNumberOfSlotRows() * upgradeItem.getAdjustedStackMultiplier(storageWrapper) * (FluidConstants.BUCKET / 1000));
 	}
 
 	public long fill(FluidVariant resource, long maxFill, TransactionContext ctx, boolean ignoreInOutLimit) {

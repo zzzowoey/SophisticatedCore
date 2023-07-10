@@ -1,5 +1,3 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.pump;
 
 import net.minecraft.network.chat.Component;
@@ -64,4 +62,3 @@ public class PumpUpgradeTab extends UpgradeSettingsTab<PumpUpgradeContainer> {
 		}
 	}
 }
-*/
