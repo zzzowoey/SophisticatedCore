@@ -3,7 +3,11 @@ package net.p3pp3rf1y.sophisticatedcore.client.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import io.github.fabricators_of_create.porting_lib.util.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
+import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -12,6 +16,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Dimension;
@@ -168,20 +173,18 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 	}
 
 	private void addFluidTooltip(IStorageWrapper wrapper) {
-		// TODO: Reimplement
-/*		wrapper.getFluidHandler().ifPresent(fluidHandler -> {
-			for (int tank = 0; tank < fluidHandler.getTanks(); tank++) {
-				FluidStack fluid = fluidHandler.getFluidInTank(tank);
-				if (fluid.isEmpty()) {
+		wrapper.getFluidHandler().ifPresent(fluidHandler -> {
+			for (StorageView<FluidVariant> view : fluidHandler) {
+				if (view.isResourceBlank()) {
 					tooltipLines.add(Component.translatable(getEmptyFluidTooltipTranslation()).withStyle(ChatFormatting.BLUE));
 				} else {
 					tooltipLines.add(Component.translatable(getFluidTooltipTranslation(),
-							Component.literal(CountAbbreviator.abbreviate((int) fluid.getAmount())).withStyle(ChatFormatting.WHITE),
-							fluid.getDisplayName().getStyle().applyFormat(ChatFormatting.BLUE)
+							Component.literal(FluidTextUtil.getUnicodeMillibuckets(view.getAmount(), FluidUnit.MILIBUCKETS, true)).withStyle(ChatFormatting.WHITE),
+							((MutableComponent)FluidVariantAttributes.getName(view.getResource())).withStyle(ChatFormatting.BLUE)
 					));
 				}
 			}
-		});*/
+		});
 	}
 
 	protected String getFluidTooltipTranslation() {
