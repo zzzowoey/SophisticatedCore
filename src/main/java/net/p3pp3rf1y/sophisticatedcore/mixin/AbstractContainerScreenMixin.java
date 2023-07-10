@@ -20,9 +20,9 @@ public abstract class AbstractContainerScreenMixin {
         return (handled = checkHotbarKeyPressed(keyCode, scanCode));
     }
 
-    @Inject(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ClickType;)V", shift = At.Shift.AFTER), cancellable = true)
+    @Inject(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ClickType;)V", shift = At.Shift.AFTER))
     private void sophisticatedcore$slotClicked$keyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(true);
+        handled = true;
     }
 
     @Inject(method = "keyPressed", at = @At(value = "TAIL"), cancellable = true)

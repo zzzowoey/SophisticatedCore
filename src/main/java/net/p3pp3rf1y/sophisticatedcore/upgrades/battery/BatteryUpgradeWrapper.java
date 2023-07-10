@@ -137,6 +137,7 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 
 	public void tick(@Nullable LivingEntity entity, Level world, BlockPos pos) {
 		if (getAmount() < getCapacity()) {
+			// TODO: Is this the right container item context?
 			EnergyStorage storage = ContainerItemContext.withConstant(inventory.getStackInSlot(INPUT_SLOT)).find(EnergyStorage.ITEM);
 			if (storage != null) {
 				EnergyStorageUtil.move(storage, energyStorage, storage.getAmount(), null);
@@ -145,6 +146,7 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 		}
 
 		if (getAmount() > 0) {
+			// TODO: Is this the right container item context?
 			EnergyStorage storage = ContainerItemContext.withConstant(inventory.getStackInSlot(OUTPUT_SLOT)).find(EnergyStorage.ITEM);
 			if (storage != null) {
 				EnergyStorageUtil.move(energyStorage, storage, getAmount(), null);

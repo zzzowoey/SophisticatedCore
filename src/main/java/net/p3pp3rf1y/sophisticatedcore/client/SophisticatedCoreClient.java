@@ -41,7 +41,7 @@ public class SophisticatedCoreClient implements ClientModInitializer {
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> RecipeHelper.setWorld(client.level));
 
-        ScreenEvents.AFTER_INIT.register((Minecraft client, Screen screen, int windowWidth, int windowHeight) -> {
+        ScreenEvents.BEFORE_INIT.register((client, screen, windowWidth, windowHeight) -> {
             if (!(screen instanceof AbstractContainerScreen<?> containerGui) || screen instanceof CreativeModeInventoryScreen || client.player == null) {
                 return;
             }
