@@ -156,8 +156,11 @@ public class InventoryHelper {
 			ItemStack slotStack = inventory.getStackInSlot(slot);
 			ItemVariant resource = ItemVariant.of(slotStack);
 			if (ItemHandlerHelper.canItemStacksStack(stack, slotStack)) {
-				long toExtract = Math.min(slotStack.getCount(), stack.getCount() - extractedCount);
-				extractedCount += inventory.extractSlot(slot, resource, toExtract, ctx);
+				try (Transaction nested = Transaction.openNested(ctx)) {
+					long toExtract = Math.min(slotStack.getCount(), stack.getCount() - extractedCount);
+					extractedCount += inventory.extractSlot(slot, resource, toExtract, nested);
+					nested.commit();
+				}
 			}
 		}
 

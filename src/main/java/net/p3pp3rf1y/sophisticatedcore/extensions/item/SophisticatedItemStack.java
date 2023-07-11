@@ -36,15 +36,6 @@ public interface SophisticatedItemStack {
     }
 
     /**
-     * @return the fuel burn time for this itemStack in a furnace. Return 0 to make
-     *         it not act as a fuel. Return -1 to let the default vanilla logic
-     *         decide.
-     */
-    default int getBurnTime(@Nullable RecipeType<?> recipeType) {
-        return self().getItem().getBurnTime(self(), recipeType);
-    }
-
-    /**
      * Called to tick armor in the armor slot. Override to do something
      */
     default void onArmorTick(Level level, Player player)

@@ -12,6 +12,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
@@ -23,6 +24,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -51,12 +53,12 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 		inputFilterLogic = new FilterLogic(upgrade, upgradeSaveHandler, autoCookingUpgradeConfig.inputFilterSlots.get(),
 				s -> RecipeHelper.getCookingRecipe(s, recipeType).isPresent(), "inputFilter");
 		fuelFilterLogic = new FilterLogic(upgrade, upgradeSaveHandler, autoCookingUpgradeConfig.fuelFilterSlots.get(),
-				s -> s.getBurnTime(recipeType) > 0, "fuelFilter");
+				s -> Objects.requireNonNullElse(FuelRegistry.INSTANCE.get(s.getItem()), 0) > 0, "fuelFilter");
 		fuelFilterLogic.setAllowByDefault(true);
 		fuelFilterLogic.setEmptyAllowListMatchesEverything();
 
 		isValidInput = s -> RecipeHelper.getCookingRecipe(s, recipeType).isPresent() && inputFilterLogic.matchesFilter(s);
-		isValidFuel = s -> s.getBurnTime(recipeType) > 0 && fuelFilterLogic.matchesFilter(s);
+		isValidFuel = s -> Objects.requireNonNullElse(FuelRegistry.INSTANCE.get(s.getItem()), 0) > 0 && fuelFilterLogic.matchesFilter(s);
 		cookingLogic = new CookingLogic<>(upgrade, upgradeSaveHandler, isValidFuel, isValidInput, autoCookingUpgradeConfig, recipeType, burnTimeModifier);
 	}
 
@@ -97,7 +99,7 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 
 		ItemStack fuel = cookingLogic.getFuel();
 		ItemVariant fuelResource = ItemVariant.of(fuel);
-		if (!fuel.isEmpty() && fuel.getBurnTime(recipeType) <= 0 && inventory.simulateInsert(fuelResource, fuel.getCount(), null) < fuel.getCount()) {
+		if (!fuel.isEmpty() && Objects.requireNonNullElse(FuelRegistry.INSTANCE.get(fuelResource.getItem()), 0) <= 0 && inventory.simulateInsert(fuelResource, fuel.getCount(), null) < fuel.getCount()) {
 			long ret = inventory.insert(fuelResource, fuel.getCount(), null);
 			cookingLogic.getCookingInventory().extractSlot(CookingLogic.FUEL_SLOT, fuelResource, fuel.getCount() - ret, null);
 		}

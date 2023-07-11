@@ -12,16 +12,16 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class CookingLogicContainer<T extends AbstractCookingRecipe> {
-	private final Supplier<CookingLogic<T>> supplyCoookingLogic;
+	private final Supplier<CookingLogic<T>> supplyCookingLogic;
 
 	private final List<Slot> smeltingSlots = new ArrayList<>();
 
-	public CookingLogicContainer(Supplier<CookingLogic<T>> supplyCoookingLogic, Consumer<Slot> addSlot) {
-		this.supplyCoookingLogic = supplyCoookingLogic;
+	public CookingLogicContainer(Supplier<CookingLogic<T>> supplyCookingLogic, Consumer<Slot> addSlot) {
+		this.supplyCookingLogic = supplyCookingLogic;
 
-		addSmeltingSlot(addSlot, new SlotSuppliedHandler(() -> supplyCoookingLogic.get().getCookingInventory(), CookingLogic.COOK_INPUT_SLOT, -100, -100));
-		addSmeltingSlot(addSlot, new SlotSuppliedHandler(() -> supplyCoookingLogic.get().getCookingInventory(), CookingLogic.FUEL_SLOT, -100, -100));
-		addSmeltingSlot(addSlot, new SlotSuppliedHandler(() -> supplyCoookingLogic.get().getCookingInventory(), CookingLogic.COOK_OUTPUT_SLOT, -100, -100) {
+		addSmeltingSlot(addSlot, new SlotSuppliedHandler(() -> supplyCookingLogic.get().getCookingInventory(), CookingLogic.COOK_INPUT_SLOT, -100, -100));
+		addSmeltingSlot(addSlot, new SlotSuppliedHandler(() -> supplyCookingLogic.get().getCookingInventory(), CookingLogic.FUEL_SLOT, -100, -100));
+		addSmeltingSlot(addSlot, new SlotSuppliedHandler(() -> supplyCookingLogic.get().getCookingInventory(), CookingLogic.COOK_OUTPUT_SLOT, -100, -100) {
 			@Override
 			public boolean mayPlace(ItemStack stack) {
 				return false; //needs to not allow player putting anything in
@@ -35,27 +35,27 @@ public class CookingLogicContainer<T extends AbstractCookingRecipe> {
 	}
 
 	public int getBurnTimeTotal() {
-		return supplyCoookingLogic.get().getBurnTimeTotal();
+		return supplyCookingLogic.get().getBurnTimeTotal();
 	}
 
 	public long getBurnTimeFinish() {
-		return supplyCoookingLogic.get().getBurnTimeFinish();
+		return supplyCookingLogic.get().getBurnTimeFinish();
 	}
 
 	public long getCookTimeFinish() {
-		return supplyCoookingLogic.get().getCookTimeFinish();
+		return supplyCookingLogic.get().getCookTimeFinish();
 	}
 
 	public int getCookTimeTotal() {
-		return supplyCoookingLogic.get().getCookTimeTotal();
+		return supplyCookingLogic.get().getCookTimeTotal();
 	}
 
 	public boolean isCooking() {
-		return supplyCoookingLogic.get().isCooking();
+		return supplyCookingLogic.get().isCooking();
 	}
 
 	public boolean isBurning(Level world) {
-		return supplyCoookingLogic.get().isBurning(world);
+		return supplyCookingLogic.get().isBurning(world);
 	}
 
 	public List<Slot> getCookingSlots() {

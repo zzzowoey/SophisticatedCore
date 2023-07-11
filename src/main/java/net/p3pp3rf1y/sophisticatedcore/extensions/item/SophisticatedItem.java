@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.extensions.item;
 
+import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -42,16 +43,6 @@ public interface SophisticatedItem {
     default boolean hasCraftingRemainingItem(ItemStack stack)
     {
         return self().hasCraftingRemainingItem();
-    }
-
-    /**
-     * @return the fuel burn time for this itemStack in a furnace. Return 0 to make
-     *         it not act as a fuel. Return -1 to let the default vanilla logic
-     *         decide.
-     */
-    default int getBurnTime(ItemStack itemStack, @Nullable RecipeType<?> recipeType)
-    {
-        return -1;
     }
 
     /**

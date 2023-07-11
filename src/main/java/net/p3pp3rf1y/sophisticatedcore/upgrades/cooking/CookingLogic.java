@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.cooking;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
@@ -14,6 +15,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -43,7 +45,7 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 	private long remainingBurnTime = 0;
 
 	public CookingLogic(ItemStack upgrade, Consumer<ItemStack> saveHandler, CookingUpgradeConfig cookingUpgradeConfig, RecipeType<T> recipeType, float burnTimeModifier) {
-		this(upgrade, saveHandler, s -> getBurnTime(s, recipeType, burnTimeModifier) > 0, s -> RecipeHelper.getCookingRecipe(s, recipeType).isPresent(), cookingUpgradeConfig, recipeType, burnTimeModifier);
+		this(upgrade, saveHandler, s -> getBurnTime(s, burnTimeModifier) > 0, s -> RecipeHelper.getCookingRecipe(s, recipeType).isPresent(), cookingUpgradeConfig, recipeType, burnTimeModifier);
 	}
 
 	public CookingLogic(ItemStack upgrade, Consumer<ItemStack> saveHandler, Predicate<ItemStack> isFuel, Predicate<ItemStack> isInput, CookingUpgradeConfig cookingUpgradeConfig, RecipeType<T> recipeType, float burnTimeModifier) {
@@ -212,10 +214,10 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 	private void updateFuel(Level world, T cookingRecipe) {
 		ItemStack fuel = getFuel();
 		if (!isBurning(world) && canSmelt(cookingRecipe)) {
-			if (getBurnTime(fuel, recipeType, burnTimeModifier) <= 0) {
+			if (getBurnTime(fuel, burnTimeModifier) <= 0) {
 				return;
 			}
-			setBurnTime(world, (int) (getBurnTime(fuel, recipeType, burnTimeModifier) * fuelEfficiencyMultiplier / cookingSpeedMultiplier));
+			setBurnTime(world, (int) (getBurnTime(fuel, burnTimeModifier) * fuelEfficiencyMultiplier / cookingSpeedMultiplier));
 			if (isBurning(world)) {
 				if (fuel.hasCraftingRemainingItem()) {
 					setFuel(fuel.getCraftingRemainingItem());
@@ -240,6 +242,10 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 			return false;
 		}
 		Minecraft mc = Minecraft.getInstance();
+		if (mc.level == null) {
+			return false;
+		}
+
 		ItemStack recipeOutput = cookingRecipe.getResultItem(mc.level.registryAccess());
 		if (recipeOutput.isEmpty()) {
 			return false;
@@ -257,8 +263,8 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 		}
 	}
 
-	private static <T extends AbstractCookingRecipe> int getBurnTime(ItemStack fuel, RecipeType<T> recipeType, float burnTimeModifier) {
-		return (int) (fuel.getBurnTime(recipeType) * burnTimeModifier);
+	private static int getBurnTime(ItemStack fuel, float burnTimeModifier) {
+		return (int) (Objects.requireNonNullElse(FuelRegistry.INSTANCE.get(fuel.getItem()), 0) * burnTimeModifier);
 	}
 
 	public ItemStack getCookOutput() {
@@ -293,8 +299,8 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 				@Override
 				public boolean isItemValid(int slot, ItemVariant resource, long amount) {
 					return switch (slot) {
-						case COOK_INPUT_SLOT -> isInput.test(resource.toStack());
-						case FUEL_SLOT -> isFuel.test(resource.toStack());
+						case COOK_INPUT_SLOT -> isInput.test(resource.toStack((int) amount));
+						case FUEL_SLOT -> isFuel.test(resource.toStack((int) amount));
 						default -> true;
 					};
 				}
