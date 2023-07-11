@@ -226,8 +226,8 @@ public class GuiHelper {
 
 		float u1 = sprite.getU0();
 		float v1 = sprite.getV0();
-		int spriteHeight = sprite.getY();
-		int spriteWidth = sprite.getX();
+		int spriteHeight = sprite.contents().height();
+		int spriteWidth = sprite.contents().width();
 		int startY = y;
 		float red = (color >> 16 & 255) / 255.0F;
 		float green = (color >> 8 & 255) / 255.0F;

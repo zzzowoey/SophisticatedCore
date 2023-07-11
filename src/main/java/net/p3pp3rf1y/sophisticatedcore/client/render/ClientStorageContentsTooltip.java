@@ -219,10 +219,6 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 	}
 
 	protected void renderTooltip(IStorageWrapper wrapper, Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer) {
-		renderTooltip(wrapper, font, leftX, topY, poseStack, itemRenderer, 0);
-	}
-
-	protected void renderTooltip(IStorageWrapper wrapper, Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer, int blitOffset) {
 		Minecraft minecraft = Minecraft.getInstance();
 		LocalPlayer player = minecraft.player;
 		if (player == null) {
@@ -230,34 +226,33 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 		}
 
 		initContents(player, wrapper);
-		renderComponent(font, leftX, topY, poseStack, itemRenderer, blitOffset, minecraft);
+		renderComponent(font, leftX, topY, poseStack, itemRenderer, minecraft);
 	}
 
-	private void renderComponent(Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer, int blitOffset, Minecraft minecraft) {
+	private void renderComponent(Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer, Minecraft minecraft) {
 		for (Component tooltipLine : tooltipLines) {
-			topY = renderTooltipLine(poseStack, leftX, topY, font, blitOffset, tooltipLine);
+			topY = renderTooltipLine(poseStack, leftX, topY, font, tooltipLine);
 		}
-		renderContentsTooltip(minecraft, font, leftX, topY, poseStack, itemRenderer, blitOffset);
+		renderContentsTooltip(minecraft, font, leftX, topY, poseStack, itemRenderer);
 	}
 
-	private void renderContentsTooltip(Minecraft minecraft, Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer, double blitOffset) {
+	private void renderContentsTooltip(Minecraft minecraft, Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer) {
 		if (!upgrades.isEmpty()) {
-			topY = renderTooltipLine(poseStack, leftX, topY, font, blitOffset, Component.translatable(TranslationHelper.INSTANCE.translItemTooltip(STORAGE_ITEM) + ".upgrades").withStyle(ChatFormatting.YELLOW));
+			topY = renderTooltipLine(poseStack, leftX, topY, font, Component.translatable(TranslationHelper.INSTANCE.translItemTooltip(STORAGE_ITEM) + ".upgrades").withStyle(ChatFormatting.YELLOW));
 			topY = renderUpgrades(poseStack, leftX, topY, itemRenderer);
 		}
 		if (!sortedContents.isEmpty()) {
-			topY = renderTooltipLine(poseStack, leftX, topY, font, blitOffset, Component.translatable(TranslationHelper.INSTANCE.translItemTooltip(STORAGE_ITEM) + ".inventory").withStyle(ChatFormatting.YELLOW));
+			topY = renderTooltipLine(poseStack, leftX, topY, font, Component.translatable(TranslationHelper.INSTANCE.translItemTooltip(STORAGE_ITEM) + ".inventory").withStyle(ChatFormatting.YELLOW));
 			renderContents(minecraft, poseStack, leftX, topY, itemRenderer, font);
 		}
 	}
 
-	private int renderTooltipLine(PoseStack poseStack, int leftX, int topY, Font font, double blitOffset, Component tooltip) {
+	private int renderTooltipLine(PoseStack poseStack, int leftX, int topY, Font font, Component tooltip) {
 		poseStack.pushPose();
-		poseStack.translate(0.0D, 0.0D, blitOffset + 200.0F);
+		poseStack.translate(0.0D, 0.0D, 200.0F);
 		MultiBufferSource.BufferSource renderTypeBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 		font.drawInBatch(tooltip, leftX, topY, 16777215, true, poseStack.last().pose(), renderTypeBuffer, Font.DisplayMode.NORMAL, 0, 15728880);
 		renderTypeBuffer.endBatch();
-		poseStack.translate(0.0D, 0.0D, -(blitOffset + 200.0F));
 		poseStack.popPose();
 		return topY + 10;
 	}

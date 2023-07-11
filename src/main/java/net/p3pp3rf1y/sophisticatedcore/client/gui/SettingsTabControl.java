@@ -106,10 +106,7 @@ public abstract class SettingsTabControl<C extends AbstractContainerScreen<?>, T
 
 	public List<Rect2i> getTabRectangles() {
 		List<Rect2i> ret = new ArrayList<>();
-		children.forEach(child -> {
-			ScreenRectangle rect = child.getRectangle();
-			ret.add(new Rect2i(rect.left(), rect.top(), rect.width(), rect.height()));
-		});
+		children.forEach(child -> child.getTabRectangle().ifPresent(ret::add));
 		return ret;
 	}
 

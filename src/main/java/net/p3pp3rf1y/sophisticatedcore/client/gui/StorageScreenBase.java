@@ -375,10 +375,10 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 	}
 
 	@SuppressWarnings("java:S4449") //renderFloatingItem should really have altText as nullable as it is then only passed to nullable parameter
-	private void renderSuper(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { //copy of super.render with storage inventory slots rendering and snap rendering removed
+	private void renderSuper(PoseStack posestack, int pMouseX, int pMouseY, float pPartialTick) { //copy of super.render with storage inventory slots rendering and snap rendering removed
 		int i = leftPos;
 		int j = topPos;
-		renderBg(pPoseStack, pPartialTick, pMouseX, pMouseY);
+		renderBg(posestack, pPartialTick, pMouseX, pMouseY);
 /*		//noinspection UnstableApiUsage
 		MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.ContainerScreenEvent.Render.Background(this, pPoseStack, pMouseX, pMouseY));*/
 		RenderSystem.disableDepthTest();
@@ -386,33 +386,28 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 		hoveredSlot = null;
 
 		for (Renderable widget : renderables) {
-			widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
+			widget.render(posestack, pMouseX, pMouseY, pPartialTick);
 		}
 
-		PoseStack posestack = RenderSystem.getModelViewStack();
 		posestack.pushPose();
 		posestack.translate(i, j, 0.0D);
-
-		RenderSystem.applyModelViewMatrix();
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 		for (int k = 0; k < StorageContainerMenuBase.NUMBER_OF_PLAYER_SLOTS; ++k) {
 			Slot slot = getMenu().getSlot(getMenu().getInventorySlotsSize() - StorageContainerMenuBase.NUMBER_OF_PLAYER_SLOTS + k);
 			if (slot.isActive()) {
 				RenderSystem.setShader(GameRenderer::getPositionTexShader);
-				renderSlot(pPoseStack, slot);
+				renderSlot(posestack, slot);
 			}
 
 			if (isHovering(slot, pMouseX, pMouseY) && slot.isActive()) {
 				hoveredSlot = slot;
 				int l = slot.x;
 				int i1 = slot.y;
-				renderSlotHighlight(pPoseStack, l, i1, 0);
+				renderSlotHighlight(posestack, l, i1, 0);
 			}
 		}
 
-		renderLabels(pPoseStack, pMouseX, pMouseY);
+		renderLabels(posestack, pMouseX, pMouseY);
 /*		//noinspection UnstableApiUsage
 		MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, pPoseStack, pMouseX, pMouseY));*/
 		ItemStack itemstack = draggingItem.isEmpty() ? menu.getCarried() : draggingItem;
@@ -431,11 +426,10 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 			}
 
 			//noinspection ConstantConditions - renderFloatingItem should really have altText as nullable as it is then only passed to nullable parameter
-			renderFloatingItem(pPoseStack, itemstack, pMouseX - i - 8, pMouseY - j - i2, s);
+			renderFloatingItem(posestack, itemstack, pMouseX - i - 8, pMouseY - j - i2, s);
 		}
 
 		posestack.popPose();
-		RenderSystem.applyModelViewMatrix();
 		RenderSystem.enableDepthTest();
 	}
 
@@ -487,30 +481,30 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 	}
 
 	@Override
-	protected void renderSlot(PoseStack matrixStack, Slot slot) {
+	protected void renderSlot(PoseStack poseStack, Slot slot) {
 		int i = slot.x;
 		int j = slot.y;
-		ItemStack itemstack = slot.getItem();
+		ItemStack stackToRender = slot.getItem();
 		boolean flag = false;
 		boolean rightClickDragging = slot == clickedSlot && !draggingItem.isEmpty() && !isSplittingStack;
-		ItemStack itemstack1 = getMenu().getCarried();
+		ItemStack carriedStack = getMenu().getCarried();
 		String stackCountText = null;
-		if (slot == clickedSlot && !draggingItem.isEmpty() && isSplittingStack && !itemstack.isEmpty()) {
-			itemstack = itemstack.copy();
-			itemstack.setCount(itemstack.getCount() / 2);
-		} else if (isQuickCrafting && quickCraftSlots.contains(slot) && !itemstack1.isEmpty()) {
+		if (slot == clickedSlot && !draggingItem.isEmpty() && isSplittingStack && !stackToRender.isEmpty()) {
+			stackToRender = stackToRender.copy();
+			stackToRender.setCount(stackToRender.getCount() / 2);
+		} else if (isQuickCrafting && quickCraftSlots.contains(slot) && !carriedStack.isEmpty()) {
 			if (quickCraftSlots.size() == 1) {
 				return;
 			}
 
-			if (StorageContainerMenuBase.canItemQuickReplace(slot, itemstack1) && menu.canDragTo(slot)) {
-				itemstack = itemstack1.copy();
+			if (StorageContainerMenuBase.canItemQuickReplace(slot, carriedStack) && menu.canDragTo(slot)) {
+				stackToRender = carriedStack.copy();
 				flag = true;
-				AbstractContainerMenu.getQuickCraftSlotCount(quickCraftSlots, quickCraftingType, itemstack, slot.getItem().isEmpty() ? 0 : slot.getItem().getCount());
-				int slotLimit = slot.getMaxStackSize(itemstack);
-				if (itemstack.getCount() > slotLimit) {
+				AbstractContainerMenu.getQuickCraftSlotCount(quickCraftSlots, quickCraftingType, stackToRender, slot.getItem().isEmpty() ? 0 : slot.getItem().getCount());
+				int slotLimit = slot.getMaxStackSize(stackToRender);
+				if (stackToRender.getCount() > slotLimit) {
 					stackCountText = ChatFormatting.YELLOW + CountAbbreviator.abbreviate(slotLimit);
-					itemstack.setCount(slotLimit);
+					stackToRender.setCount(slotLimit);
 				}
 			} else {
 				quickCraftSlots.remove(slot);
@@ -518,15 +512,15 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 			}
 		}
 
-		matrixStack.pushPose();
-		matrixStack.translate(0.0F, 0.0F, 100.0F);
-		if (itemstack.isEmpty() && slot.isActive()) {
-			renderSlotBackground(matrixStack, slot, i, j);
+		poseStack.pushPose();
+		poseStack.translate(0.0F, 0.0F, -50);
+		if (stackToRender.isEmpty() && slot.isActive()) {
+			renderSlotBackground(poseStack, slot, i, j);
 		} else if (!rightClickDragging) {
-			renderStack(matrixStack, i, j, itemstack, flag, stackCountText);
+			renderStack(poseStack, i, j, stackToRender, flag, stackCountText);
 		}
 
-		matrixStack.popPose();
+		poseStack.popPose();
 	}
 
 	private void renderStack(PoseStack poseStack, int i, int j, ItemStack itemstack, boolean flag, @Nullable String stackCountText) {
@@ -560,9 +554,8 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 			if (pair != null) {
 				//noinspection ConstantConditions - by this point minecraft isn't null
 				TextureAtlasSprite textureatlassprite = minecraft.getTextureAtlas(pair.getFirst()).apply(pair.getSecond());
-				RenderSystem.setShader(GameRenderer::getPositionTexShader);
 				RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
-				blit(poseStack, i, j, 0, 16, 16, textureatlassprite);
+				blit(poseStack, i, j, 50, 16, 16, textureatlassprite);
 			}
 		}
 	}

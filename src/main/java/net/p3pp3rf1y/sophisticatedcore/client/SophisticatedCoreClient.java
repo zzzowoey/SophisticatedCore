@@ -85,7 +85,7 @@ public class SophisticatedCoreClient implements ClientModInitializer {
         int y = GuiHelper.getGuiTop(containerGui) + s.y;
 
         poseStack.pushPose();
-        poseStack.translate(0, 0, containerGui instanceof StorageScreenBase ? 100 : 499);
+        poseStack.translate(0, 0, containerGui instanceof StorageScreenBase ? 150 : 499);
 
         if (stack.getItem() instanceof IStashStorageItem) {
             mc.font.drawShadow(poseStack, "+", (float) x + 10, (float) y + 8, 0xFFFF00);

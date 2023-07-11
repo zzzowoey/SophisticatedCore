@@ -69,7 +69,7 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 	@Override
 	public boolean handleMouseReleased(double mouseX, double mouseY, int button) {
 		if (mouseX < GuiHelper.getGuiLeft(screen) + getTankLeft() || mouseX >= GuiHelper.getGuiLeft(screen) + getTankLeft() + 18 ||
-				mouseY < GuiHelper.getGuiLeft(screen) + pos.y() || mouseY >= GuiHelper.getGuiLeft(screen) + pos.y() + height) {
+				mouseY < GuiHelper.getGuiTop(screen) + pos.y() || mouseY >= GuiHelper.getGuiTop(screen) + pos.y() + height) {
 			return false;
 		}
 
