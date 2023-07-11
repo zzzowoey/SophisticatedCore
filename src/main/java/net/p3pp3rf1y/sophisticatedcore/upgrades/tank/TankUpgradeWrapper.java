@@ -83,7 +83,7 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 
 	private boolean isValidFluidItem(ItemStack stack, boolean isOutput) {
 		if (stack != null && !stack.isEmpty()) {
-			Storage<FluidVariant> storage = ContainerItemContext.withInitial(stack).find(FluidStorage.ITEM);
+			Storage<FluidVariant> storage = ContainerItemContext.withConstant(stack).find(FluidStorage.ITEM);
 			return isValidFluidHandler(storage, isOutput);
 		}
 		return false;
@@ -194,13 +194,13 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 		}
 
 		Boolean didSomething = false;
-		ContainerItemContext cic = ContainerItemContext.withInitial(inventory.getStackInSlot(INPUT_SLOT));
+		ContainerItemContext cic = ContainerItemContext.withConstant(inventory.getStackInSlot(INPUT_SLOT));
 		Storage<FluidVariant> storage = cic.find(FluidStorage.ITEM);
 		if (storage != null) {
 			didSomething = drainHandler(cic, storage, stack -> inventory.setStackInSlot(INPUT_SLOT, stack));
 		}
 
-		cic = ContainerItemContext.withInitial(inventory.getStackInSlot(OUTPUT_SLOT));
+		cic = ContainerItemContext.withConstant(inventory.getStackInSlot(OUTPUT_SLOT));
 		storage = cic.find(FluidStorage.ITEM);
 		if (storage != null) {
 			didSomething |= fillHandler(cic, storage, stack -> inventory.setStackInSlot(OUTPUT_SLOT, stack));

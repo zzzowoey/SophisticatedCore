@@ -74,7 +74,7 @@ public class BatteryInventoryPart extends UpgradeInventoryPartBase<BatteryUpgrad
 	public boolean handleMouseReleased(double mouseX, double mouseY, int button) {
 		ItemStack cursorStack = screen.getMenu().getCarried();
 
-		Storage<FluidVariant> storage = ContainerItemContext.withInitial(cursorStack).find(FluidStorage.ITEM);
+		Storage<FluidVariant> storage = ContainerItemContext.withConstant(cursorStack).find(FluidStorage.ITEM);
 		if (storage == null) {
 			return false;
 		}

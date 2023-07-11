@@ -43,7 +43,7 @@ public class TankClickMessage extends SimplePacketBase {
 				return;
 			}
 			ItemStack cursorStack = containerMenu.getCarried();
-			ContainerItemContext cic = ContainerItemContext.withInitial(cursorStack);
+			ContainerItemContext cic = ContainerItemContext.withConstant(cursorStack);
 			Storage<FluidVariant> storage = cic.find(FluidStorage.ITEM);
 			if (storage != null) {
 				TankUpgradeWrapper tankWrapper = tankContainer.getUpgradeWrapper();
