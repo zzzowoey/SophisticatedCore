@@ -1,6 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.feeding;
 
+import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityUseItemEvents;
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -76,14 +78,13 @@ public class FeedingUpgradeWrapper extends UpgradeWrapperBase<FeedingUpgradeWrap
 				player.getInventory().items.set(player.getInventory().selected, stack);
 				if (stack.use(world, player, InteractionHand.MAIN_HAND).getResult() == InteractionResult.CONSUME) {
 					player.getInventory().items.set(player.getInventory().selected, mainHandItem);
-					//ItemStack containerItem = ForgeEventFactory.onItemUseFinish(player, stack.copy(), 0, stack.getItem().finishUsingItem(stack, world, player));
+					ItemStack containerItem = LivingEntityUseItemEvents.LIVING_USE_ITEM_FINISH.invoker().onUseItem(player, stack.copy(), 0, stack.getItem().finishUsingItem(stack, world, player));
 					inventory.setStackInSlot(slot, stack);
-					// TODO: Reimplement
-					/*if (!ItemStack.matches(containerItem, stack)) {
+					if (containerItem != null && !ItemStack.matches(containerItem, stack)) {
 						//not handling the case where player doesn't have item handler cap as the player should always have it. if that changes in the future well I guess I fix it
-						player.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP)
-								.ifPresent(playerInventory -> InventoryHelper.insertOrDropItem(player, containerItem, inventory, playerInventory));
-					}*/
+						PlayerInventoryStorage playerInventory = PlayerInventoryStorage.of(player);
+						InventoryHelper.insertOrDropItem(player, containerItem, inventory, playerInventory);
+					}
 					fedPlayer.set(true);
 					return true;
 				}
@@ -102,14 +103,6 @@ public class FeedingUpgradeWrapper extends UpgradeWrapperBase<FeedingUpgradeWrap
 		return foodProperties != null && foodProperties.getNutrition() >= 1;
 	}
 
-/*	private static boolean isEdible(ItemStack stack, LivingEntity player) {
-		if (!stack.isEdible()) {
-			return false;
-		}
-		FoodProperties foodProperties = stack.getItem().getFoodProperties(stack, player);
-		return foodProperties != null && foodProperties.getNutrition() >= 1;
-	}*/
-
 	private boolean isHungryEnoughForFood(int hungerLevel, ItemStack stack) {
 		FoodProperties foodProperties = stack.getItem().getFoodProperties();
 		if (foodProperties == null) {
@@ -124,21 +117,6 @@ public class FeedingUpgradeWrapper extends UpgradeWrapperBase<FeedingUpgradeWrap
 		int nutrition = foodProperties.getNutrition();
 		return (feedAtHungerLevel == HungerLevel.HALF ? (nutrition / 2) : nutrition) <= hungerLevel;
 	}
-
-/*	private boolean isHungryEnoughForFood(int hungerLevel, ItemStack stack, Player player) {
-		FoodProperties foodProperties = stack.getItem().getFoodProperties(stack, player);
-		if (foodProperties == null) {
-			return false;
-		}
-
-		HungerLevel feedAtHungerLevel = getFeedAtHungerLevel();
-		if (feedAtHungerLevel == HungerLevel.ANY) {
-			return true;
-		}
-
-		int nutrition = foodProperties.getNutrition();
-		return (feedAtHungerLevel == HungerLevel.HALF ? (nutrition / 2) : nutrition) <= hungerLevel;
-	}*/
 
 	@Override
 	public FilterLogic getFilterLogic() {
