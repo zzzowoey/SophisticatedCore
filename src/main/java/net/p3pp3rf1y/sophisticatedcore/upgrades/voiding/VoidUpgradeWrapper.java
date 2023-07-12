@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.upgrades.voiding;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -56,23 +57,6 @@ public class VoidUpgradeWrapper extends UpgradeWrapperBase<VoidUpgradeWrapper, V
 
 		return !shouldVoidOverflow && filterLogic.matchesFilter(stack) ? 0 : maxAmount;
 	}
-
-/*	@Override
-	public ItemStack onBeforeInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, ItemStack stack, boolean simulate) {
-		if (shouldVoidOverflow && inventoryHandler.getStackInSlot(slot).isEmpty() && (!filterLogic.shouldMatchNbt() || !filterLogic.shouldMatchDurability() || filterLogic.getPrimaryMatch() != PrimaryMatch.ITEM) && filterLogic.matchesFilter(stack)) {
-			for (int s = 0; s < inventoryHandler.getSlots(); s++) {
-				if (s == slot) {
-					continue;
-				}
-				if (stackMatchesFilterStack(inventoryHandler.getStackInSlot(s), stack)) {
-					return ItemStack.EMPTY;
-				}
-			}
-			return stack;
-		}
-
-		return !shouldVoidOverflow && filterLogic.matchesFilter(stack) ? ItemStack.EMPTY : stack;
-	}*/
 
 	@Override
 	public void onAfterInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, @Nullable TransactionContext ctx) {
@@ -132,8 +116,10 @@ public class VoidUpgradeWrapper extends UpgradeWrapperBase<VoidUpgradeWrapper, V
 		InventoryHandler storageInventory = storageWrapper.getInventoryHandler();
 		for (int slot : slotsToVoid) {
 			ItemStack stack = storageInventory.getStackInSlot(slot);
-			storageInventory.extractSlot(slot, ItemVariant.of(stack), stack.getCount(), null);
-			//storageInventory.extractItem(slot, storageInventory.getStackInSlot(slot).getCount(), false);
+			try (Transaction outer = Transaction.openOuter()) {
+				storageInventory.extractSlot(slot, ItemVariant.of(stack), stack.getCount(), outer);
+				outer.commit();
+			}
 		}
 
 		slotsToVoid.clear();
