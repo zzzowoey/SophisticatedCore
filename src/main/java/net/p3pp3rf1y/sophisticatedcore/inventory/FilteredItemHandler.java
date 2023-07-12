@@ -45,7 +45,18 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 
 	@Override
 	public long insert(ItemVariant resource, long maxAmount, TransactionContext ctx) {
-		throw new NotImplementedException();
+		if (inputFilters.isEmpty()) {
+			return inventoryHandler.insert(resource, maxAmount, ctx);
+		}
+
+		ItemStack stack = resource.toStack((int) maxAmount);
+		for (FilterLogic filter : inputFilters) {
+			if (filter.matchesFilter(stack)) {
+				return inventoryHandler.insert(resource, maxAmount, ctx);
+			}
+		}
+
+		return 0;
 	}
 
 	@Override
@@ -65,8 +76,18 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 	}
 
 	@Override
-	public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		throw new NotImplementedException();
+	public long extract(ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		if (outputFilters.isEmpty()) {
+			return inventoryHandler.extract(resource, maxAmount, ctx);
+		}
+
+		ItemStack stack = resource.toStack((int) maxAmount);
+		for (FilterLogic filter : outputFilters) {
+			if (filter.matchesFilter(stack)) {
+				return inventoryHandler.extract(resource, maxAmount, ctx);
+			}
+		}
+		return 0;
 	}
 
 	@Override

@@ -267,7 +267,7 @@ public class InventoryHelper {
 					long accepted = handlerB.insert(resource, maxExtracted, transferTransaction);
 
 					// extract it, or rollback if the amounts don't match
-					if (view.extract(resource, accepted, transferTransaction) == accepted) {
+					if (accepted > 0 && view.extract(resource, accepted, transferTransaction) == accepted) {
 						TransactionCallback.onSuccess(transferTransaction, () -> onInserted.accept(() -> resource.toStack((int) accepted)));
 						transferTransaction.commit();
 					}
