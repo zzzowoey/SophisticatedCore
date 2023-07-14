@@ -113,7 +113,7 @@ public class InventoryHelper {
 		return cloned;
 	}
 
-	public static long insertIntoInventory(ItemVariant resource, long maxAmount, Storage<ItemVariant> inventory, @Nullable TransactionContext ctx) {
+	public static long insertIntoInventory(ItemVariant resource, long maxAmount, Storage<ItemVariant> inventory, TransactionContext ctx) {
 		if (inventory instanceof IItemHandlerSimpleInserter itemHandlerSimpleInserter) {
 			return maxAmount - itemHandlerSimpleInserter.insert(resource, maxAmount, ctx);
 		}
@@ -309,7 +309,10 @@ public class InventoryHelper {
 		ItemVariant resource = ItemVariant.of(stack);
 		long toInsert = stack.getCount();
 		for (Storage<ItemVariant> inventory : inventories) {
-			toInsert -= insertIntoInventory(resource, toInsert, inventory, null);
+			try (Transaction outer = Transaction.openOuter()) {
+				toInsert -= insertIntoInventory(resource, toInsert, inventory, outer);
+				outer.commit();
+			}
 			if (toInsert == 0) {
 				return;
 			}
