@@ -40,10 +40,21 @@ public class SlotExposedStorageWrapper implements SlotExposedStorage {
     }
 
     @Override
+    public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
+        if (isItemValid(slot, resource, maxAmount))
+            return insert(resource, maxAmount, transaction);
+
+        return 0;
+    }
+    @Override
     public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
         return this.inventory.insert(resource, maxAmount, transaction);
     }
 
+    @Override
+    public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
+        return extract(resource, maxAmount, transaction);
+    }
     @Override
     public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
         return this.inventory.extract(resource, maxAmount, transaction);
