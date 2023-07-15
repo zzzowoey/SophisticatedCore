@@ -1,5 +1,3 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.xppump;
 
 import com.google.common.collect.ImmutableMap;
@@ -41,4 +39,3 @@ public enum AutomationDirection implements StringRepresentable {
 		return NAME_VALUES.getOrDefault(name, INPUT);
 	}
 }
-*/

@@ -7,6 +7,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeSlotChangeResult;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeType;
+import net.p3pp3rf1y.sophisticatedcore.util.FluidHelper;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,8 +24,7 @@ public class TankUpgradeItem extends UpgradeItemBase<TankUpgradeWrapper> {
 	}
 
 	public long getBaseCapacity(IStorageWrapper storageWrapper) {
-		// Config values are in millibuckets so we devide the bucket constant by 1000 to get the correct multiplier
-		return (long) tankUpgradeConfig.capacityPerSlotRow.get() * storageWrapper.getNumberOfSlotRows() * (FluidConstants.BUCKET / 1000);
+		return (long) tankUpgradeConfig.capacityPerSlotRow.get() * storageWrapper.getNumberOfSlotRows() * FluidHelper.BUCKET_VOLUME_IN_MILLIBUCKETS;
 	}
 
 	public int getAdjustedStackMultiplier(IStorageWrapper storageWrapper) {

@@ -1,12 +1,16 @@
 package net.p3pp3rf1y.sophisticatedcore.api;
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.material.Fluid;
 
 public interface IStorageFluidHandler extends Storage<FluidVariant> {
-	/*default long insert(TagKey<Fluid> fluidTag, int maxFill, Fluid fallbackFluid, TransactionContext ctx) {
+	default long insert(TagKey<Fluid> fluidTag, int maxFill, Fluid fallbackFluid, TransactionContext ctx) {
 		return insert(fluidTag, maxFill, fallbackFluid, ctx, false);
 	}
 
@@ -18,13 +22,13 @@ public interface IStorageFluidHandler extends Storage<FluidVariant> {
         }
 
 		return insert(FluidVariant.of(fallbackFluid), maxFill, ctx, ignoreInOutLimit);
-	}*/
+	}
 
 	long insert(FluidVariant resource, long maxFill, TransactionContext ctx, boolean ignoreInOutLimit);
 
 	long extract(FluidVariant resource, long maxDrain, TransactionContext ctx, boolean ignoreInOutLimit);
 
-	/*FluidStack extract(TagKey<Fluid> resourceTag, long maxDrain, TransactionContext ctx, boolean ignoreInOutLimit);*/
+	FluidStack extract(TagKey<Fluid> resourceTag, long maxDrain, TransactionContext ctx, boolean ignoreInOutLimit);
 
 	FluidStack extract(int maxDrain, TransactionContext ctx, boolean ignoreInOutLimit);
 

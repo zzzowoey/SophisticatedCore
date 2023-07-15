@@ -1,5 +1,3 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.xppump;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -136,7 +134,7 @@ public class XpPumpUpgradeTab extends UpgradeSettingsTab<XpPumpUpgradeContainer>
 		}
 
 		@Override
-		protected void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+		public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
 			String text = getText.get();
 			Component fullText = Component.translatable(TranslationHelper.INSTANCE.translUpgradeControl("xp_level_select"), Component.literal(text).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
 			int xOffset = (getWidth() - minecraft.font.width(fullText)) / 2;
@@ -164,4 +162,3 @@ public class XpPumpUpgradeTab extends UpgradeSettingsTab<XpPumpUpgradeContainer>
 		}
 	}
 }
-*/

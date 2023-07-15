@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.util;
 
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
@@ -40,6 +41,7 @@ import java.util.Objects;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
 
 public class FluidHelper {
+    public static final long BUCKET_VOLUME_IN_MILLIBUCKETS = FluidConstants.BUCKET / 1000;
     public static boolean isFluidStorage(ItemStack stack) {
         return ContainerItemContext.withConstant(stack).find(FluidStorage.ITEM) != null;
     }

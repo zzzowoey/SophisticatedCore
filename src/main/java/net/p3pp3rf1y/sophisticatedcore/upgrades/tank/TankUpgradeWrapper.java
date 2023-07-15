@@ -25,6 +25,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.IRenderedTankUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IStackableContentsUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
+import net.p3pp3rf1y.sophisticatedcore.util.FluidHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 
 import javax.annotation.Nullable;
@@ -130,8 +131,7 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 	}
 
 	private long getMaxInOut() {
-		// Config values are in millibuckets so we devide the bucket constant by 1000 to get the correct multiplier
-		return Math.max(FluidConstants.BUCKET, upgradeItem.getTankUpgradeConfig().maxInputOutput.get() * storageWrapper.getNumberOfSlotRows() * upgradeItem.getAdjustedStackMultiplier(storageWrapper) * (FluidConstants.BUCKET / 1000));
+		return Math.max(FluidConstants.BUCKET, upgradeItem.getTankUpgradeConfig().maxInputOutput.get() * storageWrapper.getNumberOfSlotRows() * upgradeItem.getAdjustedStackMultiplier(storageWrapper) * FluidHelper.BUCKET_VOLUME_IN_MILLIBUCKETS);
 	}
 
 	public long fill(FluidVariant resource, long maxFill, TransactionContext ctx, boolean ignoreInOutLimit) {

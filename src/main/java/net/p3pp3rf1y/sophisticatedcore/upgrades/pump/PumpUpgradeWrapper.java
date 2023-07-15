@@ -117,8 +117,7 @@ public class PumpUpgradeWrapper extends UpgradeWrapperBase<PumpUpgradeWrapper, P
 	}
 
 	private long getMaxInOut() {
-		// Config values are in millibuckets so we devide the bucket constant by 1000 to get the correct multiplier
-		return Math.max(FluidConstants.BUCKET, pumpUpgradeConfig.maxInputOutput.get() * storageWrapper.getNumberOfSlotRows() * getAdjustedStackMultiplier(storageWrapper) * (FluidConstants.BUCKET / 1000));
+		return Math.max(FluidConstants.BUCKET, pumpUpgradeConfig.maxInputOutput.get() * storageWrapper.getNumberOfSlotRows() * getAdjustedStackMultiplier(storageWrapper) * FluidHelper.BUCKET_VOLUME_IN_MILLIBUCKETS);
 	}
 
 	public int getAdjustedStackMultiplier(IStorageWrapper storageWrapper) {

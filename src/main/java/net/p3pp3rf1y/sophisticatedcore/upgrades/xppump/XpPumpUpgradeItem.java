@@ -1,5 +1,3 @@
-// TODO: Reimplement
-/*
 package net.p3pp3rf1y.sophisticatedcore.upgrades.xppump;
 
 import net.minecraft.world.item.CreativeModeTab;
@@ -10,8 +8,8 @@ public class XpPumpUpgradeItem extends UpgradeItemBase<XpPumpUpgradeWrapper> {
 	public static final UpgradeType<XpPumpUpgradeWrapper> TYPE = new UpgradeType<>(XpPumpUpgradeWrapper::new);
 	private final XpPumpUpgradeConfig xpPumpUpgradeConfig;
 
-	public XpPumpUpgradeItem(CreativeModeTab itemGroup, XpPumpUpgradeConfig xpPumpUpgradeConfig) {
-		super(itemGroup);
+	public XpPumpUpgradeItem(XpPumpUpgradeConfig xpPumpUpgradeConfig) {
+		super();
 		this.xpPumpUpgradeConfig = xpPumpUpgradeConfig;
 	}
 
@@ -24,4 +22,3 @@ public class XpPumpUpgradeItem extends UpgradeItemBase<XpPumpUpgradeWrapper> {
 		return TYPE;
 	}
 }
-*/
