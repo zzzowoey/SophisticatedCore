@@ -31,10 +31,20 @@ repositories {
 
     maven { url = "https://maven.terraformersmc.com/releases/" } // Emi
     maven { url = "https://maven.shedaniel.me/" } // REI and deps
-    maven { url = "https://api.modrinth.com/maven" } // LazyDFU
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
 
     maven { url = "https://maven.tterrag.com/" } // Flywheel
-    maven { url = "https://ladysnake.jfrog.io/artifactory/mods" } // CCA, for Trinkets
+    maven { url = "https://maven.ladysnake.org/releases" } // CCA, for Trinkets
     maven { url = "https://modmaven.dev" } // Jei
 }
 
@@ -76,7 +86,7 @@ def dependencies(DependencyHandler deps) {
     deps.implementation "com.electronwill.night-config:core:$night_config_version"
     deps.implementation "com.electronwill.night-config:toml:$night_config_version"
 
-    deps.modApi "curse.maven:forge-config-api-port-fabric-547434:$config_api_id"
+    deps.modApi(deps.include("curse.maven:forge-config-api-port-fabric-547434:$config_api_id"))
 
     deps.modApi(deps.include("teamreborn:energy:$energy_version")) {
         exclude(group: "net.fabricmc.fabric-api")
@@ -96,7 +106,6 @@ def compat(DependencyHandler deps) {
 
     deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-base:$cca_version")
     deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-block:$cca_version")
-    deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-item:$cca_version")
 
     recipeViewers(deps)
 }
