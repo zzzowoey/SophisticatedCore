@@ -5,16 +5,24 @@ import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
+import org.jetbrains.annotations.Nullable;
 
 public interface IStorageFluidHandler extends Storage<FluidVariant> {
-	default long insert(TagKey<Fluid> fluidTag, int maxFill, Fluid fallbackFluid, TransactionContext ctx) {
+	default long simulateInsert(TagKey<Fluid> fluidTag, long maxFill, Fluid fallbackFluid, @Nullable TransactionContext transaction) {
+		try (Transaction simulateTransaction = Transaction.openNested(transaction)) {
+			return insert(fluidTag, maxFill, fallbackFluid, simulateTransaction);
+		}
+	}
+
+	default long insert(TagKey<Fluid> fluidTag, long maxFill, Fluid fallbackFluid, TransactionContext ctx) {
 		return insert(fluidTag, maxFill, fallbackFluid, ctx, false);
 	}
 
-	default long insert(TagKey<Fluid> fluidTag, int maxFill, Fluid fallbackFluid, TransactionContext ctx, boolean ignoreInOutLimit) {
+	default long insert(TagKey<Fluid> fluidTag, long maxFill, Fluid fallbackFluid, TransactionContext ctx, boolean ignoreInOutLimit) {
         for (StorageView<FluidVariant> view : TransferUtil.getNonEmpty(this)) {
             if (view.getResource().getFluid().defaultFluidState().is(fluidTag)) {
                 return insert(view.getResource(), maxFill, ctx, ignoreInOutLimit);
@@ -27,6 +35,16 @@ public interface IStorageFluidHandler extends Storage<FluidVariant> {
 	long insert(FluidVariant resource, long maxFill, TransactionContext ctx, boolean ignoreInOutLimit);
 
 	long extract(FluidVariant resource, long maxDrain, TransactionContext ctx, boolean ignoreInOutLimit);
+
+	default FluidStack simulateExtract(TagKey<Fluid> fluidTag, long maxFill, @Nullable TransactionContext transaction) {
+		try (Transaction simulateTransaction = Transaction.openNested(transaction)) {
+			return extract(fluidTag, maxFill, simulateTransaction);
+		}
+	}
+
+	default FluidStack extract(TagKey<Fluid> fluidTag, long maxDrain, TransactionContext ctx) {
+		return extract(fluidTag, maxDrain, ctx, false);
+	}
 
 	FluidStack extract(TagKey<Fluid> resourceTag, long maxDrain, TransactionContext ctx, boolean ignoreInOutLimit);
 

@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.magnet;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
@@ -88,8 +89,7 @@ public class MagnetUpgradeWrapper extends UpgradeWrapperBase<MagnetUpgradeWrappe
 	}
 
 	private boolean canFillStorageWithXp() {
-		// TODO: Reimplement
-		return false; /*return storageWrapper.getFluidHandler().map(fluidHandler -> fluidHandler.fill(ModFluids.EXPERIENCE_TAG, 1, ModFluids.XP_STILL.get(), IFluidHandler.FluidAction.SIMULATE) > 0).orElse(false);*/
+		return storageWrapper.getFluidHandler().map(fluidHandler -> fluidHandler.simulateInsert(ModFluids.EXPERIENCE_TAG, FluidConstants.BUCKET, ModFluids.XP_STILL.get(), null) > 0).orElse(false);
 	}
 
 	private int pickupXpOrbs(@Nullable LivingEntity entity, Level world, BlockPos pos) {
@@ -109,18 +109,19 @@ public class MagnetUpgradeWrapper extends UpgradeWrapperBase<MagnetUpgradeWrappe
 	}
 
 	private boolean tryToFillTank(ExperienceOrb xpOrb, @Nullable LivingEntity entity, Level world) {
-		// TODO: Reimplement
-		/*int amountToTransfer = XpHelper.experienceToLiquid(xpOrb.getValue());
+		long amountToTransfer = XpHelper.experienceToLiquid(xpOrb.getValue());
 		return storageWrapper.getFluidHandler().map(fluidHandler -> {
-			int amountAdded = fluidHandler.fill(ModFluids.EXPERIENCE_TAG, amountToTransfer, ModFluids.XP_STILL.get(), IFluidHandler.FluidAction.EXECUTE);
-
+			long amountAdded;
+			try (Transaction outer = Transaction.openOuter()) {
+				amountAdded = fluidHandler.insert(ModFluids.EXPERIENCE_TAG, amountToTransfer, ModFluids.XP_STILL.get(), outer);
+				outer.commit();
+			}
 			if (amountAdded > 0) {
 				Vec3 pos = xpOrb.position();
 				xpOrb.value = 0;
 				xpOrb.discard();
 
 				Player player = (Player) entity;
-
 				if (player != null) {
 					playXpPickupSound(world, player);
 				}
@@ -131,9 +132,7 @@ public class MagnetUpgradeWrapper extends UpgradeWrapperBase<MagnetUpgradeWrappe
 				return true;
 			}
 			return false;
-		}).orElse(false);*/
-
-		return false;
+		}).orElse(false);
 	}
 
 	private int pickupItems(@Nullable LivingEntity entity, Level world, BlockPos pos) {
