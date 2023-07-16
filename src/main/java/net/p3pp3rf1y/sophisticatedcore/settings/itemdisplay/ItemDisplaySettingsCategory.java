@@ -1,5 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay;
 
+import io.github.fabricators_of_create.porting_lib.util.LogicalSidedProvider;
+import net.fabricmc.api.EnvType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.world.item.DyeColor;
@@ -210,8 +212,7 @@ public class ItemDisplaySettingsCategory implements ISettingsCategory<ItemDispla
 	}
 
 	public void itemChanged(int changedSlotIndex) {
-		// TODO: Reimplement?
-		if (/*Thread.currentThread().getThreadGroup() != SidedThreadGroups.SERVER || */!slotIndexes.contains(changedSlotIndex)) {
+		if (!LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread() || !slotIndexes.contains(changedSlotIndex)) {
 			return;
 		}
 

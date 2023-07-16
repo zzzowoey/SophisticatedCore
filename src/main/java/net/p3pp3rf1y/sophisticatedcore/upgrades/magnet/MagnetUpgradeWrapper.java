@@ -204,19 +204,6 @@ public class MagnetUpgradeWrapper extends UpgradeWrapperBase<MagnetUpgradeWrappe
 		return false;
 	}
 
-/*	private boolean tryToInsertItem(ItemEntity itemEntity) {
-		ItemStack stack = itemEntity.getItem();
-		IItemHandlerSimpleInserter inventory = storageWrapper.getInventoryForUpgradeProcessing();
-		ItemStack remaining = inventory.insertItem(stack, true);
-		boolean insertedSomething = false;
-		if (remaining.getCount() != stack.getCount()) {
-			insertedSomething = true;
-			remaining = inventory.insertItem(stack, false);
-			itemEntity.setItem(remaining);
-		}
-		return insertedSomething;
-	}*/
-
 	public void setPickupItems(boolean pickupItems) {
 		NBTHelper.setBoolean(upgrade, "pickupItems", pickupItems);
 		save();

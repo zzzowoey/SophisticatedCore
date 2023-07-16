@@ -1,13 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.inventory;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
-
-import javax.annotation.Nullable;
-import java.lang.reflect.Field;
-import java.util.Objects;
 
 public record ItemStackKey(ItemStack stack) {
 	public ItemStack getStack() {
@@ -37,7 +31,7 @@ public record ItemStackKey(ItemStack stack) {
 		}
 
 		//noinspection DataFlowIssue
-		return (!a.hasTag() || a.getTag().equals(b.getTag())) && Objects.equals(getCapNbt(a), getCapNbt(b));
+		return (!a.hasTag() || a.getTag().equals(b.getTag())); /*&& Objects.equals(getCapNbt(a), getCapNbt(b));*/
 	}
 
 	public boolean hashCodeNotEquals(ItemStack otherStack) {
@@ -55,10 +49,10 @@ public record ItemStackKey(ItemStack stack) {
 			//noinspection ConstantConditions - hasTag call makes sure getTag doesn't return null
 			hash = hash * 31 + stack.getTag().hashCode();
 		}
-		CompoundTag capNbt = getCapNbt(stack);
+		/*CompoundTag capNbt = getCapNbt(stack);
 		if (capNbt != null && !capNbt.isEmpty()) {
 			hash = hash * 31 + capNbt.hashCode();
-		}
+		}*/
 		return hash;
 	}
 
@@ -66,20 +60,19 @@ public record ItemStackKey(ItemStack stack) {
 		return getHashCode(resource.toStack());
 	}
 
-	// TODO: Reimplement
+	// TODO: Necessary?
 	//private static final Field CAP_NBT = ObfuscationReflectionHelper.findField(ItemStack.class, "capNBT");
 
-	@Nullable
+	/*@Nullable
 	private static CompoundTag getCapNbt(ItemStack stack) {
-		/*try {
+		try {
 			return (CompoundTag) CAP_NBT.get(stack);
 		}
 		catch (IllegalAccessException e) {
 			SophisticatedCore.LOGGER.error("Error getting capNBT of stack ", e);
 			return null;
-		}*/
-		return null;
-	}
+		}
+	}*/
 
 	public boolean matches(ItemVariant resource) {
 		return hashCode() == getHashCode(resource);

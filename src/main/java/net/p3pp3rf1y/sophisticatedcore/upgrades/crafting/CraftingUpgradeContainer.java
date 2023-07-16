@@ -52,14 +52,12 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 			public void onTake(Player thePlayer, ItemStack stack) {
 				ItemStack remainingStack = getItem();
 				checkTakeAchievements(stack);
-				//net.minecraftforge.common.ForgeHooks.setCraftingPlayer(thePlayer); // TODO: is this necessary?
 				NonNullList<ItemStack> nonnulllist;
 				if (lastRecipe != null && lastRecipe.matches(craftMatrix, player.level)) {
 					nonnulllist = lastRecipe.getRemainingItems(craftMatrix);
 				} else {
 					nonnulllist = craftMatrix.items;
 				}
-				//net.minecraftforge.common.ForgeHooks.setCraftingPlayer(null); // TODO: is this necessary?
 				for (int i = 0; i < nonnulllist.size(); ++i) {
 					ItemStack itemstack = craftMatrix.getItem(i);
 					ItemStack itemstack1 = nonnulllist.get(i);

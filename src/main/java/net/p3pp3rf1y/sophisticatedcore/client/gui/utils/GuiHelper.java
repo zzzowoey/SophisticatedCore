@@ -43,10 +43,8 @@ import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ToggleButton;
 import org.joml.Matrix4f;
-import org.lwjgl.system.MemoryUtil;
 
 import javax.annotation.Nullable;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -348,20 +346,6 @@ public class GuiHelper {
 	public static int getYSize(AbstractContainerScreen<?> containerScreen) {
 		return containerScreen.imageHeight;
 	}
-
-	// TODO: Reimplement
-	/*private static final Field TOOLTIP_FONT = ObfuscationReflectionHelper.findField(Screen.class, "tooltipFont");
-
-	@Nullable
-	private static Font getTooltipFont(Screen screen) {
-		try {
-			return (Font) TOOLTIP_FONT.get(screen);
-		}
-		catch (IllegalAccessException e) {
-			SophisticatedCore.LOGGER.error("Unable to get value from field tooltipFont in Screen class: ", e);
-			return null;
-		}
-	}*/
 
 	public static void renderTooltip(Screen screen, PoseStack poseStack, List<Component> components, int x, int y) {
 		List<ClientTooltipComponent> list = gatherTooltipComponents(components, x, screen.width, screen.height, screen.font);

@@ -1,6 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore.settings;
 
+import io.github.fabricators_of_create.porting_lib.util.LogicalSidedProvider;
 import io.github.fabricators_of_create.porting_lib.util.ServerLifecycleHooks;
+import net.fabricmc.api.EnvType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -43,16 +45,15 @@ public class SettingsTemplateStorage extends SavedData {
 	}
 
 	public static SettingsTemplateStorage get() {
-		// TODO: Reimplement?
-		/*if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {*/
-		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-		if (server != null) {
-			ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-			//noinspection ConstantConditions - by this time overworld is loaded
-			DimensionDataStorage storage = overworld.getDataStorage();
-			return storage.computeIfAbsent(SettingsTemplateStorage::load, SettingsTemplateStorage::new, SAVED_DATA_NAME);
+		if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread()) {
+			MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+			if (server != null) {
+				ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+				//noinspection ConstantConditions - by this time overworld is loaded
+				DimensionDataStorage storage = overworld.getDataStorage();
+				return storage.computeIfAbsent(SettingsTemplateStorage::load, SettingsTemplateStorage::new, SAVED_DATA_NAME);
+			}
 		}
-		//}
 		return clientStorageCopy;
 	}
 
