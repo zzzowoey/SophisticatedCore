@@ -1,7 +1,18 @@
+buildscript {
+    repositories {
+        maven { url = "https://plugins.gradle.org/m2/" }
+        maven { url = "https://maven.fabricmc.net/" }
+        maven { url = "https://server.bbkr.space/artifactory/libs-release/" }
+        maven { url = "https://maven.quiltmc.org/repository/release" }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 plugins {
     id "fabric-loom" version "1.2.+"
 
-    id "io.github.juuxel.loom-vineflower" version "1.11.0" // Quiltflower, a better decompiler
+    id "io.github.juuxel.loom-vineflower" version "1.11.0" // Vineflower, a better decompiler
     id "io.github.p03w.machete" version "1.+" // automatic jar compressing on build
 
     id "maven-publish"
@@ -25,9 +36,13 @@ repositories {
     maven { url = 'https://maven.parchmentmc.org' } // Parchment
 
     maven { url = "https://maven.fabricmc.net/" } // FAPI, Loader
-    maven { url = "https://mvn.devos.one/snapshots/" } // Registrate, Porting Lib, Forge Tags, Milk Lib
+    maven { url = "https://mvn.devos.one/snapshots/" } // Porting Lib, Forge Tags, serialization-hooks
     maven { url = "https://jitpack.io/" } // for Porting Lib: Mixin Extras, Fabric ASM
-    maven { url = "https://cursemaven.com" } // Forge Config API Port
+    maven {// Forge Config API Port
+        name = "Fuzs Mod Resources"
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+    }
+    // maven { url = "https://cursemaven.com" }
 
     maven { url = "https://maven.terraformersmc.com/releases/" } // Emi
     maven { url = "https://maven.shedaniel.me/" } // REI and deps
@@ -43,7 +58,6 @@ repositories {
         }
     }
 
-    maven { url = "https://maven.tterrag.com/" } // Flywheel
     maven { url = "https://maven.ladysnake.org/releases" } // CCA, for Trinkets
     maven { url = "https://modmaven.dev" } // Jei
 }
@@ -81,31 +95,32 @@ def devEnv(DependencyHandler deps) {
 
 def dependencies(DependencyHandler deps) {
     deps.modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
-    deps.modImplementation("io.github.fabricators_of_create.Porting-Lib:Porting-Lib:$port_lib_version+$minecraft_version")
 
-    deps.implementation "com.electronwill.night-config:core:$night_config_version"
-    deps.implementation "com.electronwill.night-config:toml:$night_config_version"
+    for (String module in port_lib_modules.split(",")) {
+        deps.modApi(deps.include("io.github.fabricators_of_create.Porting-Lib:$module:$port_lib_version+$minecraft_version"))
+    }
 
-    deps.modApi(deps.include("curse.maven:forge-config-api-port-fabric-547434:$config_api_id"))
+    deps.api(deps.include("com.electronwill.night-config:core:$night_config_version"))
+    deps.api(deps.include("com.electronwill.night-config:toml:$night_config_version"))
+
+    // Forge Config Api Ports recommended way to implement this is to use their github repo, also include it as a jar-in-jar
+    deps.modApi(deps.include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_port_version"))
 
     deps.modApi(deps.include("teamreborn:energy:$energy_version")) {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-    deps.api "com.google.code.findbugs:jsr305:$jsr305_version"
+    deps.modApi(deps.include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:$cca_version"))
+    deps.modApi(deps.include("dev.onyxstudios.cardinal-components-api:cardinal-components-block:$cca_version"))
+
+    deps.api(deps.include("com.google.code.findbugs:jsr305:$jsr305_version"))
 }
 
 def compat(DependencyHandler deps) {
-//    deps.modCompileOnly("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
 //    deps.modCompileOnly("curse.maven:balm-531761:${balm_cf_file_id}")
 //    deps.modLocalRuntime("curse.maven:balm-531761:${balm_cf_file_id}")
 //    deps.modCompileOnly("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
 //    deps.modLocalRuntime("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
-//    deps.modCompileOnly("curse.maven:quark-243121:${quark_cf_file_id}")
-//    deps.modLocalRuntime("curse.maven:quark-243121:${quark_cf_file_id}")
-
-    deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-base:$cca_version")
-    deps.modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-block:$cca_version")
 
     recipeViewers(deps)
 }
@@ -136,15 +151,10 @@ def testing(DependencyHandler deps) {
 }
 
 loom {
-    if(file("src/main/resources/${mod_id}.accesswidener").exists()) {
-        accessWidenerPath = file("src/main/resources/${mod_id}.accesswidener")
-    }
+    accessWidenerPath = file("src/main/resources/sophisticatedcore.accesswidener")
 
     sourceSets {
         main {
-            java {
-                exclude("src/main/java/net/p3pp3rf1y/sophisticatedcore/compat")
-            }
             resources {
                 srcDir("src/generated/resources")
                 exclude("src/generated/resources/.cache")
@@ -162,6 +172,8 @@ loom {
             vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"
             vmArg "-Dfabric-api.datagen.modid=$mod_id"
             vmArg "-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}"
+            vmArg "-Dmixin.debug.export=true"
+            source sourceSets.main
             runDir "run/test_client"
         }
 
@@ -169,8 +181,7 @@ loom {
             client()
             ideConfigGenerated = true
 
-            //property "mixin.env.disableRefMap", "true"
-            //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            vmArg "-Dmixin.debug.export=true"
             source sourceSets.main
             runDir "run/test_client"
         }
@@ -178,8 +189,7 @@ loom {
             server()
             ideConfigGenerated = true
 
-            //property "mixin.env.disableRefMap", "true"
-            //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            vmArg "-Dmixin.debug.export=true"
             source sourceSets.main
             runDir "run/test_server"
         }
@@ -220,11 +230,17 @@ tasks.register("buildOrPublish") {
 processResources {
     exclude("**/*.bbmodel", "**/*.lnk")
 
-    Map<String, String> properties = new HashMap<>()
-    properties.put("version", version)
-    properties.put("loader_version", loader_version)
-    properties.put("fabric_version", fabric_version)
-    properties.put("minecraft_version", minecraft_version)
+    Map<String, Object> properties = [
+        "version": version,
+        "minecraft_version": minecraft_version,
+        "loader_version": loader_version,
+        "fabric_version": fabric_version,
+        "forge_config_version": forge_config_api_port_version,
+        "energy_version": energy_version
+    ]
+    for (String module in port_lib_modules.split(","))
+        properties.put("port_lib_${module}_version".toString(), port_lib_version)
+    properties.put("port_lib_tags_version", "3.0") // the weird one
 
     properties.forEach((k, v) -> inputs.property(k, v))
 
@@ -232,7 +248,7 @@ processResources {
         expand properties
     }
 
-    filesMatching("${mod_id}.mixins.json") {
+    filesMatching("sophisticatedcore.mixins.json") {
         expand "archivesBaseName": archivesBaseName
     }
 
@@ -260,7 +276,8 @@ jar {
                     "Implementation-Title"    : project.name,
                     "Implementation-Version"  : "${project.version}",
                     "Implementation-Vendor"   : "p3pp3rf1y",
-                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")],)
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")]
+        )
     }
 }
 
@@ -277,7 +294,7 @@ publishing {
     }
     publications {
         gpr(MavenPublication) {
-            artifactId = 'sophisticatedcore'
+            artifactId = 'sophisticatedcore-fabric'
             from(components.java)
         }
     }
