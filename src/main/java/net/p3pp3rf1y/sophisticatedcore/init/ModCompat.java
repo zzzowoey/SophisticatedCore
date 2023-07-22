@@ -5,6 +5,7 @@ import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.compat.CompatModIds;
 import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.JeiCompat;
+import net.p3pp3rf1y.sophisticatedcore.compat.rei.ReiCompat;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,7 @@ public class ModCompat {
 
 	static {
 		compatFactories.put(CompatModIds.JEI, () -> JeiCompat::new);
+		compatFactories.put(CompatModIds.REI, () -> ReiCompat::new);
 		/*compatFactories.put(CompatModIds.CRAFTING_TWEAKS, () -> CraftingTweaksCompat::new);
 		compatFactories.put(CompatModIds.INVENTORY_SORTER, () -> InventorySorterCompat::new);*/
 		//compatFactories.put(CompatModIds.QUARK, () -> QuarkCompat::new); //TODO readd quark compat

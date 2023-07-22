@@ -34,6 +34,9 @@
     ],
     "cardinal-components": [
       "net.p3pp3rf1y.sophisticatedcore.common.components.Components"
+    ],
+    "rei_client": [
+      "net.p3pp3rf1y.sophisticatedcore.compat.rei.CorePlugin"
     ]
   },
 
