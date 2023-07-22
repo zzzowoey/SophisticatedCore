@@ -224,16 +224,6 @@ public class InventoryHelper {
 		}
 	}
 
-	public static int getCountMissingInHandler(SlotExposedStorage itemHandler, ItemStack filter, int expectedCount) {
-		MutableInt missingCount = new MutableInt(expectedCount);
-		iterate(itemHandler, (slot, stack) -> {
-			if (ItemHandlerHelper.canItemStacksStack(stack, filter)) {
-				missingCount.subtract(Math.min(stack.getCount(), missingCount.getValue()));
-			}
-		}, () -> missingCount.getValue() == 0);
-		return missingCount.getValue();
-	}
-
 	public static <T> T iterate(SlotExposedStorage handler, BiFunction<Integer, ItemStack, T> getFromSlotStack, Supplier<T> supplyDefault, Predicate<T> shouldExit) {
 		T ret = supplyDefault.get();
 		int slots = handler.getSlots();
@@ -247,12 +237,22 @@ public class InventoryHelper {
 		return ret;
 	}
 
-	public static void transfer(SlotExposedStorage handlerA, SlotExposedStorage handlerB, Consumer<Supplier<ItemStack>> onInserted) {
+	public static int getCountMissingInHandler(SlotExposedStorage itemHandler, ItemStack filter, int expectedCount) {
+		MutableInt missingCount = new MutableInt(expectedCount);
+		iterate(itemHandler, (slot, stack) -> {
+			if (ItemHandlerHelper.canItemStacksStack(stack, filter)) {
+				missingCount.subtract(Math.min(stack.getCount(), missingCount.getValue()));
+			}
+		}, () -> missingCount.getValue() == 0);
+		return missingCount.getValue();
+	}
+
+	public static void transfer(SlotExposedStorage handlerA, SlotExposedStorage handlerB, Consumer<Supplier<ItemStack>> onInserted, @Nullable TransactionContext ctx) {
 		if (handlerA == null || handlerB == null) {
 			return;
 		}
 
-		try (Transaction iterationTransaction = Transaction.openNested(null)) {
+		try (Transaction iterationTransaction = Transaction.openNested(ctx)) {
 			for (StorageView<ItemVariant> view : handlerA.nonEmptyViews()) {
 				ItemVariant resource = view.getResource();
 				long maxExtracted;
@@ -260,6 +260,7 @@ public class InventoryHelper {
 				// check how much can be extracted
 				try (Transaction extractionTestTransaction = iterationTransaction.openNested()) {
 					maxExtracted = view.extract(resource, view.getAmount(), extractionTestTransaction);
+					extractionTestTransaction.abort();
 				}
 
 				try (Transaction transferTransaction = iterationTransaction.openNested()) {

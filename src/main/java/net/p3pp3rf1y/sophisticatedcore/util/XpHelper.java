@@ -14,8 +14,8 @@ public class XpHelper {
 		return (float) liquid / RATIO;
 	}
 
-	public static int experienceToLiquid(float xp) {
-		return (int) (xp * RATIO);
+	public static long experienceToLiquid(float xp) {
+		return (long) (xp * RATIO);
 	}
 
 	public static int getExperienceForLevel(int level) {

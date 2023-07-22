@@ -222,7 +222,7 @@ public abstract class SettingsScreen extends AbstractContainerScreen<SettingsCon
 
 	@Nullable
 	@Override
-	protected Slot findSlot(double mouseX, double mouseY) {
+	public Slot findSlot(double mouseX, double mouseY) {
 		for (int i = 0; i < menu.ghostSlots.size(); ++i) {
 			Slot slot = menu.ghostSlots.get(i);
 			if (isHovering(slot, mouseX, mouseY) && slot.isActive()) {

@@ -357,7 +357,6 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	}
 
 	protected abstract boolean isAllowed(ItemVariant resource, long amount);
-	//protected abstract boolean isAllowed(ItemStack stack);
 
 	public void saveInventory() {
 		contentsNbt.put(INVENTORY_TAG, serializeNBT());

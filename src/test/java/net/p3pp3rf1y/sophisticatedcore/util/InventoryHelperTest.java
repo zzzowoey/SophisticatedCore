@@ -62,7 +62,7 @@ class InventoryHelperTest {
 		SlotExposedStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
 		SlotExposedStorage handlerB = getItemHandler(stacksHandlerB, limitMultiplierB, isStackValidInHandlerB);
 
-		InventoryHelper.transfer(handlerA, handlerB, s -> {});
+		InventoryHelper.transfer(handlerA, handlerB, s -> {}, null);
 
 		assertHandlerState(handlerA, stacksAfterTransferA);
 		assertHandlerState(handlerB, stacksAfterTransferB);
@@ -180,7 +180,7 @@ class InventoryHelperTest {
         SlotExposedStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
         SlotExposedStorage handlerB = getItemHandler(stacksHandlerB, limitMultiplierB);
 
-		InventoryHelper.transfer(handlerA, handlerB, s -> {});
+		InventoryHelper.transfer(handlerA, handlerB, s -> {}, null);
 
 		assertHandlerState(handlerA, stacksAfterTransferA);
 		assertHandlerState(handlerB, stacksAfterTransferB);
