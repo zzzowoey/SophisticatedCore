@@ -21,7 +21,7 @@ public abstract class CookingUpgradeTab<R extends AbstractCookingRecipe, W exten
 
 	@Override
 	protected void moveSlotsToTab() {
-		cookingLogicControl.moveSlotsToView(GuiHelper.getGuiLeft(screen), GuiHelper.getGuiTop(screen));
+		cookingLogicControl.moveSlotsToView(screen.getGuiLeft(), screen.getGuiTop());
 	}
 
 	public static class SmeltingUpgradeTab extends CookingUpgradeTab<SmeltingRecipe, CookingUpgradeWrapper.SmeltingUpgradeWrapper> {

@@ -239,7 +239,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 
 		int numberOfVisibleRows = getNumberOfVisibleRows();
 		if (numberOfVisibleRows < getMenu().getNumberOfRows()) {
-			inventoryScrollPanel = new InventoryScrollPanel(Minecraft.getInstance(), this, 0, getMenu().getNumberOfStorageInventorySlots(), getSlotsOnLine(), numberOfVisibleRows * 18, GuiHelper.getGuiTop(this) + 17, GuiHelper.getGuiLeft(this) + 7);
+			inventoryScrollPanel = new InventoryScrollPanel(Minecraft.getInstance(), this, 0, getMenu().getNumberOfStorageInventorySlots(), getSlotsOnLine(), numberOfVisibleRows * 18, this.getGuiTop() + 17, this.getGuiLeft() + 7);
 			addRenderableWidget(inventoryScrollPanel);
 			inventoryScrollPanel.updateSlotsYPosition();
 		} else {
@@ -362,7 +362,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 		settingsTabControl.render(matrixStack, mouseX, mouseY, partialTicks);
 		matrixStack.translate(0, 0, 200);
 
-		renderSuper(matrixStack, mouseX, mouseY, partialTicks);
+		super.render(matrixStack, mouseX, mouseY, partialTicks);
 
 		settingsTabControl.renderTooltip(this, matrixStack, mouseX, mouseY);
 		if (sortButton != null && sortByButton != null) {
@@ -374,13 +374,13 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 		renderTooltip(matrixStack, mouseX, mouseY);
 	}
 
-	@SuppressWarnings("java:S4449") //renderFloatingItem should really have altText as nullable as it is then only passed to nullable parameter
+	/*@SuppressWarnings("java:S4449") //renderFloatingItem should really have altText as nullable as it is then only passed to nullable parameter
 	private void renderSuper(PoseStack posestack, int pMouseX, int pMouseY, float pPartialTick) { //copy of super.render with storage inventory slots rendering and snap rendering removed
 		int i = leftPos;
 		int j = topPos;
 		renderBg(posestack, pPartialTick, pMouseX, pMouseY);
-/*		//noinspection UnstableApiUsage
-		MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.ContainerScreenEvent.Render.Background(this, pPoseStack, pMouseX, pMouseY));*/
+*		//noinspection UnstableApiUsage
+		//MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.ContainerScreenEvent.Render.Background(this, pPoseStack, pMouseX, pMouseY));
 		RenderSystem.disableDepthTest();
 
 		hoveredSlot = null;
@@ -395,7 +395,6 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 		for (int k = 0; k < StorageContainerMenuBase.NUMBER_OF_PLAYER_SLOTS; ++k) {
 			Slot slot = getMenu().getSlot(getMenu().getInventorySlotsSize() - StorageContainerMenuBase.NUMBER_OF_PLAYER_SLOTS + k);
 			if (slot.isActive()) {
-				RenderSystem.setShader(GameRenderer::getPositionTexShader);
 				renderSlot(posestack, slot);
 			}
 
@@ -408,8 +407,8 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 		}
 
 		renderLabels(posestack, pMouseX, pMouseY);
-/*		//noinspection UnstableApiUsage
-		MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, pPoseStack, pMouseX, pMouseY));*/
+		//noinspection UnstableApiUsage
+		//MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, pPoseStack, pMouseX, pMouseY));
 		ItemStack itemstack = draggingItem.isEmpty() ? menu.getCarried() : draggingItem;
 		if (!itemstack.isEmpty()) {
 			int i2 = draggingItem.isEmpty() ? 8 : 16;
@@ -431,7 +430,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 
 		posestack.popPose();
 		RenderSystem.enableDepthTest();
-	}
+	}*/
 
 	@Override
 	protected void renderLabels(PoseStack matrixStack, int mouseX, int mouseY) {
@@ -613,7 +612,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 
 	private void drawSlotOverlays(PoseStack matrixStack) {
 		matrixStack.pushPose();
-		matrixStack.translate(GuiHelper.getGuiLeft(this), GuiHelper.getGuiTop(this), 0.0F);
+		matrixStack.translate(this.getGuiLeft(), this.getGuiTop(), 0.0F);
 		for (int slotNumber = 0; slotNumber < menu.getNumberOfStorageInventorySlots(); slotNumber++) {
 			List<Integer> colors = menu.getSlotOverlayColors(slotNumber);
 			if (!colors.isEmpty()) {
@@ -904,7 +903,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 	private void renderErrorOverlay(PoseStack matrixStack) {
 		menu.getErrorUpgradeSlotChangeResult().ifPresent(upgradeSlotChangeResult -> upgradeSlotChangeResult.getErrorMessage().ifPresent(overlayErrorMessage -> {
 			matrixStack.pushPose();
-			matrixStack.translate(GuiHelper.getGuiLeft(this), GuiHelper.getGuiTop(this), 0.0F);
+			matrixStack.translate(this.getGuiLeft(), this.getGuiTop(), 0.0F);
 			upgradeSlotChangeResult.getErrorUpgradeSlots().forEach(slotIndex -> renderSlotOverlay(matrixStack, menu.getSlot(menu.getFirstUpgradeSlot() + slotIndex), ERROR_SLOT_COLOR));
 			upgradeSlotChangeResult.getErrorInventorySlots().forEach(slotIndex -> {
 				Slot slot = menu.getSlot(slotIndex);
@@ -978,19 +977,19 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 	}
 
 	@Override
-	public int getTopY() {
-		return GuiHelper.getGuiTop(this);
-	}
-
-	@Override
 	public void drawSlotBg(PoseStack matrixStack) {
 		drawSlotBg(matrixStack, (width - imageWidth) / 2, (height - imageHeight) / 2);
 		drawSlotOverlays(matrixStack);
 	}
 
 	@Override
+	public int getTopY() {
+		return this.getGuiTop();
+	}
+
+	@Override
 	public int getLeftX() {
-		return GuiHelper.getGuiLeft(this);
+		return this.getGuiLeft();
 	}
 
 	public Position getRightTopAbovePlayersInventory() {

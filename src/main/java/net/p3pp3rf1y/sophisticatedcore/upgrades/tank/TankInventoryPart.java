@@ -68,8 +68,8 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 
 	@Override
 	public boolean handleMouseReleased(double mouseX, double mouseY, int button) {
-		if (mouseX < GuiHelper.getGuiLeft(screen) + getTankLeft() || mouseX >= GuiHelper.getGuiLeft(screen) + getTankLeft() + 18 ||
-				mouseY < GuiHelper.getGuiTop(screen) + pos.y() || mouseY >= GuiHelper.getGuiTop(screen) + pos.y() + height) {
+		if (mouseX < screen.getGuiLeft() + getTankLeft() || mouseX >= screen.getGuiLeft() + getTankLeft() + 18 ||
+				mouseY < screen.getGuiTop() + pos.y() || mouseY >= screen.getGuiTop() + pos.y() + height) {
 			return false;
 		}
 
@@ -96,8 +96,8 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 			contents = FluidStack.EMPTY;
 		}
 
-		int screenX = GuiHelper.getGuiLeft(screen) + pos.x() + 10;
-		int screenY = GuiHelper.getGuiTop(screen) + pos.y() + 1;
+		int screenX = screen.getGuiLeft() + pos.x() + 10;
+		int screenY = screen.getGuiTop() + pos.y() + 1;
 		if (mouseX >= screenX && mouseX < screenX + 16 && mouseY >= screenY && mouseY < screenY + height - 2) {
 			List<Component> tooltip = new ArrayList<>();
 			if (!contents.isEmpty()) {

@@ -81,8 +81,8 @@ public class SophisticatedCoreClient implements ClientModInitializer {
     }
 
     private static void renderStashSign(Minecraft mc, AbstractContainerScreen<?> containerGui, PoseStack poseStack, Slot s, ItemStack stack) {
-        int x = GuiHelper.getGuiLeft(containerGui) + s.x;
-        int y = GuiHelper.getGuiTop(containerGui) + s.y;
+        int x = containerGui.getGuiLeft() + s.x;
+        int y = containerGui.getGuiTop() + s.y;
 
         poseStack.pushPose();
         poseStack.translate(0, 0, containerGui instanceof StorageScreenBase ? 150 : 499);

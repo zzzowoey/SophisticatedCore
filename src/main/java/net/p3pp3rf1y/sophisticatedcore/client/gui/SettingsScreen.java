@@ -68,7 +68,7 @@ public abstract class SettingsScreen extends AbstractContainerScreen<SettingsCon
 
 		int numberOfVisibleRows = getNumberOfVisibleRows();
 		if (numberOfVisibleRows < getMenu().getNumberOfRows()) {
-			inventoryScrollPanel = new InventoryScrollPanel(Minecraft.getInstance(), this, 0, getMenu().getNumberOfStorageInventorySlots(), getSlotsOnLine(), numberOfVisibleRows * 18, GuiHelper.getGuiTop(this) + 17, GuiHelper.getGuiLeft(this) + 7);
+			inventoryScrollPanel = new InventoryScrollPanel(Minecraft.getInstance(), this, 0, getMenu().getNumberOfStorageInventorySlots(), getSlotsOnLine(), numberOfVisibleRows * 18, this.getGuiTop() + 17, this.getGuiLeft() + 7);
 			addRenderableWidget(inventoryScrollPanel);
 			inventoryScrollPanel.updateSlotsYPosition();
 		} else {
@@ -281,12 +281,12 @@ public abstract class SettingsScreen extends AbstractContainerScreen<SettingsCon
 
 	@Override
 	public int getTopY() {
-		return GuiHelper.getGuiTop(this);
+		return this.getGuiTop();
 	}
 
 	@Override
 	public int getLeftX() {
-		return GuiHelper.getGuiLeft(this);
+		return this.getGuiLeft();
 	}
 
 	@Override

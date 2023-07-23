@@ -90,8 +90,8 @@ public class BatteryInventoryPart extends UpgradeInventoryPartBase<BatteryUpgrad
 
 	@Override
 	public void renderTooltip(StorageScreenBase<?> screen, PoseStack poseStack, int mouseX, int mouseY) {
-		int screenX = GuiHelper.getGuiLeft(screen) + pos.x() + 10;
-		int screenY = GuiHelper.getGuiTop(screen) + pos.y() + 1;
+		int screenX = screen.getGuiLeft() + pos.x() + 10;
+		int screenY = screen.getGuiTop() + pos.y() + 1;
 		if (mouseX >= screenX && mouseX < screenX + 16 && mouseY >= screenY && mouseY < screenY + height - 2) {
 			long energyStored = container.getAmount();
 			long maxEnergyStored = container.getCapacity();

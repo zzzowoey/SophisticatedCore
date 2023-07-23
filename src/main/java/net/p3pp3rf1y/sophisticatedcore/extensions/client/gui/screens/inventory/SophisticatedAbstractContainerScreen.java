@@ -5,4 +5,7 @@ public interface SophisticatedAbstractContainerScreen {
     default int getSlotColor(int slotId) {
         return slotColor;
     }
+
+    default int getGuiLeft() { return 0; }
+    default int getGuiTop() { return 0; }
 }

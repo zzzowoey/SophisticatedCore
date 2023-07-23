@@ -331,22 +331,6 @@ public class GuiHelper {
 		return Optional.ofNullable(slot);
 	}
 
-	public static int getGuiLeft(AbstractContainerScreen<?> containerScreen) {
-		return containerScreen.leftPos;
-	}
-
-	public static int getGuiTop(AbstractContainerScreen<?> containerScreen) {
-		return containerScreen.topPos;
-	}
-
-	public static int getXSize(AbstractContainerScreen<?> containerScreen) {
-		return containerScreen.imageWidth;
-	}
-
-	public static int getYSize(AbstractContainerScreen<?> containerScreen) {
-		return containerScreen.imageHeight;
-	}
-
 	public static void renderTooltip(Screen screen, PoseStack poseStack, List<Component> components, int x, int y) {
 		List<ClientTooltipComponent> list = gatherTooltipComponents(components, x, screen.width, screen.height, screen.font);
 		screen.renderTooltipInternal(poseStack, list, x, y, DefaultTooltipPositioner.INSTANCE);
