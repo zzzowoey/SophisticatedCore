@@ -110,9 +110,6 @@ def dependencies(DependencyHandler deps) {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-    deps.modApi(deps.include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:$cca_version"))
-    deps.modApi(deps.include("dev.onyxstudios.cardinal-components-api:cardinal-components-block:$cca_version"))
-
     deps.api(deps.include("com.google.code.findbugs:jsr305:$jsr305_version"))
 }
 

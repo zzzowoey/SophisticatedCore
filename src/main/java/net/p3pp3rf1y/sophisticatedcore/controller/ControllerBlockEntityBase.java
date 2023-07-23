@@ -39,8 +39,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import static net.p3pp3rf1y.sophisticatedcore.common.components.Components.ITEM_HANDLER;
-
 public abstract class ControllerBlockEntityBase extends BlockEntity implements SlotExposedStorage, ChunkUnloadListeningBlockEntity {
 	public static final int SEARCH_RANGE = 15;
 	private List<BlockPos> storagePositions = new ArrayList<>();
@@ -460,7 +458,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 	@Override
 	public void invalidateCaps() {
 		super.invalidateCaps();
-		getComponent(ITEM_HANDLER).invalidate();
+		//getComponent(ITEM_HANDLER).invalidate();
 	}
 
 	@Override
