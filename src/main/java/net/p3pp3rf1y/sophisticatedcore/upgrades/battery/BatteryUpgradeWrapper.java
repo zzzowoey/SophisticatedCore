@@ -74,8 +74,8 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 		};
 	}
 
-	public static int getEnergyStored(ItemStack upgrade) {
-		return NBTHelper.getInt(upgrade, ENERGY_STORED_TAG).orElse(0);
+	public static long getEnergyStored(ItemStack upgrade) {
+		return NBTHelper.getLong(upgrade, ENERGY_STORED_TAG).orElse(0L);
 	}
 
 	@Override
@@ -85,7 +85,7 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 	}
 
 	private void serializeEnergyStored() {
-		NBTHelper.setInteger(upgrade, ENERGY_STORED_TAG, (int) energyStorage.amount);
+		NBTHelper.setLong(upgrade, ENERGY_STORED_TAG, energyStorage.amount);
 		save();
 		forceUpdateBatteryRenderInfo();
 	}
