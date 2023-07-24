@@ -4,6 +4,7 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandle
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -137,21 +138,21 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 
 	public void tick(@Nullable LivingEntity entity, Level world, BlockPos pos) {
 		if (getAmount() < getCapacity()) {
-			// TODO: Is this the right container item context?
-			EnergyStorage storage = ContainerItemContext.withConstant(inventory.getStackInSlot(INPUT_SLOT)).find(EnergyStorage.ITEM);
-			if (storage != null) {
-				EnergyStorageUtil.move(storage, energyStorage, storage.getAmount(), null);
-				// receiveFromStorage(storage);
-			}
+			EnergyStorageUtil.move(
+					ContainerItemContext.ofSingleSlot(new EnergyStackWrapper(INPUT_SLOT)).find(EnergyStorage.ITEM),
+					energyStorage,
+					Long.MAX_VALUE,
+					null
+			);
 		}
 
 		if (getAmount() > 0) {
-			// TODO: Is this the right container item context?
-			EnergyStorage storage = ContainerItemContext.withConstant(inventory.getStackInSlot(OUTPUT_SLOT)).find(EnergyStorage.ITEM);
-			if (storage != null) {
-				EnergyStorageUtil.move(energyStorage, storage, getAmount(), null);
-				// extractToStorage(storage);
-			}
+			EnergyStorageUtil.move(
+					energyStorage,
+					ContainerItemContext.ofSingleSlot(new EnergyStackWrapper(OUTPUT_SLOT)).find(EnergyStorage.ITEM),
+					Long.MAX_VALUE,
+					null
+			);
 		}
 	}
 
@@ -167,5 +168,23 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 	@Override
 	public boolean canBeDisabled() {
 		return false;
+	}
+
+	private class EnergyStackWrapper extends SingleStackStorage {
+		private int slot;
+
+		public EnergyStackWrapper(int slot) {
+			this.slot = slot;
+		}
+
+		@Override
+		protected ItemStack getStack() {
+			return inventory.getStackInSlot(slot);
+		}
+
+		@Override
+		protected void setStack(ItemStack stack) {
+			inventory.setStackInSlot(slot, stack);
+		}
 	}
 }
