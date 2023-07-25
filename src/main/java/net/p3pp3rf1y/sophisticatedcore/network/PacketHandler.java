@@ -4,8 +4,6 @@ import io.github.fabricators_of_create.porting_lib.util.NetworkDirection;
 import me.pepperbell.simplenetworking.C2SPacket;
 import me.pepperbell.simplenetworking.S2CPacket;
 import me.pepperbell.simplenetworking.SimpleChannel;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -41,8 +39,6 @@ public class PacketHandler {
 		registerMessage(StopDiscPlaybackMessage.class, StopDiscPlaybackMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SoundStopNotificationMessage.class, SoundStopNotificationMessage::new, PLAY_TO_SERVER);
 		registerMessage(TankClickMessage.class, TankClickMessage::new, PLAY_TO_SERVER);
-		registerMessage(StorageInsertMessage.class, StorageInsertMessage::new, PLAY_TO_CLIENT);
-		registerMessage(InsertIntoHeldStorageMessage.class, InsertIntoHeldStorageMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SyncTemplateSettingsMessage.class, SyncTemplateSettingsMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SyncAdditionalSlotInfoMessage.class, SyncAdditionalSlotInfoMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SyncEmptySlotIconsMessage.class, SyncEmptySlotIconsMessage::new, PLAY_TO_CLIENT);

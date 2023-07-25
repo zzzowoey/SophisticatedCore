@@ -71,7 +71,6 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 		setBaseSlotLimit(baseSlotLimit);
 		deserializeNBT(contentsNbt.getCompound(INVENTORY_TAG));
 		inventoryPartitioner = new InventoryPartitioner(contentsNbt.getCompound(PARTITIONER_TAG), this, () -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
-		filterItemSlots.putAll(inventoryPartitioner.getFilterItems());
 		initStackNbts();
 
 		isInitializing = false;
@@ -206,6 +205,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	}
 
 	public void setBaseSlotLimit(int baseSlotLimit) {
+		slotLimitInitialized = false; // not the most ideal of places to do this, but base slot limit is set when upgrades change and that's when slot limit needs to be reinitialized as well
 		this.baseSlotLimit = baseSlotLimit;
 		maxStackSizeMultiplier = baseSlotLimit / 64;
 
@@ -270,7 +270,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 			return triggerOverflowUpgrades(resource.toStack((int) insertItemInternal(slot, resource, maxAmount, ctx))).getCount();
 		}
 
-		return maxAmount;
+		return insertItemInternal(slot, resource, maxAmount, ctx);
 	}
 
 	private void initSlotTracker() {
@@ -464,6 +464,10 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 
 	public void unregisterFilterItemsChangeListener() {
 		filterItemsChangeListener = s -> {};
+	}
+
+	public void initFilterItems() {
+		filterItemSlots.putAll(inventoryPartitioner.getFilterItems());
 	}
 
 	public void onFilterItemsChanged() {

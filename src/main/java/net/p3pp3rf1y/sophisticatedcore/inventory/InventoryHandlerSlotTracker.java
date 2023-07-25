@@ -25,6 +25,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 	private final Map<Integer, ItemStackKey> fullSlotStacks = new HashMap<>();
 	private final Map<ItemStackKey, Set<Integer>> partiallyFilledStackSlots = new HashMap<>();
 	private final Map<Integer, ItemStackKey> partiallyFilledSlotStacks = new HashMap<>();
+	private final Map<Item, Set<ItemStackKey>> itemStackKeys = new HashMap<>();
 	private final Set<Integer> emptySlots = new TreeSet<>();
 	private final MemorySettingsCategory memorySettings;
 	private Map<Item, Set<Integer>> filterItemSlots;
@@ -55,6 +56,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 			return new TreeSet<>();
 		}).add(slot);
 		partiallyFilledSlotStacks.put(slot, stackKey);
+		itemStackKeys.computeIfAbsent(stack.getItem(), i -> new HashSet<>()).add(stackKey);
 	}
 
 	@Override
@@ -67,6 +69,11 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		return partiallyFilledStackSlots.keySet();
 	}
 
+	@Override
+	public Set<Item> getItems() {
+		return itemStackKeys.keySet();
+	}
+
 	public void addFull(int slot, ItemStack stack) {
 		ItemStackKey stackKey = new ItemStackKey(stack);
 		fullStackSlots.computeIfAbsent(stackKey, k -> {
@@ -76,6 +83,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 			return new HashSet<>();
 		}).add(slot);
 		fullSlotStacks.put(slot, stackKey);
+		itemStackKeys.computeIfAbsent(stack.getItem(), i -> new HashSet<>()).add(stackKey);
 	}
 
 	public void removePartiallyFilled(int slot) {
@@ -91,7 +99,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 			if (partialSlots == null || partialSlots.isEmpty()) {
 				partiallyFilledStackSlots.remove(stackKey);
 				if (!fullStackSlots.containsKey(stackKey)) {
-					onRemoveStackKey.accept(stackKey);
+					onStackKeyRemoved(stackKey);
 				}
 			}
 		}
@@ -110,10 +118,22 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 			if (fullSlots == null || fullSlots.isEmpty()) {
 				fullStackSlots.remove(stackKey);
 				if (!partiallyFilledStackSlots.containsKey(stackKey)) {
-					onRemoveStackKey.accept(stackKey);
+					onStackKeyRemoved(stackKey);
 				}
 			}
 		}
+	}
+
+	private void onStackKeyRemoved(ItemStackKey stackKey) {
+		itemStackKeys.computeIfPresent(stackKey.getStack().getItem(), (i, stackKeys) -> {
+			stackKeys.remove(stackKey);
+			return stackKeys;
+		});
+		if (itemStackKeys.containsKey(stackKey.getStack().getItem()) && itemStackKeys.get(stackKey.getStack().getItem()).isEmpty()) {
+			itemStackKeys.remove(stackKey.getStack().getItem());
+		}
+
+		onRemoveStackKey.accept(stackKey);
 	}
 
 	@Override
@@ -202,6 +222,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		partiallyFilledStackSlots.keySet().forEach(sk -> onRemoveStackKey.accept(sk));
 		partiallyFilledStackSlots.clear();
 		partiallyFilledSlotStacks.clear();
+		itemStackKeys.clear();
 
 		emptySlots.clear();
 		onRemoveLastEmptySlot.run();

@@ -49,30 +49,12 @@ public record ItemStackKey(ItemStack stack) {
 			//noinspection ConstantConditions - hasTag call makes sure getTag doesn't return null
 			hash = hash * 31 + stack.getTag().hashCode();
 		}
-		/*CompoundTag capNbt = getCapNbt(stack);
-		if (capNbt != null && !capNbt.isEmpty()) {
-			hash = hash * 31 + capNbt.hashCode();
-		}*/
 		return hash;
 	}
 
 	public static int getHashCode(ItemVariant resource) {
 		return getHashCode(resource.toStack());
 	}
-
-	// TODO: Necessary?
-	//private static final Field CAP_NBT = ObfuscationReflectionHelper.findField(ItemStack.class, "capNBT");
-
-	/*@Nullable
-	private static CompoundTag getCapNbt(ItemStack stack) {
-		try {
-			return (CompoundTag) CAP_NBT.get(stack);
-		}
-		catch (IllegalAccessException e) {
-			SophisticatedCore.LOGGER.error("Error getting capNBT of stack ", e);
-			return null;
-		}
-	}*/
 
 	public boolean matches(ItemVariant resource) {
 		return hashCode() == getHashCode(resource);

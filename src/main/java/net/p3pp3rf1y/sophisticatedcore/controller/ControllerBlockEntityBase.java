@@ -46,6 +46,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 	private int totalSlots = 0;
 	private final Map<ItemStackKey, Set<BlockPos>> stackStorages = new HashMap<>();
 	private final Map<BlockPos, Set<ItemStackKey>> storageStacks = new HashMap<>();
+	private final Map<Item, Set<ItemStackKey>> itemStackKeys = new HashMap<>();
 	private final Set<BlockPos> emptySlotsStorages = new LinkedHashSet<>();
 
 	private final Map<Item, Set<BlockPos>> memorizedItemStorages = new HashMap<>();
@@ -91,6 +92,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		if (level != null && !level.isClientSide()) {
 			stackStorages.clear();
 			storageStacks.clear();
+			itemStackKeys.clear();
 			emptySlotsStorages.clear();
 			storagePositions.forEach(this::addStorageStacksAndRegisterListeners);
 		}
@@ -270,6 +272,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 	public void addStorageStack(BlockPos storagePos, ItemStackKey itemStackKey) {
 		stackStorages.computeIfAbsent(itemStackKey, stackKey -> new LinkedHashSet<>()).add(storagePos);
 		storageStacks.computeIfAbsent(storagePos, pos -> new HashSet<>()).add(itemStackKey);
+		itemStackKeys.computeIfAbsent(itemStackKey.getStack().getItem(), item -> new LinkedHashSet<>()).add(itemStackKey);
 	}
 
 	public void removeStorageStack(BlockPos storagePos, ItemStackKey stackKey) {
@@ -279,8 +282,22 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		});
 		if (stackStorages.containsKey(stackKey) && stackStorages.get(stackKey).isEmpty()) {
 			stackStorages.remove(stackKey);
+
+			itemStackKeys.computeIfPresent(stackKey.getStack().getItem(), (i, stackKeys) -> {
+				stackKeys.remove(stackKey);
+				return stackKeys;
+			});
+			if (itemStackKeys.containsKey(stackKey.getStack().getItem()) && itemStackKeys.get(stackKey.getStack().getItem()).isEmpty()) {
+				itemStackKeys.remove(stackKey.getStack().getItem());
+			}
 		}
-		storageStacks.remove(storagePos);
+		storageStacks.computeIfPresent(storagePos, (pos, stackKeys) -> {
+			stackKeys.remove(stackKey);
+			return stackKeys;
+		});
+		if (storageStacks.containsKey(storagePos) && storageStacks.get(storagePos).isEmpty()) {
+			storageStacks.remove(storagePos);
+		}
 	}
 
 	public void removeStorageStacks(BlockPos storagePos) {
@@ -291,6 +308,13 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 					storages.remove(storagePos);
 					if (storages.isEmpty()) {
 						stackStorages.remove(stackKey);
+						itemStackKeys.computeIfPresent(stackKey.getStack().getItem(), (i, positions) -> {
+							positions.remove(stackKey);
+							return positions;
+						});
+						if (itemStackKeys.containsKey(stackKey.getStack().getItem()) && itemStackKeys.get(stackKey.getStack().getItem()).isEmpty()) {
+							itemStackKeys.remove(stackKey.getStack().getItem());
+						}
 					}
 				}
 			});
@@ -299,8 +323,8 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		storageStacks.remove(storagePos);
 	}
 
-	protected boolean hasStack(ItemStack stack) {
-		return stackStorages.containsKey(new ItemStackKey(stack));
+	protected boolean hasItem(Item item) {
+		return itemStackKeys.containsKey(item);
 	}
 
 	protected boolean isMemorizedItem(ItemStack stack) {
@@ -554,6 +578,17 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 				return maxAmount;
 			}
 		}
+		if (itemStackKeys.containsKey(resource.getItem())) {
+			for (ItemStackKey key : itemStackKeys.get(resource.getItem())) {
+				if (stackStorages.containsKey(key)) {
+					Set<BlockPos> positions = stackStorages.get(key);
+					remaining -= insertIntoStorages(positions, resource, remaining, transaction);
+					if (remaining == 0) {
+						break;
+					}
+				}
+			}
+		}
 
 		if (memorizedItemStorages.containsKey(resource.getItem())) {
 			remaining -= insertIntoStorages(memorizedItemStorages.get(resource.getItem()), resource, remaining, transaction);
@@ -582,6 +617,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 
 	private long insertIntoStorages(Set<BlockPos> positions, ItemVariant resource, long maxAmount, TransactionContext transaction) {
 		long remaining = maxAmount;
+		Set<BlockPos> positionsCopy = new HashSet<>(positions); //to prevent CME if stack insertion actually causes set of positions to change
 		for (BlockPos storagePos : positions) {
 			long finalRemaining = remaining;
 			remaining = getInventoryHandlerValueFromHolder(storagePos, ins -> finalRemaining - ins.insert(resource, finalRemaining, transaction)).orElse(remaining);
@@ -664,7 +700,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 
 	public void detachFromStoragesAndUnlinkBlocks() {
 		storagePositions.forEach(pos -> WorldHelper.getLoadedBlockEntity(level, pos, IControllableStorage.class).ifPresent(IControllableStorage::unregisterController));
-		linkedBlocks.forEach(linkedPos -> WorldHelper.getLoadedBlockEntity(level, linkedPos, ILinkable.class).ifPresent(ILinkable::unlinkFromController));
+		new HashSet<>(linkedBlocks).forEach(linkedPos -> WorldHelper.getLoadedBlockEntity(level, linkedPos, ILinkable.class).ifPresent(ILinkable::unlinkFromController)); //copying into new hashset to prevent CME when these are removed
 	}
 
 	@Override

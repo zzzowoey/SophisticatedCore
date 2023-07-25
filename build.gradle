@@ -24,10 +24,6 @@ targetCompatibility = JavaVersion.VERSION_17
 archivesBaseName = project.mod_id
 group = project.maven_group
 
-String buildNumber = System.getenv("GITHUB_RUN_NUMBER")
-String patch = buildNumber != null ? buildNumber : "99999"
-version = mod_version.replace("<build>", patch)
-
 repositories {
     mavenLocal()
     mavenCentral()
@@ -209,7 +205,7 @@ loom {
 }*/
 
 machete {
-    enabled = buildNumber != null
+    enabled = System.getenv("GITHUB_RUN_NUMBER") != null
 }
 
 tasks.register("buildOrPublish") {
