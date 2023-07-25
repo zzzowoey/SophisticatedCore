@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "sophisticatedcore",
-  "version": "${version}",
+  "id": "${mod_id}",
+  "version": "${mod_version}",
 
   "name": "Sophisticated Core",
   "description": "Base mod of Sophisticated mods.",

@@ -22,6 +22,7 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.mod_id
+version = project.mod_version
 group = project.maven_group
 
 repositories {
@@ -224,12 +225,13 @@ processResources {
     exclude("**/*.bbmodel", "**/*.lnk")
 
     Map<String, Object> properties = [
-        "version": version,
+        "mod_id": project.mod_id,
+        "mod_version": project.mod_version,
         "minecraft_version": minecraft_version,
         "loader_version": loader_version,
         "fabric_version": fabric_version,
-        "forge_config_version": forge_config_api_port_version,
-        "energy_version": energy_version
+        "forge_config_version": project.forge_config_api_port_version,
+        "energy_version": project.energy_version
     ]
     for (String module in port_lib_modules.split(","))
         properties.put("port_lib_${module}_version".toString(), port_lib_version)
@@ -263,7 +265,7 @@ jar {
     }
 
     manifest {
-        attributes(["Specification-Title"     : "${mod_id}",
+        attributes(["Specification-Title"     : "${project.mod_id}",
                     "Specification-Vendor"    : "p3pp3rf1y",
                     "Specification-Version"   : "1",
                     "Implementation-Title"    : project.name,
