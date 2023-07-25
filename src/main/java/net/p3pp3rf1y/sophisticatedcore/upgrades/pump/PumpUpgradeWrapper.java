@@ -99,7 +99,7 @@ public class PumpUpgradeWrapper extends UpgradeWrapperBase<PumpUpgradeWrapper, P
 	private Optional<Integer> interactWithAttachedFluidHandlers(Level world, BlockPos pos, Storage<FluidVariant> storageFluidHandler) {
 		for (Direction dir : Direction.values()) {
             boolean successful = false;
-			Storage<FluidVariant> storage = FluidStorage.SIDED.find(world, pos, dir);
+			Storage<FluidVariant> storage = FluidStorage.SIDED.find(world, pos.offset(dir.getNormal()), dir.getOpposite());
 			if (storage != null) {
 				if (isInput()) {
 					successful = fillFromFluidHandler(storage, storageFluidHandler, getMaxInOut());
@@ -223,7 +223,7 @@ public class PumpUpgradeWrapper extends UpgradeWrapperBase<PumpUpgradeWrapper, P
 		for (StorageView<FluidVariant> view : storageFluidHandler.nonEmptyViews()) {
 			FluidStack tankFluid = new FluidStack(view);
 			if (!tankFluid.isEmpty() && fluidFilterLogic.fluidMatches(tankFluid)
-					&& StorageUtil.move(fluidHandler, storageFluidHandler, view.getResource()::equals, maxFill, null) == 0) {
+					&& StorageUtil.move(storageFluidHandler, fluidHandler, view.getResource()::equals, maxFill, null) == 0) {
 					/*&& !FluidUtil.tryFluidTransfer(fluidHandler, storageFluidHandler, new FluidStack(tankFluid, maxFill), true).isEmpty()) {*/
 				ret = true;
 				break;
