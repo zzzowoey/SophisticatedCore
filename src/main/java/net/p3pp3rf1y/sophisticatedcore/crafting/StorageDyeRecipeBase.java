@@ -10,7 +10,6 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.level.Level;
-import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;

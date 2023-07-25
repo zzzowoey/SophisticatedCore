@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades;
 
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.StringTag;
