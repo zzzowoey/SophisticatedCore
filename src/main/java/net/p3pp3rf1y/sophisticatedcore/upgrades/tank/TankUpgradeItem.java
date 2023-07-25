@@ -34,7 +34,8 @@ public class TankUpgradeItem extends UpgradeItemBase<TankUpgradeWrapper> {
 	public long getTankCapacity(IStorageWrapper storageWrapper) {
 		int stackMultiplier = getAdjustedStackMultiplier(storageWrapper);
 		long baseCapacity = getBaseCapacity(storageWrapper);
-		return Long.MAX_VALUE / stackMultiplier < baseCapacity ? Integer.MAX_VALUE : baseCapacity * stackMultiplier;
+		long maxCapacity = Integer.MAX_VALUE * FluidHelper.BUCKET_VOLUME_IN_MILLIBUCKETS;
+		return maxCapacity / stackMultiplier < baseCapacity ? maxCapacity : baseCapacity * stackMultiplier;
 	}
 
 	public TankUpgradeConfig getTankUpgradeConfig() {
