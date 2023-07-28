@@ -1,16 +1,14 @@
-/*
 package net.p3pp3rf1y.sophisticatedcore.compat.craftingtweaks;
 
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 import net.blay09.mods.craftingtweaks.api.CraftingTweaksAPI;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import net.fabricmc.api.EnvType;
 import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 
 public class CraftingTweaksCompat implements ICompat {
 	@Override
 	public void setup() {
 		CraftingTweaksAPI.registerCraftingGridProvider(new CraftingUpgradeTweakProvider());
-		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> CraftingUpgradeTweakUIPart::register);
+        EnvExecutor.runWhenOn(EnvType.CLIENT, () -> CraftingUpgradeTweakUIPart::register);
 	}
 }
-*/

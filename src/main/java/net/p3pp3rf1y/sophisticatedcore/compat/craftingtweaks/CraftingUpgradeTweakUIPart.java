@@ -1,30 +1,22 @@
-/*
 package net.p3pp3rf1y.sophisticatedcore.compat.craftingtweaks;
 
 import net.blay09.mods.craftingtweaks.CraftingTweaksProviderManager;
 import net.blay09.mods.craftingtweaks.api.CraftingTweaksClientAPI;
-import net.minecraft.client.gui.components.AbstractWidget;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.inventory.Slot;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.crafting.ICraftingUIPart;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CraftingUpgradeTweakUIPart implements ICraftingUIPart {
-	@OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
 	private StorageScreenBase<?> storageScreen;
-
-	private static final Method ADD_RENDERABLE_WIDGET = ObfuscationReflectionHelper.findMethod(Screen.class, "m_142416_", GuiEventListener.class);
 
 	private final List<Button> buttons = new ArrayList<>();
 
@@ -32,32 +24,21 @@ public class CraftingUpgradeTweakUIPart implements ICraftingUIPart {
 		StorageScreenBase.setCraftingUIPart(new CraftingUpgradeTweakUIPart());
 	}
 
-	@OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
 	private void addButton(Button button) {
 		buttons.add(button);
-		try {
-			ADD_RENDERABLE_WIDGET.invoke(storageScreen, button);
-		}
-		catch (IllegalAccessException | InvocationTargetException e) {
-			SophisticatedCore.LOGGER.error("Error calling addButton in Screen class", e);
-		}
+		storageScreen.addRenderableWidget(button);
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
 	public void onCraftingSlotsHidden() {
 		if (buttons.isEmpty()) {
 			return;
 		}
 
-		List<GuiEventListener> screenChildren = ObfuscationReflectionHelper.getPrivateValue(Screen.class, storageScreen, "f_96540_");
-		List<AbstractWidget> screenRenderables = ObfuscationReflectionHelper.getPrivateValue(Screen.class, storageScreen, "f_169369_");
-		if (screenChildren == null || screenRenderables == null) {
-			return;
-		}
-
-		buttons.forEach(screenChildren::remove);
-		buttons.forEach(screenRenderables::remove);
+		buttons.forEach(storageScreen.children()::remove);
+		buttons.forEach(storageScreen.renderables::remove);
 		buttons.clear();
 	}
 
@@ -67,7 +48,7 @@ public class CraftingUpgradeTweakUIPart implements ICraftingUIPart {
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
 	public void setStorageScreen(StorageScreenBase<?> screen) {
 		storageScreen = screen;
 	}
@@ -85,14 +66,13 @@ public class CraftingUpgradeTweakUIPart implements ICraftingUIPart {
 		});
 	}
 
-	@OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
 	private int getButtonX(Slot firstSlot) {
 		return firstSlot.x - 19;
 	}
 
-	@OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
 	private int getButtonY(Slot firstSlot, int index) {
 		return firstSlot.y + 18 * index;
 	}
 }
-*/
