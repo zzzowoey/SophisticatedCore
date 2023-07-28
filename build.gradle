@@ -39,7 +39,6 @@ repositories {
         name = "Fuzs Mod Resources"
         url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
     }
-    // maven { url = "https://cursemaven.com" }
 
     maven { url = "https://maven.terraformersmc.com/releases/" } // Emi
     maven { url = "https://maven.shedaniel.me/" } // REI and deps
@@ -57,6 +56,7 @@ repositories {
 
     maven { url = "https://maven.ladysnake.org/releases" } // CCA, for Trinkets
     maven { url = "https://modmaven.dev" } // Jei
+    maven { url = "https://www.cursemaven.com" } // Balm, CraftingTweaks
 }
 
 configurations.configureEach {
@@ -88,6 +88,8 @@ def setup(DependencyHandler deps) {
 
 def devEnv(DependencyHandler deps) {
     deps.modLocalRuntime("maven.modrinth:lazydfu:$lazy_dfu_version")
+    deps.modLocalRuntime("com.terraformersmc:modmenu:$modmenu_version")
+    deps.modLocalRuntime("curse.maven:config-menus-forge-544048:$config_menu_version")
 }
 
 def dependencies(DependencyHandler deps) {
@@ -111,10 +113,11 @@ def dependencies(DependencyHandler deps) {
 }
 
 def compat(DependencyHandler deps) {
-//    deps.modCompileOnly("curse.maven:balm-531761:${balm_cf_file_id}")
-//    deps.modLocalRuntime("curse.maven:balm-531761:${balm_cf_file_id}")
-//    deps.modCompileOnly("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
-//    deps.modLocalRuntime("curse.maven:craftingtweaks-233071:${crafting_tweaks_cf_file_id}")
+    deps.modCompileOnly("com.terraformersmc:modmenu:$modmenu_version")
+    deps.modCompileOnly("curse.maven:balm-500525:${balm_cf_file_id}")
+    deps.modLocalRuntime("curse.maven:balm-500525:${balm_cf_file_id}")
+    deps.modCompileOnly("curse.maven:craftingtweaks-502516:${crafting_tweaks_cf_file_id}")
+    deps.modLocalRuntime("curse.maven:craftingtweaks-502516:${crafting_tweaks_cf_file_id}")
 
     recipeViewers(deps)
 }
