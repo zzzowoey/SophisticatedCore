@@ -109,7 +109,7 @@ public class InventoryScrollPanel extends ScrollPanel {
 	public void updateSlotsYPosition() {
 		for (int i = firstSlotIndex, row = 0; i < firstSlotIndex + numberOfSlots; i++, row = i / slotsInARow) {
 			int newY = top - screen.getTopY() - (int) scrollDistance / 18 * 18 + row * 18 + TOP_Y_OFFSET;
-			if (newY < -17 || newY > height) {
+			if (newY < 17 || newY > height) {
 				newY = -100;
 			}
 			screen.getSlot(i).y = newY;
