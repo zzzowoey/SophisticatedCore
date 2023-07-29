@@ -377,7 +377,7 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 		int i = leftPos;
 		int j = topPos;
 		renderBg(posestack, pPartialTick, pMouseX, pMouseY);
-*		//noinspection UnstableApiUsage
+		//noinspection UnstableApiUsage
 		//MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.ContainerScreenEvent.Render.Background(this, pPoseStack, pMouseX, pMouseY));
 		RenderSystem.disableDepthTest();
 
