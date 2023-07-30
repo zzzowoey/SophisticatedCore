@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
-import net.p3pp3rf1y.sophisticatedcore.compat.jei.TransferRecipeMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.PlayDiscMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.SoundStopNotificationMessage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.StopDiscPlaybackMessage;
@@ -43,7 +42,6 @@ public class PacketHandler {
 		registerMessage(SyncAdditionalSlotInfoMessage.class, SyncAdditionalSlotInfoMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SyncEmptySlotIconsMessage.class, SyncEmptySlotIconsMessage::new, PLAY_TO_CLIENT);
 		registerMessage(SyncSlotChangeErrorMessage.class, SyncSlotChangeErrorMessage::new, PLAY_TO_CLIENT);
-		registerMessage(TransferRecipeMessage.class, TransferRecipeMessage::new, PLAY_TO_SERVER);
 	}
 
 	public static <T extends SimplePacketBase> void registerMessage(Class<T> type, Function<FriendlyByteBuf, T> factory, NetworkDirection direction) {

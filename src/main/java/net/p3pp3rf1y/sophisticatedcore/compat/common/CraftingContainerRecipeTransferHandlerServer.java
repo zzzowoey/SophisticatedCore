@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedcore.compat.rei;
+package net.p3pp3rf1y.sophisticatedcore.compat.common;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -7,7 +7,11 @@ import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CraftingContainerRecipeTransferHandlerServer {
 	private CraftingContainerRecipeTransferHandlerServer() {}

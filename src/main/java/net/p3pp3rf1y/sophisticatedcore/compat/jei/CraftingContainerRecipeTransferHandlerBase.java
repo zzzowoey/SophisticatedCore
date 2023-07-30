@@ -23,6 +23,7 @@ import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ICraftingContainer;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerBase;
+import net.p3pp3rf1y.sophisticatedcore.compat.common.TransferRecipeMessage;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 
 import javax.annotation.Nullable;

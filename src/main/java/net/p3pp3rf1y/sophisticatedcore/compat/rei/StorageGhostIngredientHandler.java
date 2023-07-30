@@ -6,22 +6,22 @@ import me.shedaniel.rei.api.client.gui.drag.DraggableStack;
 import me.shedaniel.rei.api.client.gui.drag.DraggableStackVisitor;
 import me.shedaniel.rei.api.client.gui.drag.DraggedAcceptorResult;
 import me.shedaniel.rei.api.client.gui.drag.DraggingContext;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
-import net.p3pp3rf1y.sophisticatedcore.compat.common.SetMemorySlotMessage;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.IFilterSlot;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.compat.common.SetGhostSlotMessage;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
-import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsTab;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class SettingsGhostIngredientHandler<S extends SettingsScreen> implements DraggableStackVisitor<S> {
+public abstract class StorageGhostIngredientHandler<S extends StorageScreenBase<?>> implements DraggableStackVisitor<S> {
 	@Override
 	public DraggedAcceptorResult acceptDraggedStack(DraggingContext<S> context, DraggableStack stack) {
 		Stream<BoundsProvider> bounds = getDraggableAcceptingBounds(context, stack);
@@ -51,29 +51,20 @@ public class SettingsGhostIngredientHandler<S extends SettingsScreen> implements
 	@Override
 	public Stream<BoundsProvider> getDraggableAcceptingBounds(DraggingContext<S> context, DraggableStack stack) {
 		List<BoundsProvider> targets = new ArrayList<>();
-		SettingsScreen screen = context.getScreen();
+		StorageContainerMenuBase<?> screen = context.getScreen().getMenu();
 
 		if (stack.getStack().getValue() instanceof ItemStack ghostStack) {
-			screen.getSettingsTabControl().getOpenTab().ifPresent(tab -> {
-				if (tab instanceof MemorySettingsTab) {
-					screen.getMenu().getStorageInventorySlots().forEach(s -> {
-						if (s.getItem().isEmpty()) {
-							targets.add(new GhostTarget<>(screen, ghostStack, s));
-						}
-					});
+			screen.getOpenContainer().ifPresent(c -> c.getSlots().forEach(s -> {
+				if (s instanceof IFilterSlot && s.mayPlace(ghostStack)) {
+					targets.add(new GhostTarget<>(context.getScreen(), ghostStack, s));
 				}
-			});
+			}));
 		}
 
 		return targets.stream();
 	}
 
-	@Override
-	public <R extends Screen> boolean isHandingScreen(R screen) {
-		return screen instanceof SettingsScreen;
-	}
-
-	private static class GhostTarget<I, S extends SettingsScreen> implements BoundsProvider {
+	private static class GhostTarget<I, S extends StorageScreenBase> implements BoundsProvider {
 		private final Rectangle area;
 		private final Slot slot;
 		private final ItemStack stack;
@@ -85,7 +76,7 @@ public class SettingsGhostIngredientHandler<S extends SettingsScreen> implements
 		}
 
 		public void accept(I ingredient) {
-			PacketHandler.sendToServer(new SetMemorySlotMessage(stack, slot.index));
+			PacketHandler.sendToServer(new SetGhostSlotMessage(stack, slot.index));
 		}
 
 		@Override
