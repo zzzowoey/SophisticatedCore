@@ -5,6 +5,7 @@ import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.compat.CompatModIds;
 import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.craftingtweaks.CraftingTweaksCompat;
+import net.p3pp3rf1y.sophisticatedcore.compat.emi.EmiCompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.JeiCompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.rei.ReiCompat;
 
@@ -19,6 +20,7 @@ public class ModCompat {
 	private static final Map<String, Supplier<Callable<ICompat>>> compatFactories = new HashMap<>();
 
 	static {
+		compatFactories.put(CompatModIds.EMI, () -> EmiCompat::new);
 		compatFactories.put(CompatModIds.JEI, () -> JeiCompat::new);
 		compatFactories.put(CompatModIds.REI, () -> ReiCompat::new);
 		compatFactories.put(CompatModIds.CRAFTING_TWEAKS, () -> CraftingTweaksCompat::new);

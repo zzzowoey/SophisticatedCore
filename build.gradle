@@ -124,7 +124,7 @@ def compat(DependencyHandler deps) {
 
 def recipeViewers(DependencyHandler deps) {
     // EMI
-    deps.modCompileOnly("dev.emi:emi-fabric:$emi_version:api") { transitive = false }
+    deps.modCompileOnly("dev.emi:emi-fabric:$emi_version") { transitive = false }
     // JEI
     deps.modCompileOnly("mezz.jei:jei-$minecraft_version-fabric:$jei_version") { transitive = false }
     // REI

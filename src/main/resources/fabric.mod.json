@@ -29,9 +29,15 @@
     "fabric-datagen": [
       "net.p3pp3rf1y.sophisticatedcore.data.SophisticatedCoreData"
     ],
+
+    "emi": [
+      "net.p3pp3rf1y.sophisticatedcore.compat.emi.EmiCompat"
+    ],
+
     "jei_mod_plugin": [
       "net.p3pp3rf1y.sophisticatedcore.compat.jei.JeiCompat"
     ],
+
     "rei_client": [
       "net.p3pp3rf1y.sophisticatedcore.compat.rei.ReiCompat"
     ]

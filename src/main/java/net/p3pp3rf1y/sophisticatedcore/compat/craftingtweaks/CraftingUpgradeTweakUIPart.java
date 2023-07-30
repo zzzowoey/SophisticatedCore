@@ -55,7 +55,7 @@ public class CraftingUpgradeTweakUIPart implements ICraftingUIPart {
 
 	@Override
 	public void onCraftingSlotsDisplayed(List<Slot> slots) {
-		if (slots.isEmpty()) {
+		if (slots.isEmpty() || storageScreen == null) {
 			return;
 		}
 		Slot firstSlot = slots.get(0);
