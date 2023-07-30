@@ -274,16 +274,16 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 
 	private void addUpgradeSwitches() {
 		upgradeSwitches.clear();
-		int switchTop = topPos + getUpgradeTop() + 10;
-		for (int slot = 0; slot < numberOfUpgradeSlots; slot++) {
-			if (menu.canDisableUpgrade(slot)) {
-				int finalSlot = slot;
-				ToggleButton<Boolean> upgradeSwitch = new ToggleButton<>(new Position(leftPos - 22, switchTop), ButtonDefinitions.UPGRADE_SWITCH,
+		int switchTop = topPos + 2;
+		for (int slotIndex = 0; slotIndex < numberOfUpgradeSlots; slotIndex++) {
+			if (menu.canDisableUpgrade(slotIndex)) {
+				int finalSlot = slotIndex;
+				Slot slot = getMenu().getSlot(getMenu().getFirstUpgradeSlot() + slotIndex);
+				ToggleButton<Boolean> upgradeSwitch = new ToggleButton<>(new Position(leftPos - 22, switchTop + slot.y), ButtonDefinitions.UPGRADE_SWITCH,
 						button -> getMenu().setUpgradeEnabled(finalSlot, !getMenu().getUpgradeEnabled(finalSlot)), () -> getMenu().getUpgradeEnabled(finalSlot));
 				addWidget(upgradeSwitch);
 				upgradeSwitches.add(upgradeSwitch);
 			}
-			switchTop += 22;
 		}
 	}
 
@@ -350,85 +350,27 @@ public abstract class StorageScreenBase<S extends StorageContainerMenuBase<?>> e
 	}
 
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
 		if (menu.detectSettingsChangeAndReload()) {
 			updateStorageSlotsPositions();
 			updatePlayerSlotsPositions();
 			updateInventoryScrollPanel();
 		}
-		renderBackground(matrixStack);
-		settingsTabControl.render(matrixStack, mouseX, mouseY, partialTicks);
-		matrixStack.translate(0, 0, 200);
+		renderBackground(poseStack);
+		settingsTabControl.render(poseStack, mouseX, mouseY, partialTicks);
+		poseStack.translate(0, 0, 200);
 
-		super.render(matrixStack, mouseX, mouseY, partialTicks);
+		super.render(poseStack, mouseX, mouseY, partialTicks);
 
-		settingsTabControl.renderTooltip(this, matrixStack, mouseX, mouseY);
+		settingsTabControl.renderTooltip(this, poseStack, mouseX, mouseY);
 		if (sortButton != null && sortByButton != null) {
-			sortButton.render(matrixStack, mouseX, mouseY, partialTicks);
-			sortByButton.render(matrixStack, mouseX, mouseY, partialTicks);
+			sortButton.render(poseStack, mouseX, mouseY, partialTicks);
+			sortByButton.render(poseStack, mouseX, mouseY, partialTicks);
 		}
-		upgradeSwitches.forEach(us -> us.render(matrixStack, mouseX, mouseY, partialTicks));
-		renderErrorOverlay(matrixStack);
-		renderTooltip(matrixStack, mouseX, mouseY);
+		upgradeSwitches.forEach(us -> us.render(poseStack, mouseX, mouseY, partialTicks));
+		renderErrorOverlay(poseStack);
+		renderTooltip(poseStack, mouseX, mouseY);
 	}
-
-	/*@SuppressWarnings("java:S4449") //renderFloatingItem should really have altText as nullable as it is then only passed to nullable parameter
-	private void renderSuper(PoseStack posestack, int pMouseX, int pMouseY, float pPartialTick) { //copy of super.render with storage inventory slots rendering and snap rendering removed
-		int i = leftPos;
-		int j = topPos;
-		renderBg(posestack, pPartialTick, pMouseX, pMouseY);
-		//noinspection UnstableApiUsage
-		//MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.ContainerScreenEvent.Render.Background(this, pPoseStack, pMouseX, pMouseY));
-		RenderSystem.disableDepthTest();
-
-		hoveredSlot = null;
-
-		for (Renderable widget : renderables) {
-			widget.render(posestack, pMouseX, pMouseY, pPartialTick);
-		}
-
-		posestack.pushPose();
-		posestack.translate(i, j, 0.0D);
-
-		for (int k = 0; k < StorageContainerMenuBase.NUMBER_OF_PLAYER_SLOTS; ++k) {
-			Slot slot = getMenu().getSlot(getMenu().getInventorySlotsSize() - StorageContainerMenuBase.NUMBER_OF_PLAYER_SLOTS + k);
-			if (slot.isActive()) {
-				renderSlot(posestack, slot);
-			}
-
-			if (isHovering(slot, pMouseX, pMouseY) && slot.isActive()) {
-				hoveredSlot = slot;
-				int l = slot.x;
-				int i1 = slot.y;
-				renderSlotHighlight(posestack, l, i1, 0);
-			}
-		}
-
-		renderLabels(posestack, pMouseX, pMouseY);
-		//noinspection UnstableApiUsage
-		//MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, pPoseStack, pMouseX, pMouseY));
-		ItemStack itemstack = draggingItem.isEmpty() ? menu.getCarried() : draggingItem;
-		if (!itemstack.isEmpty()) {
-			int i2 = draggingItem.isEmpty() ? 8 : 16;
-			String s = null;
-			if (!draggingItem.isEmpty() && isSplittingStack) {
-				itemstack = itemstack.copy();
-				itemstack.setCount(Mth.ceil(itemstack.getCount() / 2.0F));
-			} else if (isQuickCrafting && quickCraftSlots.size() > 1) {
-				itemstack = itemstack.copy();
-				itemstack.setCount(quickCraftingRemainder);
-				if (itemstack.isEmpty()) {
-					s = ChatFormatting.YELLOW + "0";
-				}
-			}
-
-			//noinspection ConstantConditions - renderFloatingItem should really have altText as nullable as it is then only passed to nullable parameter
-			renderFloatingItem(posestack, itemstack, pMouseX - i - 8, pMouseY - j - i2, s);
-		}
-
-		posestack.popPose();
-		RenderSystem.enableDepthTest();
-	}*/
 
 	@Override
 	protected void renderLabels(PoseStack matrixStack, int mouseX, int mouseY) {
