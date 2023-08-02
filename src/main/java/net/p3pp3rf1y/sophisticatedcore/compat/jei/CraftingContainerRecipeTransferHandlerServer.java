@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedcore.compat.common;
+package net.p3pp3rf1y.sophisticatedcore.compat.jei;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;

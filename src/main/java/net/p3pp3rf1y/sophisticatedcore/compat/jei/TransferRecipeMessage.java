@@ -1,8 +1,7 @@
-package net.p3pp3rf1y.sophisticatedcore.compat.common;
+package net.p3pp3rf1y.sophisticatedcore.compat.jei;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.p3pp3rf1y.sophisticatedcore.compat.common.CraftingContainerRecipeTransferHandlerServer;
 import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
 
 import java.util.ArrayList;

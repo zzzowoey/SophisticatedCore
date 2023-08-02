@@ -12,7 +12,6 @@ import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.common.SetGhostSlotMessage;
 import net.p3pp3rf1y.sophisticatedcore.compat.common.SetMemorySlotMessage;
-import net.p3pp3rf1y.sophisticatedcore.compat.common.TransferRecipeMessage;
 import net.p3pp3rf1y.sophisticatedcore.crafting.UpgradeNextTierRecipe;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 
@@ -41,7 +40,6 @@ public class ReiCompat implements REIClientPlugin, ICompat {
 
 	@Override
 	public void setup() {
-		PacketHandler.registerMessage(TransferRecipeMessage.class, TransferRecipeMessage::new, NetworkDirection.PLAY_TO_SERVER);
 		PacketHandler.registerMessage(SetGhostSlotMessage.class, SetGhostSlotMessage::new, NetworkDirection.PLAY_TO_SERVER);
 		PacketHandler.registerMessage(SetMemorySlotMessage.class, SetMemorySlotMessage::new, NetworkDirection.PLAY_TO_SERVER);
 	}

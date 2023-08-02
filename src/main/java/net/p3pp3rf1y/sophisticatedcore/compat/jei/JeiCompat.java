@@ -12,7 +12,6 @@ import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.common.SetGhostSlotMessage;
 import net.p3pp3rf1y.sophisticatedcore.compat.common.SetMemorySlotMessage;
-import net.p3pp3rf1y.sophisticatedcore.compat.common.TransferRecipeMessage;
 import net.p3pp3rf1y.sophisticatedcore.crafting.UpgradeNextTierRecipe;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 
