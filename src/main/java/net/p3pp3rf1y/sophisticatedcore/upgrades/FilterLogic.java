@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -10,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.util.FilterItemStackHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 
 import java.util.Set;
@@ -127,22 +127,22 @@ public class FilterLogic extends FilterLogicBase {
 				CompoundTag itemTags = tagList.getCompound(i);
 				int slot = itemTags.getInt("Slot");
 
-				if (slot >= 0 && slot < getSlots()) {
+				if (slot >= 0 && slot < getSlotCount()) {
 					ItemStack stack = ItemStack.of(itemTags);
-					contentsChangedInternal(slot, stack, null);
+					this.getSlot(slot).setNewStack(stack);
 				}
 			}
 			onLoad();
 		}
 
 		@Override
-		public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+		public boolean isItemValid(int slot, ItemVariant resource) {
 			ItemStack stack = resource.toStack();
 			return stack.isEmpty() || (doesNotContain(stack) && isItemValid.test(stack));
 		}
 
 		private boolean doesNotContain(ItemStack stack) {
-			return !InventoryHelper.hasItem(this, s -> ItemHandlerHelper.canItemStacksStack(s, stack));
+			return !InventoryHelper.hasItem(this, s -> ItemStackHelper.canItemStacksStack(s, stack));
 		}
 	}
 }

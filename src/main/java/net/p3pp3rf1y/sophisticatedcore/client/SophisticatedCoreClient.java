@@ -1,11 +1,11 @@
 package net.p3pp3rf1y.sophisticatedcore.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import io.github.fabricators_of_create.porting_lib.util.ScreenHelper;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -53,7 +53,7 @@ public class SophisticatedCoreClient implements ClientModInitializer {
     }
 
     private static void onDrawScreen(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float tickDelta) {
-        Minecraft mc = ScreenHelper.getClient(screen);
+        Minecraft mc = Screens.getClient(screen);
         AbstractContainerScreen<?> containerGui = (AbstractContainerScreen<?>)screen;
 
         AbstractContainerMenu menu = containerGui.getMenu();

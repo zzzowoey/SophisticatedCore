@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.init;
 
-import io.github.fabricators_of_create.porting_lib.util.IdentifiableSimplePreparableReloadListener;
 import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
 import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -15,6 +14,7 @@ import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.crafting.ItemEnabledCondition;
 import net.p3pp3rf1y.sophisticatedcore.crafting.UpgradeClearRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.UpgradeNextTierRecipe;
+import net.p3pp3rf1y.sophisticatedcore.util.SimpleIdentifiablePrepareableReloadListener;
 
 public class ModRecipes {
 	private static final LazyRegistrar<RecipeSerializer<?>> RECIPE_SERIALIZERS = LazyRegistrar.create(Registries.RECIPE_SERIALIZER, SophisticatedCore.ID);
@@ -24,12 +24,7 @@ public class ModRecipes {
 	public static void registerHandlers() {
 		RECIPE_SERIALIZERS.register();
 
-		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new IdentifiableSimplePreparableReloadListener(SophisticatedCore.getRL("modrecipes")) {
-			@Override
-			protected Object prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
-				return null;
-			}
-
+		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new SimpleIdentifiablePrepareableReloadListener<>(SophisticatedCore.getRL("modrecipes")) {
 			@Override
 			protected void apply(Object object, ResourceManager resourceManager, ProfilerFiller profiler) {
 				UpgradeNextTierRecipe.REGISTERED_RECIPES.clear();

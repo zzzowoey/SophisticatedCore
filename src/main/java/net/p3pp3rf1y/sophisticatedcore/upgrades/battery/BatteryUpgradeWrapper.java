@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.battery;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
@@ -43,11 +43,11 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 			}
 
 			@Override
-			public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+			public boolean isItemValid(int slot, ItemVariant resource) {
 				if (slot == INPUT_SLOT) {
-					return isValidInputItem(resource.toStack((int) amount));
+					return isValidInputItem(resource.toStack());
 				} else if (slot == OUTPUT_SLOT) {
-					return isValidOutputItem(resource.toStack((int) amount));
+					return isValidOutputItem(resource.toStack());
 				}
 				return false;
 			}
@@ -156,7 +156,7 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 		}
 	}
 
-	public SlotExposedStorage getInventory() {
+	public SlottedStackStorage getInventory() {
 		return inventory;
 	}
 

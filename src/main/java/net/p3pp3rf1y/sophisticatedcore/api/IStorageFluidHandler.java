@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.api;
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -23,7 +22,7 @@ public interface IStorageFluidHandler extends Storage<FluidVariant> {
 	}
 
 	default long insert(TagKey<Fluid> fluidTag, long maxFill, Fluid fallbackFluid, TransactionContext ctx, boolean ignoreInOutLimit) {
-        for (StorageView<FluidVariant> view : TransferUtil.getNonEmpty(this)) {
+        for (StorageView<FluidVariant> view : this.nonEmptyViews()) {
             if (view.getResource().getFluid().defaultFluidState().is(fluidTag)) {
                 return insert(view.getResource(), maxFill, ctx, ignoreInOutLimit);
             }

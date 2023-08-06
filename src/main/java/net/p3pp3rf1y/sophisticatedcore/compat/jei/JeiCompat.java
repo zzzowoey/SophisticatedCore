@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.compat.jei;
 
-import io.github.fabricators_of_create.porting_lib.util.NetworkDirection;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -30,8 +29,8 @@ public class JeiCompat implements IModPlugin, ICompat {
 
 	@Override
 	public void setup() {
-		PacketHandler.registerMessage(TransferRecipeMessage.class, TransferRecipeMessage::new, NetworkDirection.PLAY_TO_SERVER);
-		PacketHandler.registerMessage(SetGhostSlotMessage.class, SetGhostSlotMessage::new, NetworkDirection.PLAY_TO_SERVER);
-		PacketHandler.registerMessage(SetMemorySlotMessage.class, SetMemorySlotMessage::new, NetworkDirection.PLAY_TO_SERVER);
+		PacketHandler.registerC2SMessage(TransferRecipeMessage.class, TransferRecipeMessage::new);
+		PacketHandler.registerC2SMessage(SetGhostSlotMessage.class, SetGhostSlotMessage::new);
+		PacketHandler.registerC2SMessage(SetMemorySlotMessage.class, SetMemorySlotMessage::new);
 	}
 }

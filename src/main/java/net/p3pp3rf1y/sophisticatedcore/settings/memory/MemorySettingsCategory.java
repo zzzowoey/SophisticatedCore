@@ -64,12 +64,12 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 		ignoreNbt = NBTHelper.getBoolean(categoryNbt, IGNORE_NBT_TAG).orElse(true);
 	}
 
-	public boolean matchesFilter(int slotNumber, ItemVariant resource, long amount) {
+	public boolean matchesFilter(int slotNumber, ItemVariant resource) {
 		if (slotFilterItems.containsKey(slotNumber)) {
-			return amount > 0 && !resource.isBlank() && resource.getItem() == slotFilterItems.get(slotNumber);
+			return !resource.isBlank() && resource.getItem() == slotFilterItems.get(slotNumber);
 		}
 		if (slotFilterStacks.containsKey(slotNumber)) {
-			return amount > 0 && !resource.isBlank() && slotFilterStacks.get(slotNumber).matches(resource);
+			return !resource.isBlank() && slotFilterStacks.get(slotNumber).matches(resource);
 		}
 
 		return true;
@@ -131,7 +131,7 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 	public void selectSlots(int minSlot, int maxSlot) {
 		for (int slot = minSlot; slot < maxSlot; slot++) {
 			InventoryHandler inventoryHandler = getInventoryHandler();
-			if (slot < inventoryHandler.getSlots()) {
+			if (slot < inventoryHandler.getSlotCount()) {
 				ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
 				if (!stackInSlot.isEmpty()) {
 					if (ignoreNbt) {
@@ -287,12 +287,12 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 	private void overwriteFilterStacks(MemorySettingsCategory otherCategory) {
 		InventoryHandler inventoryHandler = getInventoryHandler();
 		otherCategory.slotFilterStacks.forEach((slot, isk) -> {
-			if(slot >= inventoryHandler.getSlots()) {
+			if(slot >= inventoryHandler.getSlotCount()) {
 				return;
 			}
 
 			ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
-			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, ItemVariant.of(stackInSlot), stackInSlot.getCount())) {
+			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, ItemVariant.of(stackInSlot))) {
 				addSlotStack(slot, isk.getStack());
 			}});
 	}
@@ -313,12 +313,12 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 	private void overwriteFilterItems(MemorySettingsCategory otherCategory) {
 		InventoryHandler inventoryHandler = getInventoryHandler();
 		otherCategory.slotFilterItems.forEach((slot, item) -> {
-			if(slot >= inventoryHandler.getSlots()) {
+			if(slot >= inventoryHandler.getSlotCount()) {
 				return;
 			}
 
 			ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
-			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, ItemVariant.of(stackInSlot), stackInSlot.getCount())) {
+			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, ItemVariant.of(stackInSlot))) {
 				addSlotItem(slot, item);
 			}});
 	}
@@ -370,7 +370,7 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 
 	public void setFilter(int slot, ItemStack filter) {
 		InventoryHandler inventoryHandler = getInventoryHandler();
-		if (slot < inventoryHandler.getSlots()) {
+		if (slot < inventoryHandler.getSlotCount()) {
 			ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
 			if (stackInSlot.isEmpty()) {
 				if (ignoreNbt) {

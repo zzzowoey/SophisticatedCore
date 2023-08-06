@@ -144,15 +144,13 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 	private void addUpgradeSlots() {
 		UpgradeHandler upgradeHandler = storageWrapper.getUpgradeHandler();
 
-		int numberOfSlots = upgradeHandler.getSlots();
-
+		int numberOfSlots = upgradeHandler.getSlotCount();
 		if (numberOfSlots == 0) {
 			return;
 		}
 
 		int slotIndex = 0;
-
-		while (slotIndex < upgradeHandler.getSlots()) {
+		while (slotIndex < upgradeHandler.getSlotCount()) {
 			addUpgradeSlot(instantiateUpgradeSlot(upgradeHandler, slotIndex));
 
 			slotIndex++;
@@ -208,11 +206,11 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 	}
 
 	public int getNumberOfStorageInventorySlots() {
-		return storageWrapper.getInventoryHandler().getSlots();
+		return storageWrapper.getInventoryHandler().getSlotCount();
 	}
 
 	public int getNumberOfUpgradeSlots() {
-		return storageWrapper.getUpgradeHandler().getSlots();
+		return storageWrapper.getUpgradeHandler().getSlotCount();
 	}
 
 	public Map<Integer, UpgradeContainerBase<?, ?>> getUpgradeContainers() {
@@ -224,7 +222,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 		int slotIndex = 0;
 
 		Set<Integer> noSortSlotIndexes = getNoSortSlotIndexes();
-		while (slotIndex < inventoryHandler.getSlots()) {
+		while (slotIndex < inventoryHandler.getSlotCount()) {
 			int finalSlotIndex = slotIndex;
 			StorageInventorySlot slot = new StorageInventorySlot(player.level.isClientSide, storageWrapper, inventoryHandler, finalSlotIndex) {
 				@Override
@@ -832,7 +830,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 			return;
 		}
 		Map<ResourceLocation, Set<Integer>> noItemSlotTextures = new HashMap<>();
-		for (int slot = 0; slot < storageWrapper.getInventoryHandler().getSlots(); slot++) {
+		for (int slot = 0; slot < storageWrapper.getInventoryHandler().getSlotCount(); slot++) {
 			Pair<ResourceLocation, ResourceLocation> noItemIcon = storageWrapper.getInventoryHandler().getNoItemIcon(slot);
 			if (noItemIcon != null) {
 				noItemSlotTextures.computeIfAbsent(noItemIcon.getSecond(), rl -> new HashSet<>()).add(slot);
@@ -849,7 +847,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 		Map<Integer, Integer> slotLimitOverrides = new HashMap<>();
 		InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
 		Map<Integer, Item> slotFilterItems = new HashMap<>();
-		for (int slot = 0; slot < inventoryHandler.getSlots(); slot++) {
+		for (int slot = 0; slot < inventoryHandler.getSlotCount(); slot++) {
 			if (!inventoryHandler.isSlotAccessible(slot)) {
 				inaccessibleSlots.add(slot);
 			}
@@ -1593,7 +1591,7 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 
 		@Override
 		public boolean mayPlace(ItemStack stack) {
-			if (stack.isEmpty() || !getItemHandler().isItemValid(slotIndex, ItemVariant.of(stack), stack.getCount())) {
+			if (stack.isEmpty() || !getItemHandler().isItemValid(slotIndex, ItemVariant.of(stack))) {
 				return false;
 			}
 			UpgradeSlotChangeResult result = ((IUpgradeItem<?>) stack.getItem()).canAddUpgradeTo(storageWrapper, stack, isFirstLevelStorage(), player.getLevel().isClientSide());

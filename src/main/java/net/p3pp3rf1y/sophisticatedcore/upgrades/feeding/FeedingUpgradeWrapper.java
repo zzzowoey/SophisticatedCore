@@ -1,11 +1,12 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.feeding;
 
-import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityUseItemEvents;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -70,17 +71,22 @@ public class FeedingUpgradeWrapper extends UpgradeWrapperBase<FeedingUpgradeWrap
 
 	private boolean tryFeedingFoodFromStorage(Level world, int hungerLevel, Player player) {
 		boolean isHurt = player.getHealth() < player.getMaxHealth() - 0.1F;
-		SlotExposedStorage inventory = storageWrapper.getInventoryForUpgradeProcessing();
+		SlottedStackStorage inventory = storageWrapper.getInventoryForUpgradeProcessing();
 		AtomicBoolean fedPlayer = new AtomicBoolean(false);
 		InventoryHelper.iterate(inventory, (slot, stack) -> {
 			if (isEdible(stack) && filterLogic.matchesFilter(stack) && (isHungryEnoughForFood(hungerLevel, stack) || shouldFeedImmediatelyWhenHurt() && hungerLevel > 0 && isHurt)) {
 				ItemStack mainHandItem = player.getMainHandItem();
 				player.getInventory().items.set(player.getInventory().selected, stack);
 				if (stack.use(world, player, InteractionHand.MAIN_HAND).getResult() == InteractionResult.CONSUME) {
+					InteractionResultHolder<ItemStack> result = UseItemCallback.EVENT.invoker().interact(player, world, InteractionHand.MAIN_HAND);
+					ItemStack containerItem = result.getObject();
+					if (result.getResult() == InteractionResult.PASS) {
+						containerItem = stack.getItem().finishUsingItem(stack, world, player);
+					}
+
 					player.getInventory().items.set(player.getInventory().selected, mainHandItem);
-					ItemStack containerItem = LivingEntityUseItemEvents.LIVING_USE_ITEM_FINISH.invoker().onUseItem(player, stack.copy(), 0, stack.getItem().finishUsingItem(stack, world, player));
 					inventory.setStackInSlot(slot, stack);
-					if (containerItem != null && !ItemStack.matches(containerItem, stack)) {
+					if (!ItemStack.matches(containerItem, stack)) {
 						//not handling the case where player doesn't have item handler cap as the player should always have it. if that changes in the future well I guess I fix it
 						PlayerInventoryStorage playerInventory = PlayerInventoryStorage.of(player);
 						InventoryHelper.insertOrDropItem(player, containerItem, inventory, playerInventory);

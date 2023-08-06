@@ -1,9 +1,11 @@
 package net.p3pp3rf1y.sophisticatedcore.controller;
 
-import io.github.fabricators_of_create.porting_lib.block.ChunkUnloadListeningBlockEntity;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -11,11 +13,13 @@ import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
@@ -39,7 +43,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-public abstract class ControllerBlockEntityBase extends BlockEntity implements SlotExposedStorage, ChunkUnloadListeningBlockEntity {
+public abstract class ControllerBlockEntityBase extends BlockEntity implements SlottedStackStorage {
 	public static final int SEARCH_RANGE = 15;
 	private List<BlockPos> storagePositions = new ArrayList<>();
 	private List<Integer> baseIndexes = new ArrayList<>();
@@ -204,7 +208,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 
 	private void addStorageData(BlockPos storagePos) {
 		storagePositions.add(storagePos);
-		totalSlots += getInventoryHandlerValueFromHolder(storagePos, SlotExposedStorage::getSlots).orElse(0);
+		totalSlots += getInventoryHandlerValueFromHolder(storagePos, SlottedStackStorage::getSlotCount).orElse(0);
 		baseIndexes.add(totalSlots);
 		addStorageStacksAndRegisterListeners(storagePos);
 
@@ -477,16 +481,13 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 
 	protected ControllerBlockEntityBase(BlockEntityType<?> blockEntityType, BlockPos pos, BlockState state) {
 		super(blockEntityType, pos, state);
+
+		ClientChunkEvents.CHUNK_UNLOAD.register(this::onClientChunkUnloaded);
+		ServerChunkEvents.CHUNK_UNLOAD.register(this::onServerChunkUnloaded);
 	}
 
 	@Override
-	public void invalidateCaps() {
-		super.invalidateCaps();
-		//getComponent(ITEM_HANDLER).invalidate();
-	}
-
-	@Override
-	public int getSlots() {
+	public int getSlotCount() {
 		return totalSlots;
 	}
 
@@ -503,11 +504,11 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		return -1;
 	}
 
-	protected SlotExposedStorage getHandlerFromIndex(int index) {
+	protected SlottedStackStorage getHandlerFromIndex(int index) {
 		if (index < 0 || index >= storagePositions.size()) {
 			return null;
 		}
-		return getWrapperValueFromHolder(storagePositions.get(index), wrapper -> (SlotExposedStorage) wrapper.getInventoryForInputOutput()).orElse(null);
+		return getWrapperValueFromHolder(storagePositions.get(index), wrapper -> (SlottedStackStorage) wrapper.getInventoryForInputOutput()).orElse(null);
 	}
 
 	protected int getSlotFromIndex(int slot, int index) {
@@ -524,7 +525,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 			return ItemStack.EMPTY;
 		}
 		int handlerIndex = getIndexForSlot(slot);
-		SlotExposedStorage handler = getHandlerFromIndex(handlerIndex);
+		SlottedStackStorage handler = getHandlerFromIndex(handlerIndex);
 		slot = getSlotFromIndex(slot, handlerIndex);
 		if (validateHandlerSlotIndex(handler, handlerIndex, slot, "getStackInSlot")) {
 			return handler.getStackInSlot(slot);
@@ -536,8 +537,8 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		return slot < 0 || slot >= totalSlots;
 	}
 
-	private boolean validateHandlerSlotIndex(SlotExposedStorage handler, int handlerIndex, int slot, String methodName) {
-		if (slot >= 0 && slot < handler.getSlots()) {
+	private boolean validateHandlerSlotIndex(SlottedStackStorage handler, int handlerIndex, int slot, String methodName) {
+		if (slot >= 0 && slot < handler.getSlotCount()) {
 			return true;
 		}
 		if (handlerIndex < 0 || handlerIndex >= storagePositions.size()) {
@@ -552,7 +553,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 
 	@Override
 	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		if (isItemValid(slot, resource, maxAmount))
+		if (isItemValid(slot, resource))
 			return insert(resource, maxAmount, transaction, true);
 
 		return 0;
@@ -561,7 +562,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 
 	@Override
 	public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		if (isItemValid(-1, resource, maxAmount))
+		if (isItemValid(-1, resource))
 			return insert(resource, maxAmount, transaction, true);
 
 		return 0;
@@ -618,7 +619,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 	private long insertIntoStorages(Set<BlockPos> positions, ItemVariant resource, long maxAmount, TransactionContext transaction) {
 		long remaining = maxAmount;
 		Set<BlockPos> positionsCopy = new HashSet<>(positions); //to prevent CME if stack insertion actually causes set of positions to change
-		for (BlockPos storagePos : positions) {
+		for (BlockPos storagePos : positionsCopy) {
 			long finalRemaining = remaining;
 			remaining = getInventoryHandlerValueFromHolder(storagePos, ins -> finalRemaining - ins.insert(resource, finalRemaining, transaction)).orElse(remaining);
 			if (remaining == 0) {
@@ -636,10 +637,10 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		}
 
 		int handlerIndex = getIndexForSlot(slot);
-		SlotExposedStorage handler = getHandlerFromIndex(handlerIndex);
+		SlottedStackStorage handler = getHandlerFromIndex(handlerIndex);
 		slot = getSlotFromIndex(slot, handlerIndex);
 		if (validateHandlerSlotIndex(handler, handlerIndex, slot, "extractItem(int slot, int amount, boolean simulate)")) {
-			return handler.extract(resource, maxAmount, transaction);
+			return handler.extractSlot(slot, resource, maxAmount, transaction);
 		}
 
 		return 0;
@@ -656,7 +657,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 			return 0;
 		}
 		int handlerIndex = getIndexForSlot(slot);
-		SlotExposedStorage handler = getHandlerFromIndex(handlerIndex);
+		SlottedStackStorage handler = getHandlerFromIndex(handlerIndex);
 		int localSlot = getSlotFromIndex(slot, handlerIndex);
 		if (validateHandlerSlotIndex(handler, handlerIndex, localSlot, "getSlotLimit(int slot)")) {
 			return handler.getSlotLimit(localSlot);
@@ -666,16 +667,16 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 
 
 	@Override
-	public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+	public boolean isItemValid(int slot, ItemVariant resource) {
 		if (isSlotIndexInvalid(slot)) {
 			return false;
 		}
 
 		int handlerIndex = getIndexForSlot(slot);
-		SlotExposedStorage handler = getHandlerFromIndex(handlerIndex);
+		SlottedStackStorage handler = getHandlerFromIndex(handlerIndex);
 		int localSlot = getSlotFromIndex(slot, handlerIndex);
 		if (validateHandlerSlotIndex(handler, handlerIndex, localSlot, "isItemValid(int slot, ItemStack stack)")) {
-			return handler.isItemValid(localSlot, resource, amount);
+			return handler.isItemValid(localSlot, resource);
 		}
 		return false;
 	}
@@ -686,15 +687,18 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 			return;
 		}
 		int handlerIndex = getIndexForSlot(slot);
-		SlotExposedStorage handler = getHandlerFromIndex(handlerIndex);
+		SlottedStackStorage handler = getHandlerFromIndex(handlerIndex);
 		slot = getSlotFromIndex(slot, handlerIndex);
 		if (validateHandlerSlotIndex(handler, handlerIndex, slot, "setStackInSlot(int slot, ItemStack stack)")) {
 			handler.setStackInSlot(slot, stack);
 		}
 	}
 
-	@Override
-	public void onChunkUnloaded() {
+	public void onClientChunkUnloaded(ClientLevel world, LevelChunk chunk) {
+		detachFromStoragesAndUnlinkBlocks();
+	}
+
+	public void onServerChunkUnloaded(ServerLevel world, LevelChunk chunk) {
 		detachFromStoragesAndUnlinkBlocks();
 	}
 

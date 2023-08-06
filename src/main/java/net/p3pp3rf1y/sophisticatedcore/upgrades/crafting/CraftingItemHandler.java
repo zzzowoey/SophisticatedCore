@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.crafting;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.world.Container;
@@ -15,10 +15,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class CraftingItemHandler extends CraftingContainer {
-	private final Supplier<SlotExposedStorage> supplyInventory;
+	private final Supplier<SlottedStackStorage> supplyInventory;
 	private final Consumer<Container> onCraftingMatrixChanged;
 
-	public CraftingItemHandler(Supplier<SlotExposedStorage> supplyInventory, Consumer<Container> onCraftingMatrixChanged) {
+	public CraftingItemHandler(Supplier<SlottedStackStorage> supplyInventory, Consumer<Container> onCraftingMatrixChanged) {
 		super(new AbstractContainerMenu(null, -1) {
 			@Override
 			public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
@@ -36,7 +36,7 @@ public class CraftingItemHandler extends CraftingContainer {
 
 	@Override
 	public int getContainerSize() {
-		return supplyInventory.get().getSlots();
+		return supplyInventory.get().getSlotCount();
 	}
 
 	@Override
@@ -46,8 +46,8 @@ public class CraftingItemHandler extends CraftingContainer {
 
 	@Override
 	public ItemStack getItem(int index) {
-		SlotExposedStorage itemHandler = supplyInventory.get();
-		return index >= itemHandler.getSlots() ? ItemStack.EMPTY : itemHandler.getStackInSlot(index);
+		SlottedStackStorage itemHandler = supplyInventory.get();
+		return index >= itemHandler.getSlotCount() ? ItemStack.EMPTY : itemHandler.getStackInSlot(index);
 	}
 
 	@Override

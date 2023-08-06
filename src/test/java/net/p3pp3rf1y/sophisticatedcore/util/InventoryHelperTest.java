@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.util;
 
 import com.google.common.collect.ImmutableMap;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.NonNullList;
@@ -31,11 +31,11 @@ class InventoryHelperTest {
 		Bootstrap.bootStrap();
 	}
 
-	private SlotExposedStorage getItemHandler(NonNullList<ItemStack> stacks, int stackLimitMultiplier) {
+	private SlottedStackStorage getItemHandler(NonNullList<ItemStack> stacks, int stackLimitMultiplier) {
 		return getItemHandler(stacks, stackLimitMultiplier, (slot, stack) -> true);
 	}
 
-	private SlotExposedStorage getItemHandler(NonNullList<ItemStack> stacks, int stackLimitMultiplier, BiPredicate<Integer, ItemStack> isStackValidForSlot) {
+	private SlottedStackStorage getItemHandler(NonNullList<ItemStack> stacks, int stackLimitMultiplier, BiPredicate<Integer, ItemStack> isStackValidForSlot) {
 		return new ItemStackHandler(stacks.toArray(new ItemStack[0])) {
 			@Override
 			public int getSlotLimit(int slot) {
@@ -49,8 +49,8 @@ class InventoryHelperTest {
 
 
             @Override
-            public boolean isItemValid(int slot, ItemVariant resource, long amount) {
-				return isStackValidForSlot.test(slot, resource.toStack((int) amount));
+            public boolean isItemValid(int slot, ItemVariant resource) {
+				return isStackValidForSlot.test(slot, resource.toStack());
 			}
 		};
 	}
@@ -59,8 +59,8 @@ class InventoryHelperTest {
 	@MethodSource("transferMovesOnlyStacksThatCanGoIntoInventory")
 	void transferMovesOnlyStacksThatCanGoIntoInventory(NonNullList<ItemStack> stacksHandlerA, int limitMultiplierA, NonNullList<ItemStack> stacksHandlerB, int limitMultiplierB,
 			BiPredicate<Integer, ItemStack> isStackValidInHandlerB, Map<Integer, ItemStack> stacksAfterTransferA, Map<Integer, ItemStack> stacksAfterTransferB) {
-		SlotExposedStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
-		SlotExposedStorage handlerB = getItemHandler(stacksHandlerB, limitMultiplierB, isStackValidInHandlerB);
+		SlottedStackStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
+		SlottedStackStorage handlerB = getItemHandler(stacksHandlerB, limitMultiplierB, isStackValidInHandlerB);
 
 		InventoryHelper.transfer(handlerA, handlerB, s -> {}, null);
 
@@ -177,8 +177,8 @@ class InventoryHelperTest {
 	@ParameterizedTest
 	@MethodSource("transferMovesStacksCorrectly")
 	void transferMovesStacksCorrectly(NonNullList<ItemStack> stacksHandlerA, int limitMultiplierA, NonNullList<ItemStack> stacksHandlerB, int limitMultiplierB, Map<Integer, ItemStack> stacksAfterTransferA, Map<Integer, ItemStack> stacksAfterTransferB) {
-        SlotExposedStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
-        SlotExposedStorage handlerB = getItemHandler(stacksHandlerB, limitMultiplierB);
+		SlottedStackStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
+		SlottedStackStorage handlerB = getItemHandler(stacksHandlerB, limitMultiplierB);
 
 		InventoryHelper.transfer(handlerA, handlerB, s -> {}, null);
 
@@ -186,8 +186,8 @@ class InventoryHelperTest {
 		assertHandlerState(handlerB, stacksAfterTransferB);
 	}
 
-	private static void assertHandlerState(SlotExposedStorage handler, Map<Integer, ItemStack> expectedStacksInHandler) {
-		for (int slot = 0; slot < handler.getSlots(); slot++) {
+	private static void assertHandlerState(SlottedStackStorage handler, Map<Integer, ItemStack> expectedStacksInHandler) {
+		for (int slot = 0; slot < handler.getSlotCount(); slot++) {
 			ItemStack stackInSlot = handler.getStackInSlot(slot);
 			if (expectedStacksInHandler.containsKey(slot)) {
 				assertStackEquals(expectedStacksInHandler.get(slot), stackInSlot, "Expected different stack in handler");

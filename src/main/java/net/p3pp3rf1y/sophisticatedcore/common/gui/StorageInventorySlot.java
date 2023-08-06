@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.common.gui;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +31,7 @@ public class StorageInventorySlot extends SlotItemHandler {
 		processSlotChangeResponse(slotIndex, storageWrapper.getInventoryHandler(), storageWrapper);
 	}
 
-	private void processSlotChangeResponse(int slot, SlotExposedStorage handler, IStorageWrapper storageWrapper) {
+	private void processSlotChangeResponse(int slot, SlottedStackStorage handler, IStorageWrapper storageWrapper) {
 		if (!isClientSide) {
 			storageWrapper.getUpgradeHandler().getWrappersThatImplementFromMainStorage(ISlotChangeResponseUpgrade.class).forEach(u -> u.onSlotChange(handler, slot));
 		}

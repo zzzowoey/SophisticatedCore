@@ -1,13 +1,15 @@
 package net.p3pp3rf1y.sophisticatedcore.inventory;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.FilterLogic;
+import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotExposedStorage {
+public class FilteredItemHandler<T extends SlottedStorage<ItemVariant>> implements SlottedStorage<ItemVariant> {
 	protected final T inventoryHandler;
 	protected final List<FilterLogic> inputFilters;
 	private final List<FilterLogic> outputFilters;
@@ -32,15 +34,20 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 	}
 
 	@Override
-	public int getSlots() {
-		return inventoryHandler.getSlots();
+	public int getSlotCount() {
+		return inventoryHandler.getSlotCount();
 	}
 
-	@Nonnull
+/*	@Nonnull
 	@Override
 	public ItemStack getStackInSlot(int slot) {
 		return inventoryHandler.getStackInSlot(slot);
 	}
+
+	@Override
+	public void setStackInSlot(int i, @NotNull ItemStack itemStack) {
+		inventoryHandler.setStackInSlot(i, itemStack);
+	}*/
 
 	@Override
 	public long insert(ItemVariant resource, long maxAmount, TransactionContext ctx) {
@@ -58,7 +65,7 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 		return 0;
 	}
 
-	@Override
+/*	@Override
 	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
 		if (inputFilters.isEmpty()) {
 			return inventoryHandler.insertSlot(slot, resource, maxAmount, ctx);
@@ -72,7 +79,7 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 		}
 
 		return 0;
-	}
+	}*/
 
 	@Override
 	public long extract(ItemVariant resource, long maxAmount, TransactionContext ctx) {
@@ -89,7 +96,7 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 		return 0;
 	}
 
-	@Override
+/*	@Override
 	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
 		if (outputFilters.isEmpty()) {
 			return inventoryHandler.extractSlot(slot, resource, maxAmount, ctx);
@@ -101,17 +108,22 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 			}
 		}
 		return 0;
-	}
+	}*/
 
 	@Override
+	public SingleSlotStorage<ItemVariant> getSlot(int slot) {
+		return inventoryHandler.getSlot(slot);
+	}
+
+/*	@Override
 	public int getSlotLimit(int slot) {
 		return inventoryHandler.getSlotLimit(slot);
 	}
 
 	@Override
-	public boolean isItemValid(int slot, ItemVariant resource, long amount) {
-		return inventoryHandler.isItemValid(slot, resource, amount);
-	}
+	public boolean isItemValid(int slot, ItemVariant resource) {
+		return inventoryHandler.isItemValid(slot, resource);
+	}*/
 
 	public static class Modifiable extends FilteredItemHandler<ITrackedContentsItemHandler> implements ITrackedContentsItemHandler {
 		public Modifiable(ITrackedContentsItemHandler inventoryHandler, List<FilterLogic> inputFilters, List<FilterLogic> outputFilters) {
@@ -119,9 +131,19 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 		}
 
 		@Override
+		public ItemStack getStackInSlot(int slot) {
+			throw new NotImplementedException();
+		}
+
+		@Override
+		public void setStackInSlot(int slot, @NotNull ItemStack stack) {
+			throw new NotImplementedException();
+		}
+
+/*		@Override
 		public void setStackInSlot(int slot, ItemStack stack) {
 			inventoryHandler.setStackInSlot(slot, stack);
-		}
+		}*/
 
 		@Override
 		public long insert(ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
@@ -191,6 +213,16 @@ public class FilteredItemHandler<T extends SlotExposedStorage> implements SlotEx
 		@Override
 		public int getInternalSlotLimit(int slot) {
 			return inventoryHandler.getInternalSlotLimit(slot);
+		}
+
+		@Override
+		public boolean isItemValid(int slot, ItemVariant resource) {
+			return inventoryHandler.isItemValid(slot, resource);
+		}
+
+		@Override
+		public int getSlotLimit(int slot) {
+			return inventoryHandler.getSlotLimit(slot);
 		}
 	}
 }

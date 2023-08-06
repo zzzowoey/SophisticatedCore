@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -50,7 +50,7 @@ public class JukeboxUpgradeItem extends UpgradeItemBase<JukeboxUpgradeItem.Wrapp
 				}
 
 				@Override
-				public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+				public boolean isItemValid(int slot, ItemVariant resource) {
 					return resource.getItem() instanceof RecordItem;
 				}
 			};
@@ -110,7 +110,7 @@ public class JukeboxUpgradeItem extends UpgradeItemBase<JukeboxUpgradeItem.Wrapp
 			setIsPlaying(false);
 		}
 
-		public SlotExposedStorage getDiscInventory() {
+		public SlottedStackStorage getDiscInventory() {
 			return discInventory;
 		}
 

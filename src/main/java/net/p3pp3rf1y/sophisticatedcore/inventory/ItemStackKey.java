@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.inventory;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.world.item.ItemStack;
+import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 
 public record ItemStackKey(ItemStack stack) {
 	public ItemStack getStack() {
@@ -22,16 +23,7 @@ public record ItemStackKey(ItemStack stack) {
 		if (this == o) {return true;}
 		if (o == null || getClass() != o.getClass()) {return false;}
 		ItemStackKey that = (ItemStackKey) o;
-		return canItemStacksStack(stack, that.stack);
-	}
-
-	public static boolean canItemStacksStack(ItemStack a, ItemStack b) {
-		if (a.isEmpty() || !a.sameItem(b) || a.hasTag() != b.hasTag()) {
-			return false;
-		}
-
-		//noinspection DataFlowIssue
-		return (!a.hasTag() || a.getTag().equals(b.getTag())); /*&& Objects.equals(getCapNbt(a), getCapNbt(b));*/
+		return ItemStackHelper.canItemStacksStack(stack, that.stack);
 	}
 
 	public boolean hashCodeNotEquals(ItemStack otherStack) {

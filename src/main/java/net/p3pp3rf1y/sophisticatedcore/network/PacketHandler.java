@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
-import io.github.fabricators_of_create.porting_lib.util.NetworkDirection;
 import me.pepperbell.simplenetworking.C2SPacket;
 import me.pepperbell.simplenetworking.S2CPacket;
 import me.pepperbell.simplenetworking.SimpleChannel;
@@ -18,35 +17,37 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankClickMessage;
 
 import java.util.function.Function;
 
-import static io.github.fabricators_of_create.porting_lib.util.NetworkDirection.PLAY_TO_CLIENT;
-import static io.github.fabricators_of_create.porting_lib.util.NetworkDirection.PLAY_TO_SERVER;
-
 public class PacketHandler {
-	public static final ResourceLocation CHANNEL_NAME = SophisticatedCore.getRL("channel");
+	private static int index = 0;
 	private static SimpleChannel channel;
+
+	public static final ResourceLocation CHANNEL_NAME = SophisticatedCore.getRL("channel");
 
 	public static void init() {
 		channel = new SimpleChannel(CHANNEL_NAME);
 		channel.initServerListener();
 
-		registerMessage(SyncContainerClientDataMessage.class, SyncContainerClientDataMessage::new, PLAY_TO_SERVER);
-		registerMessage(TransferFullSlotMessage.class, TransferFullSlotMessage::new, PLAY_TO_SERVER);
-		registerMessage(SyncContainerStacksMessage.class, SyncContainerStacksMessage::new, PLAY_TO_CLIENT);
-		registerMessage(SyncSlotStackMessage.class, SyncSlotStackMessage::new, PLAY_TO_CLIENT);
-		registerMessage(SyncPlayerSettingsMessage.class, SyncPlayerSettingsMessage::new, PLAY_TO_CLIENT);
-		registerMessage(PlayDiscMessage.class, PlayDiscMessage::new, PLAY_TO_CLIENT);
-		registerMessage(StopDiscPlaybackMessage.class, StopDiscPlaybackMessage::new, PLAY_TO_CLIENT);
-		registerMessage(SoundStopNotificationMessage.class, SoundStopNotificationMessage::new, PLAY_TO_SERVER);
-		registerMessage(TankClickMessage.class, TankClickMessage::new, PLAY_TO_SERVER);
-		registerMessage(SyncTemplateSettingsMessage.class, SyncTemplateSettingsMessage::new, PLAY_TO_CLIENT);
-		registerMessage(SyncAdditionalSlotInfoMessage.class, SyncAdditionalSlotInfoMessage::new, PLAY_TO_CLIENT);
-		registerMessage(SyncEmptySlotIconsMessage.class, SyncEmptySlotIconsMessage::new, PLAY_TO_CLIENT);
-		registerMessage(SyncSlotChangeErrorMessage.class, SyncSlotChangeErrorMessage::new, PLAY_TO_CLIENT);
+		registerC2SMessage(SyncContainerClientDataMessage.class, SyncContainerClientDataMessage::new);
+		registerC2SMessage(TransferFullSlotMessage.class, TransferFullSlotMessage::new);
+		registerC2SMessage(SoundStopNotificationMessage.class, SoundStopNotificationMessage::new);
+		registerC2SMessage(TankClickMessage.class, TankClickMessage::new);
+
+		registerS2CMessage(SyncContainerStacksMessage.class, SyncContainerStacksMessage::new);
+		registerS2CMessage(SyncSlotStackMessage.class, SyncSlotStackMessage::new);
+		registerS2CMessage(SyncPlayerSettingsMessage.class, SyncPlayerSettingsMessage::new);
+		registerS2CMessage(PlayDiscMessage.class, PlayDiscMessage::new);
+		registerS2CMessage(StopDiscPlaybackMessage.class, StopDiscPlaybackMessage::new);
+		registerS2CMessage(SyncTemplateSettingsMessage.class, SyncTemplateSettingsMessage::new);
+		registerS2CMessage(SyncAdditionalSlotInfoMessage.class, SyncAdditionalSlotInfoMessage::new);
+		registerS2CMessage(SyncEmptySlotIconsMessage.class, SyncEmptySlotIconsMessage::new);
+		registerS2CMessage(SyncSlotChangeErrorMessage.class, SyncSlotChangeErrorMessage::new);
 	}
 
-	public static <T extends SimplePacketBase> void registerMessage(Class<T> type, Function<FriendlyByteBuf, T> factory, NetworkDirection direction) {
-		PacketType<T> packet = new PacketType<>(type, factory, direction);
-		packet.register();
+	public static <T extends SimplePacketBase> void registerC2SMessage(Class<T> type, Function<FriendlyByteBuf, T> factory) {
+		getChannel().registerC2SPacket(type, index++, factory);
+	}
+	public static <T extends SimplePacketBase> void registerS2CMessage(Class<T> type, Function<FriendlyByteBuf, T> factory) {
+		getChannel().registerS2CPacket(type, index++, factory);
 	}
 
 	public static SimpleChannel getChannel() {
@@ -66,26 +67,5 @@ public class PacketHandler {
 	}
 	public static void sendToAllNear(ServerLevel world, Vec3 pos, int range, Object message) {
 		getChannel().sendToClientsAround((S2CPacket) message, world, pos, range);
-	}
-
-	public static class PacketType<T extends SimplePacketBase> {
-		private static int index = 0;
-
-		private Function<FriendlyByteBuf, T> decoder;
-		private Class<T> type;
-		private NetworkDirection direction;
-
-		public PacketType(Class<T> type, Function<FriendlyByteBuf, T> factory, NetworkDirection direction) {
-			decoder = factory;
-			this.type = type;
-			this.direction = direction;
-		}
-
-		public void register() {
-			switch (direction) {
-				case PLAY_TO_CLIENT -> getChannel().registerS2CPacket(type, index++, decoder);
-				case PLAY_TO_SERVER -> getChannel().registerC2SPacket(type, index++, decoder);
-			}
-		}
 	}
 }

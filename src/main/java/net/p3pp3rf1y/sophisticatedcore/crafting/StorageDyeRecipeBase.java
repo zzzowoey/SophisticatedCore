@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.crafting;
 
-import io.github.fabricators_of_create.porting_lib.util.TagUtil;
 import me.alphamode.forgetags.Tags;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +10,7 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.level.Level;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +54,6 @@ public abstract class StorageDyeRecipeBase extends CustomRecipe {
 			if (slotStack.isEmpty()) {
 				continue;
 			}
-			Item item = slotStack.getItem();
 			int column = slot % inv.getWidth();
 			if (isDyeableStorageItem(slotStack)) {
 				if (columnStorage != null) {
@@ -63,7 +62,7 @@ public abstract class StorageDyeRecipeBase extends CustomRecipe {
 
 				columnStorage = new Tuple<>(column, slotStack);
 			} else if (slotStack.is(Tags.Items.DYES)) {
-				DyeColor dyeColor = TagUtil.getColorFromStack(slotStack);
+				DyeColor dyeColor = getColorFromStack(slotStack);
 				if (dyeColor == null) {
 					return ItemStack.EMPTY;
 				}
@@ -108,5 +107,19 @@ public abstract class StorageDyeRecipeBase extends CustomRecipe {
 	@Override
 	public boolean canCraftInDimensions(int width, int height) {
 		return width >= 2 && height >= 1;
+	}
+
+	@Nullable
+	public static DyeColor getColorFromStack(ItemStack stack) {
+		Item item = stack.getItem();
+		if (item instanceof DyeItem dyeItem) {
+			return dyeItem.getDyeColor();
+		}
+
+		for (DyeColor color : DyeColor.values()) {
+			if (stack.is(color.getTag())) return color;
+		}
+
+		return null;
 	}
 }

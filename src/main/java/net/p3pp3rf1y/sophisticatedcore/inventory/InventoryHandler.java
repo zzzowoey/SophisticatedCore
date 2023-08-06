@@ -2,7 +2,6 @@ package net.p3pp3rf1y.sophisticatedcore.inventory;
 
 import com.mojang.datafixers.util.Pair;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
@@ -20,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.IOverflowResponseUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ISlotLimitUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.MathHelper;
 
 import javax.annotation.Nonnull;
@@ -82,11 +82,11 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 
 	@Override
 	public void setSize(int size) {
-		super.setSize(this.getSlots());
+		super.setSize(this.getSlotCount());
 	}
 
 	private void initStackNbts() {
-		for (int slot = 0; slot < this.getSlots(); slot++) {
+		for (int slot = 0; slot < this.getSlotCount(); slot++) {
 			ItemStack slotStack = this.getStackInSlot(slot);
 			if (!slotStack.isEmpty()) {
 				stackNbts.put(slot, getSlotsStackNbt(slot, slotStack));
@@ -139,18 +139,18 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	@Override
 	public void deserializeNBT(CompoundTag nbt) {
 		slotTracker.clear();
-		setSize(nbt.contains("Size", Tag.TAG_INT) ? nbt.getInt("Size") : getSlots());
+		setSize(nbt.contains("Size", Tag.TAG_INT) ? nbt.getInt("Size") : getSlotCount());
 		ListTag tagList = nbt.getList("Items", Tag.TAG_COMPOUND);
 		for (int i = 0; i < tagList.size(); i++) {
 			CompoundTag itemTags = tagList.getCompound(i);
 			int slot = itemTags.getInt("Slot");
 
-			if (slot >= 0 && slot < getSlots()) {
+			if (slot >= 0 && slot < getSlotCount()) {
 				ItemStack slotStack = ItemStack.of(itemTags);
 				if (itemTags.contains(REAL_COUNT_TAG)) {
 					slotStack.setCount(itemTags.getInt(REAL_COUNT_TAG));
 				}
-				contentsChangedInternal(slot, slotStack, null);
+				this.getSlot(slot).setNewStack(slotStack);
 			}
 		}
 		slotTracker.refreshSlotIndexesFrom(this);
@@ -242,16 +242,12 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 		return inventoryPartitioner.getPartBySlot(slot).extractItem(slot, resource, maxAmount, ctx);
 	}
 
-	public ItemVariant getSlotVariant(int slot) {
-		return variants[slot];
-	}
-
 	public ItemStack getSlotStack(int slot) {
-		return stacks[slot];
+		return this.getSlot(slot).getStack();
 	}
 
 	public void setSlotStack(int slot, ItemStack stack) {
-		contentsChangedInternal(slot, stack, null);
+		this.getSlot(slot).setNewStack(stack);
 		slotTracker.removeAndSetSlotIndexes(this, slot, stack);
 		onContentsChanged(slot);
 	}
@@ -265,7 +261,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	@Nonnull
 	public long insertItemOnlyToSlot(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
 		initSlotTracker();
-		if (ItemHandlerHelper.canItemStacksStack(getStackInSlot(slot), resource.toStack())) {
+		if (ItemStackHelper.canItemStacksStack(getStackInSlot(slot), resource.toStack())) {
 			return triggerOverflowUpgrades(resource.toStack((int) insertItemInternal(slot, resource, maxAmount, ctx))).getCount();
 		}
 
@@ -339,8 +335,8 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	}
 
 	@Override
-	public boolean isItemValid(int slot, ItemVariant resource, long amount) {
-		return inventoryPartitioner.getPartBySlot(slot).isItemValid(slot, resource, amount) && isAllowed(resource, amount) && storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).matchesFilter(slot, resource, amount);
+	public boolean isItemValid(int slot, ItemVariant resource) {
+		return inventoryPartitioner.getPartBySlot(slot).isItemValid(slot, resource) && isAllowed(resource) && storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).matchesFilter(slot, resource);
 	}
 
 	@Nonnull
@@ -355,7 +351,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 		return inventoryPartitioner.getPartBySlot(slot).getStackInSlot(slot, super::getStackInSlot);
 	}
 
-	protected abstract boolean isAllowed(ItemVariant resource, long amount);
+	protected abstract boolean isAllowed(ItemVariant resource);
 
 	public void saveInventory() {
 		contentsNbt.put(INVENTORY_TAG, serializeNBT());
@@ -390,7 +386,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 		nbtTagList.addAll(stackNbts.values());
 		CompoundTag nbt = new CompoundTag();
 		nbt.put("Items", nbtTagList);
-		nbt.putInt("Size", getSlots());
+		nbt.putInt("Size", getSlotCount());
 		return nbt;
 	}
 
@@ -404,7 +400,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 		return slotTracker.insertItemIntoHandler(this, this::insertItemInternal, this::triggerOverflowUpgrades, resource, maxAmount, ctx);
 	}
 
-	public void changeSlots(int diff) {
+/*	public void changeSlots(int diff) {
 		var previousStacks = stacks.clone();
 
 		setSize(previousStacks.length + diff);
@@ -415,7 +411,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 		initStackNbts();
 		saveInventory();
 		slotTracker.refreshSlotIndexesFrom(this);
-	}
+	}*/
 
 	@Override
 	public Set<ItemStackKey> getTrackedStacks() {

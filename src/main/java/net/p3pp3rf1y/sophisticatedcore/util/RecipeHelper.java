@@ -3,8 +3,7 @@ package net.p3pp3rf1y.sophisticatedcore.util;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerContainer;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
@@ -215,7 +214,7 @@ public class RecipeHelper {
 	}
 
 	public static <T extends AbstractCookingRecipe> Optional<T> getCookingRecipe(ItemStack stack, RecipeType<T> recipeType) {
-		return getWorld().flatMap(w -> safeGetRecipeFor(recipeType, new RecipeWrapper(new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, stack).toArray(new ItemStack[0]))), w));
+		return getWorld().flatMap(w -> safeGetRecipeFor(recipeType, new ItemStackHandlerContainer(NonNullList.of(ItemStack.EMPTY, stack).toArray(new ItemStack[0])), w));
 	}
 
 	public static Set<CompactingShape> getItemCompactingShapes(Item item) {

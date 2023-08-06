@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.compacting;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
@@ -45,11 +45,6 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 	public long onBeforeInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
 		return maxAmount;
 	}
-
-/*	@Override
-	public ItemStack onBeforeInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, ItemStack stack, boolean simulate) {
-		return stack;
-	}*/
 
 	@Override
 	public void onAfterInsert(IItemHandlerSimpleInserter inventoryHandler, int slot, TransactionContext ctx) {
@@ -106,9 +101,9 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 		}
 	}
 
-	private boolean fitsResultAndRemainingItems(SlotExposedStorage inventoryHandler, List<ItemStack> remainingItems, ItemVariant result, long count, @Nullable TransactionContext ctx) {
+	private boolean fitsResultAndRemainingItems(SlottedStackStorage inventoryHandler, List<ItemStack> remainingItems, ItemVariant result, long count, @Nullable TransactionContext ctx) {
 		if (!remainingItems.isEmpty()) {
-			SlotExposedStorage clonedHandler = InventoryHelper.cloneInventory(inventoryHandler);
+			SlottedStackStorage clonedHandler = InventoryHelper.cloneInventory(inventoryHandler);
 			return InventoryHelper.insertIntoInventory(result, count, clonedHandler, ctx) == count && InventoryHelper.insertIntoInventory(remainingItems, clonedHandler, ctx).isEmpty();
 		}
 
@@ -134,7 +129,7 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 	}
 
 	@Override
-	public void onSlotChange(SlotExposedStorage inventoryHandler, int slot) {
+	public void onSlotChange(SlottedStackStorage inventoryHandler, int slot) {
 		if (shouldWorkInGUI()) {
 			slotsToCompact.add(slot);
 		}

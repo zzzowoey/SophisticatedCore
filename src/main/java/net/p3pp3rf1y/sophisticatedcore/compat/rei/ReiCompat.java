@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.compat.rei;
 
-import io.github.fabricators_of_create.porting_lib.util.NetworkDirection;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
 import me.shedaniel.rei.api.client.registry.screen.ScreenRegistry;
@@ -40,7 +39,7 @@ public class ReiCompat implements REIClientPlugin, ICompat {
 
 	@Override
 	public void setup() {
-		PacketHandler.registerMessage(SetGhostSlotMessage.class, SetGhostSlotMessage::new, NetworkDirection.PLAY_TO_SERVER);
-		PacketHandler.registerMessage(SetMemorySlotMessage.class, SetMemorySlotMessage::new, NetworkDirection.PLAY_TO_SERVER);
+		PacketHandler.registerC2SMessage(SetGhostSlotMessage.class, SetGhostSlotMessage::new);
+		PacketHandler.registerC2SMessage(SetMemorySlotMessage.class, SetMemorySlotMessage::new);
 	}
 }

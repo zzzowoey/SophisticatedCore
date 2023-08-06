@@ -1,8 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
-import io.github.fabricators_of_create.porting_lib.item.XpRepairItem;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class XpHelper {
@@ -63,11 +61,13 @@ public class XpHelper {
 	}
 
 	public static float getXpRepairRatio(ItemStack stack) {
-		Item item = stack.getItem();
+		// TODO: What todo here? Is there an equivalent in Fabric?
+		//  For now just return the default of 2f
+		/*Item item = stack.getItem();
 		if (item instanceof XpRepairItem xp) {
 			return xp.getXpRepairRatio(stack);
-		}
+		}*/
 
-		return 0;
+		return 2f;
 	}
 }

@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.common.gui;
 
 import com.google.common.base.Suppliers;
 import com.mojang.datafixers.util.Pair;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -95,7 +95,7 @@ public abstract class SettingsContainerMenu<S extends IStorageWrapper> extends A
 	}
 
 	public int getNumberOfStorageInventorySlots() {
-		return storageWrapper.getInventoryHandler().getSlots();
+		return storageWrapper.getInventoryHandler().getSlotCount();
 	}
 
 	public S getStorageWrapper() {
@@ -112,7 +112,7 @@ public abstract class SettingsContainerMenu<S extends IStorageWrapper> extends A
 
 		int slotIndex = 0;
 
-		while (slotIndex < inventoryHandler.getSlots()) {
+		while (slotIndex < inventoryHandler.getSlotCount()) {
 			int finalSlotIndex = slotIndex;
 			storageInventorySlots.add(addSlot(new ViewOnlyStorageInventorySlot(inventoryHandler, finalSlotIndex)));
 
@@ -193,7 +193,7 @@ public abstract class SettingsContainerMenu<S extends IStorageWrapper> extends A
 	}
 
 	public int getNumberOfSlots() {
-		return storageWrapper.getInventoryHandler().getSlots();
+		return storageWrapper.getInventoryHandler().getSlotCount();
 	}
 
 	@Override
@@ -323,7 +323,7 @@ public abstract class SettingsContainerMenu<S extends IStorageWrapper> extends A
 	}
 
 	private class ViewOnlyStorageInventorySlot extends SlotItemHandler {
-		public ViewOnlyStorageInventorySlot(SlotExposedStorage inventoryHandler, int slotIndex) {
+		public ViewOnlyStorageInventorySlot(SlottedStackStorage inventoryHandler, int slotIndex) {
 			super(inventoryHandler, slotIndex, 0, 0);
 		}
 
@@ -393,7 +393,7 @@ public abstract class SettingsContainerMenu<S extends IStorageWrapper> extends A
 		Set<Integer> inaccessibleSlots = new HashSet<>();
 		InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
 		Map<Integer, Item> slotFilterItems = new HashMap<>();
-		for (int slot = 0; slot < inventoryHandler.getSlots(); slot++) {
+		for (int slot = 0; slot < inventoryHandler.getSlotCount(); slot++) {
 			if (!inventoryHandler.isSlotAccessible(slot)) {
 				inaccessibleSlots.add(slot);
 			}
@@ -435,7 +435,7 @@ public abstract class SettingsContainerMenu<S extends IStorageWrapper> extends A
 			return;
 		}
 		Map<ResourceLocation, Set<Integer>> noItemSlotTextures = new HashMap<>();
-		for (int slot = 0; slot < storageWrapper.getInventoryHandler().getSlots(); slot++) {
+		for (int slot = 0; slot < storageWrapper.getInventoryHandler().getSlotCount(); slot++) {
 			Pair<ResourceLocation, ResourceLocation> noItemIcon = storageWrapper.getInventoryHandler().getNoItemIcon(slot);
 			if (noItemIcon != null) {
 				noItemSlotTextures.computeIfAbsent(noItemIcon.getSecond(), rl -> new HashSet<>()).add(slot);

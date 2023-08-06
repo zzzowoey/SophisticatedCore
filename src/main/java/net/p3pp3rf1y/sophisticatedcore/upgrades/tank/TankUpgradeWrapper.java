@@ -3,7 +3,7 @@ package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
@@ -52,11 +52,11 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 			}
 
 			@Override
-			public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+			public boolean isItemValid(int slot, ItemVariant resource) {
 				if (slot == INPUT_SLOT) {
-					return isValidInputItem(resource.toStack((int) amount));
+					return isValidInputItem(resource.toStack());
 				} else if (slot == OUTPUT_SLOT) {
-					return isValidOutputItem(resource.toStack((int) amount));
+					return isValidOutputItem(resource.toStack());
 				}
 				return false;
 			}
@@ -126,7 +126,7 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 		return upgradeItem.getTankCapacity(storageWrapper);
 	}
 
-	public SlotExposedStorage getInventory() {
+	public SlottedStackStorage getInventory() {
 		return inventory;
 	}
 

@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
@@ -71,12 +71,12 @@ public class InventorySorter {
 		return BuiltInRegistries.ITEM.getKey(itemStackKey.getStack().getItem()).toString();
 	}
 
-	public static void sortHandler(SlotExposedStorage handler, Comparator<? super Map.Entry<ItemStackKey, Integer>> comparator, Set<Integer> noSortSlots) {
+	public static void sortHandler(SlottedStackStorage handler, Comparator<? super Map.Entry<ItemStackKey, Integer>> comparator, Set<Integer> noSortSlots) {
 		Map<ItemStackKey, Integer> compactedStacks = InventoryHelper.getCompactedStacks(handler, noSortSlots);
 		List<Map.Entry<ItemStackKey, Integer>> sortedList = new ArrayList<>(compactedStacks.entrySet());
 		sortedList.sort(comparator);
 
-		int slots = handler.getSlots();
+		int slots = handler.getSlotCount();
 		Iterator<Map.Entry<ItemStackKey, Integer>> it = sortedList.iterator();
 		ItemStackKey current = null;
 		int count = 0;
@@ -97,13 +97,13 @@ public class InventorySorter {
 		}
 	}
 
-	private static void emptySlot(SlotExposedStorage handler, int slot) {
+	private static void emptySlot(SlottedStackStorage handler, int slot) {
 		if (!handler.getStackInSlot(slot).isEmpty()) {
 			handler.setStackInSlot(slot, ItemStack.EMPTY);
 		}
 	}
 
-	private static int placeStack(SlotExposedStorage handler, ItemStackKey current, int count, int slot) {
+	private static int placeStack(SlottedStackStorage handler, ItemStackKey current, int count, int slot) {
 		ItemStack copy = current.getStack().copy();
 		int slotLimit = handler instanceof InventoryHandler inventoryHandler ? inventoryHandler.getStackLimit(slot, ItemVariant.of(copy)) : handler.getSlotLimit(slot);
 		int countPlaced = Math.min(count, slotLimit);

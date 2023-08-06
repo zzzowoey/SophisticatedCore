@@ -1,7 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades;
 
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.util.LogicalSidedProvider;
 import net.fabricmc.api.EnvType;
@@ -14,6 +13,7 @@ import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.TankPosition;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,7 +50,7 @@ public class UpgradeHandler extends ItemStackHandler {
 		this.contentsSaveHandler = contentsSaveHandler;
 		this.onInvalidateUpgradeCaches = onInvalidateUpgradeCaches;
 		deserializeNBT(contentsNbt.getCompound(UPGRADE_INVENTORY_TAG));
-		if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread() && storageWrapper.getRenderInfo().getUpgradeItems().size() != getSlots()) {
+		if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread() && storageWrapper.getRenderInfo().getUpgradeItems().size() != this.getSlotCount()) {
 			setRenderUpgradeItems();
 		}
 	}
@@ -60,8 +60,8 @@ public class UpgradeHandler extends ItemStackHandler {
 	}
 
 	@Override
-	public boolean isItemValid(int slot, ItemVariant resource, long amount) {
-		return amount == 0 || resource.getItem() instanceof IUpgradeItem;
+	public boolean isItemValid(int slot, ItemVariant resource) {
+		return resource.getItem() instanceof IUpgradeItem;
 	}
 
 	@Override
@@ -79,13 +79,13 @@ public class UpgradeHandler extends ItemStackHandler {
 
 	public void setRenderUpgradeItems() {
 		List<ItemStack> upgradeItems = new ArrayList<>();
-		InventoryHelper.iterate(this, (upgradeSlot, upgrade) -> upgradeItems.add(ItemHandlerHelper.copyStackWithSize(upgrade, 1)));
+		InventoryHelper.iterate(this, (upgradeSlot, upgrade) -> upgradeItems.add(ItemStackHelper.copyStackWithSize(upgrade, 1)));
 		storageWrapper.getRenderInfo().setUpgradeItems(upgradeItems);
 	}
 
 	@Override
 	public void setSize(int size) {
-		super.setSize(getSlots());
+		super.setSize(getSlotCount());
 	}
 
 	public void saveInventory() {
@@ -163,7 +163,7 @@ public class UpgradeHandler extends ItemStackHandler {
 	public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
 		ItemStack originalStack = getStackInSlot(slot);
 		Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
-		boolean itemsDiffer = !ItemHandlerHelper.canItemStacksStack(originalStack, stack);
+		boolean itemsDiffer = !ItemStackHelper.canItemStacksStack(originalStack, stack);
 		if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread() && itemsDiffer && wrappers.containsKey(slot)) {
 			wrappers.get(slot).onBeforeRemoved();
 		}
@@ -320,7 +320,7 @@ public class UpgradeHandler extends ItemStackHandler {
 	private void initTankRenderInfoCallbacks(boolean forceUpdateRenderInfo, RenderInfo renderInfo) {
 		AtomicBoolean singleTankRight = new AtomicBoolean(false);
 		List<IRenderedTankUpgrade> tankRenderWrappers = new ArrayList<>();
-		int minRightSlot = getSlots() / 2;
+		int minRightSlot = getSlotCount() / 2;
 		getSlotWrappers().forEach((slot, wrapper) -> {
 			if (wrapper instanceof IRenderedTankUpgrade tankUpgrade) {
 				tankRenderWrappers.add(tankUpgrade);
@@ -341,7 +341,7 @@ public class UpgradeHandler extends ItemStackHandler {
 		}
 	}
 
-	public void increaseSize(int diff) {
+/*	public void increaseSize(int diff) {
 		var previousStacks = stacks.clone();
 
 		setSize(previousStacks.length + diff);
@@ -351,7 +351,7 @@ public class UpgradeHandler extends ItemStackHandler {
 
 		saveInventory();
 		setRenderUpgradeItems();
-	}
+	}*/
 
 	@Override
 	public int getSlotLimit(int slot) {

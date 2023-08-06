@@ -102,9 +102,6 @@ def dependencies(DependencyHandler deps) {
         deps.modApi(deps.include("io.github.fabricators_of_create.Porting-Lib:$module:$port_lib_version+$minecraft_version"))
     }
 
-    deps.api(deps.include("com.electronwill.night-config:core:$night_config_version"))
-    deps.api(deps.include("com.electronwill.night-config:toml:$night_config_version"))
-
     // Forge Config Api Ports recommended way to implement this is to use their github repo, also include it as a jar-in-jar
     deps.modApi(deps.include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_port_version"))
 
@@ -239,7 +236,6 @@ processResources {
     ]
     for (String module in port_lib_modules.split(","))
         properties.put("port_lib_${module}_version".toString(), port_lib_version)
-    properties.put("port_lib_tags_version", "3.0") // the weird one
 
     properties.forEach((k, v) -> inputs.property(k, v))
 

@@ -1,8 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore.init;
 
+import io.github.fabricators_of_create.porting_lib.fluids.SimpleFlowableFluid;
 import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
 import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
-import io.github.fabricators_of_create.porting_lib.util.SimpleFlowableFluid;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributeHandler;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;

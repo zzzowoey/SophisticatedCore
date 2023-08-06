@@ -45,7 +45,7 @@ public interface IInventoryPartHandler {
 		//noop
 	}
 
-	default boolean isItemValid(int slot, ItemVariant resource, long amount) {
+	default boolean isItemValid(int slot, ItemVariant resource) {
 		return false;
 	}
 
@@ -134,7 +134,7 @@ public interface IInventoryPartHandler {
 		}
 
 		@Override
-		public boolean isItemValid(int slot, ItemVariant resource, long amount) {
+		public boolean isItemValid(int slot, ItemVariant resource) {
 			return true;
 		}
 

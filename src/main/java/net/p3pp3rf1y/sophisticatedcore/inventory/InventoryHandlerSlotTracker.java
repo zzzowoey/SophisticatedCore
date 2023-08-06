@@ -1,12 +1,12 @@
 package net.p3pp3rf1y.sophisticatedcore.inventory;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -226,7 +226,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		emptySlots.clear();
 		onRemoveLastEmptySlot.run();
 
-		for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+		for (int slot = 0; slot < itemHandler.getSlotCount(); slot++) {
 			ItemStack stack = itemHandler.getStackInSlot(slot);
 			set(itemHandler, slot, stack);
 		}
@@ -270,7 +270,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		ItemStack existing = itemHandler.getStackInSlot(slot);
 		boolean wasEmpty = existing.isEmpty();
 
-		boolean doesNotMatchCurrentSlot = !ItemHandlerHelper.canItemStacksStack(resource.toStack((int) remaining), existing);
+		boolean doesNotMatchCurrentSlot = !ItemStackHelper.canItemStacksStack(resource.toStack((int) remaining), existing);
 		if (wasEmpty || doesNotMatchCurrentSlot) {
 			remaining -= insertIntoSlotsThatMatchStack(inserter, resource, remaining, ctx, stackKey);
 		}

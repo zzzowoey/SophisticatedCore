@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.battery;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotExposedStorage;
+import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +15,7 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankUpgradeWrapper;
 
 import java.util.function.Supplier;
+
 
 public class BatteryUpgradeContainer extends UpgradeContainerBase<BatteryUpgradeWrapper, BatteryUpgradeContainer> {
 	public static final ResourceLocation EMPTY_BATTERY_INPUT_SLOT_BACKGROUND = SophisticatedCore.getRL("item/empty_battery_input_slot");
@@ -44,7 +45,7 @@ public class BatteryUpgradeContainer extends UpgradeContainerBase<BatteryUpgrade
 	private static class BatteryIOSlot extends SlotSuppliedHandler implements INameableEmptySlot {
 		private final Component emptyTooltip;
 
-		public BatteryIOSlot(Supplier<SlotExposedStorage> itemHandlerSupplier, int slot, int xPosition, int yPosition, Component emptyTooltip) {
+		public BatteryIOSlot(Supplier<SlottedStackStorage> itemHandlerSupplier, int slot, int xPosition, int yPosition, Component emptyTooltip) {
 			super(itemHandlerSupplier, slot, xPosition, yPosition);
 			this.emptyTooltip = emptyTooltip;
 		}
