@@ -79,7 +79,7 @@ public class CraftingItemHandler extends CraftingContainer {
 
 	@Override
 	public void fillStackedContents(StackedContents helper) {
-		InventoryHelper.iterate(supplyInventory.get(), (slot, stack) -> helper.accountSimpleStack(stack));
+		InventoryHelper.iterate(supplyInventory.get(), stack -> helper.accountSimpleStack(stack));
 	}
 
 }

@@ -73,45 +73,31 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 		int totalCount = width * height;
 		RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(item, width, height);
 		if (compactingResult.getCount() > 0) {
-			long maxExtracted;
-			try (Transaction nested = Transaction.openNested(ctx)) {
-				maxExtracted = InventoryHelper.extractFromInventory(item, totalCount, inventoryHandler, nested);
-			}
-
+			ItemVariant resource = ItemVariant.of(item);
+			long maxExtracted = inventoryHandler.simulateExtract(resource, totalCount, ctx);
 			if (maxExtracted != totalCount) {
 				return;
 			}
 
-			ItemVariant resultCopy = compactingResult.getResult();
+			ItemVariant resultVariant = compactingResult.getResult();
 			while (maxExtracted == totalCount) {
 				List<ItemStack> remainingItemsCopy = compactingResult.getRemainingItems().isEmpty() ? Collections.emptyList() : compactingResult.getRemainingItems().stream().map(ItemStack::copy).toList();
 
-				if (!fitsResultAndRemainingItems(inventoryHandler, remainingItemsCopy, resultCopy, compactingResult.getCount(), ctx)) {
-					break;
-				}
-
-				InventoryHelper.extractFromInventory(item, totalCount, inventoryHandler, ctx);
-				inventoryHandler.insert(resultCopy, compactingResult.getCount(), ctx);
-				InventoryHelper.insertIntoInventory(remainingItemsCopy, inventoryHandler, ctx);
-
 				try (Transaction nested = Transaction.openNested(ctx)) {
-					maxExtracted = InventoryHelper.extractFromInventory(item, totalCount, inventoryHandler, nested);
+					long inserted = inventoryHandler.insert(resultVariant, compactingResult.getCount(), nested);
+					List<ItemStack> remaining = InventoryHelper.insertIntoInventory(remainingItemsCopy, inventoryHandler, nested);
+
+					if (!(inserted == compactingResult.getCount() && remaining.isEmpty())) {
+						return;
+					}
+
+					inventoryHandler.extract(resource, totalCount, nested);
+					nested.commit();
 				}
+
+				maxExtracted = inventoryHandler.simulateExtract(resource, totalCount, ctx);
 			}
 		}
-	}
-
-	private boolean fitsResultAndRemainingItems(SlottedStackStorage inventoryHandler, List<ItemStack> remainingItems, ItemVariant result, long count, @Nullable TransactionContext ctx) {
-		if (!remainingItems.isEmpty()) {
-			SlottedStackStorage clonedHandler = InventoryHelper.cloneInventory(inventoryHandler);
-			return InventoryHelper.insertIntoInventory(result, count, clonedHandler, ctx) == count && InventoryHelper.insertIntoInventory(remainingItems, clonedHandler, ctx).isEmpty();
-		}
-
-		long ret;
-		try (Transaction insertionTransaction = Transaction.openNested(ctx)) {
-			ret = InventoryHelper.insertIntoInventory(result, count, inventoryHandler, insertionTransaction);
-		}
-		return ret == 0;
 	}
 
 	@Override

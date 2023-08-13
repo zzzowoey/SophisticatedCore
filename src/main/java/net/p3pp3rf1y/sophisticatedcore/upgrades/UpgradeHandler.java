@@ -79,7 +79,7 @@ public class UpgradeHandler extends ItemStackHandler {
 
 	public void setRenderUpgradeItems() {
 		List<ItemStack> upgradeItems = new ArrayList<>();
-		InventoryHelper.iterate(this, (upgradeSlot, upgrade) -> upgradeItems.add(ItemStackHelper.copyStackWithSize(upgrade, 1)));
+		InventoryHelper.iterate(this, upgrade -> upgradeItems.add(upgrade.copyWithCount(1)));
 		storageWrapper.getRenderInfo().setUpgradeItems(upgradeItems);
 	}
 
@@ -340,18 +340,6 @@ public class UpgradeHandler extends ItemStackHandler {
 			currentTankPos = TankPosition.RIGHT;
 		}
 	}
-
-/*	public void increaseSize(int diff) {
-		var previousStacks = stacks.clone();
-
-		setSize(previousStacks.length + diff);
-		for (int slot = 0; slot < previousStacks.length && slot < getSlots(); slot++) {
-			contentsChangedInternal(slot, previousStacks[slot], null);
-		}
-
-		saveInventory();
-		setRenderUpgradeItems();
-	}*/
 
 	@Override
 	public int getSlotLimit(int slot) {

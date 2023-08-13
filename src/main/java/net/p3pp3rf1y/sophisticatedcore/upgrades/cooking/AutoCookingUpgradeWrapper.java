@@ -1,8 +1,9 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.cooking;
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -151,7 +152,7 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 
 	private boolean tryPullingGetUnsucessful(ItemStack stack, Consumer<ItemStack> setSlot, Predicate<ItemStack> isItemValid) {
 		ItemStack toExtract;
-		SlottedStackStorage inventory = storageWrapper.getInventoryForUpgradeProcessing();
+		Storage<ItemVariant> inventory = storageWrapper.getInventoryForUpgradeProcessing();
 		if (stack.isEmpty()) {
 			AtomicReference<ItemStack> ret = new AtomicReference<>(ItemStack.EMPTY);
 			InventoryHelper.iterate(inventory, (st) -> {
@@ -172,12 +173,16 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 			toExtract.setCount(stack.getMaxStackSize() - stack.getCount());
 		}
 
-		if (InventoryHelper.simulateExtractFromInventory(toExtract, inventory, null).getCount() > 0) {
-			ItemStack toSet = InventoryHelper.extractFromInventory(toExtract, inventory, null);
-			toSet.grow(stack.getCount());
-			setSlot.accept(toSet);
-		} else {
-			return true;
+		try (Transaction ctx = Transaction.openOuter()) {
+			long extracted = inventory.extract(ItemVariant.of(toExtract), toExtract.getCount(), ctx);
+			if (extracted > 0) {
+				ctx.commit();
+				ItemStack toSet = toExtract.copy();
+				toSet.grow(stack.getCount());
+				setSlot.accept(toSet);
+			} else {
+				return true;
+			}
 		}
 		return false;
 	}

@@ -45,21 +45,9 @@ import java.util.function.Supplier;
 public class InventoryHelper {
 	private InventoryHelper() {}
 
-	public static Optional<ItemStack> getItemFromEitherHand(Player player, Item item) {
-		ItemStack mainHandItem = player.getMainHandItem();
-		if (mainHandItem.getItem() == item) {
-			return Optional.of(mainHandItem);
-		}
-		ItemStack offhandItem = player.getOffhandItem();
-		if (offhandItem.getItem() == item) {
-			return Optional.of(offhandItem);
-		}
-		return Optional.empty();
-	}
-
 	public static boolean hasItem(SlottedStorage<ItemVariant> inventory, Predicate<ItemStack> matches) {
 		AtomicBoolean result = new AtomicBoolean(false);
-		iterate(inventory, (slot, stack) -> {
+		iterate(inventory, (stack) -> {
 			if (!stack.isEmpty() && matches.test(stack)) {
 				result.set(true);
 			}
@@ -95,11 +83,12 @@ public class InventoryHelper {
 		if (stacks.isEmpty()) {
 			return stacks;
 		}
+
 		List<ItemStack> remainingStacks = new ArrayList<>();
 		for (ItemStack stack : stacks) {
 			ItemVariant resource = ItemVariant.of(stack);
 
-			long remaining = stack.getCount() - insertIntoInventory(resource, stack.getCount(), inventory, ctx);
+			long remaining = stack.getCount() - inventory.insert(resource, stack.getCount(), ctx);
 			if (remaining > 0) {
 				remainingStacks.add(resource.toStack((int) remaining));
 			}
@@ -107,98 +96,11 @@ public class InventoryHelper {
 		return remainingStacks;
 	}
 
-	public static SlottedStackStorage cloneInventory(SlottedStorage<ItemVariant> inventory) {
-		SlottedStackStorage cloned = new ItemStackHandler(inventory.getSlotCount());
-		for (int slot = 0; slot < inventory.getSlotCount(); slot++) {
-			SingleSlotStorage<ItemVariant> slotStorage = inventory.getSlot(slot);
-			cloned.insertSlot(slot, slotStorage.getResource(), slotStorage.getAmount(), null);
-		}
-		return cloned;
-	}
-
-	public static long insertIntoInventory(ItemVariant resource, long maxAmount, Storage<ItemVariant> inventory, TransactionContext ctx) {
-		if (inventory instanceof IItemHandlerSimpleInserter itemHandlerSimpleInserter) {
-			return maxAmount - itemHandlerSimpleInserter.insert(resource, maxAmount, ctx);
-		}
-
-		long inserted = inventory.insert(resource, maxAmount, ctx);
-		return maxAmount - inserted;
-	}
-	public static ItemStack simulateInsertIntoInventory(ItemStack stack, Storage<ItemVariant> inventory, @Nullable TransactionContext ctx) {
-		try (Transaction transaction = Transaction.openNested(ctx)) {
-			ItemVariant resource = ItemVariant.of(stack);
-			return resource.toStack((int) insertIntoInventory(resource, stack.getCount(), inventory, transaction));
-		}
-	}
-
-
-	public static long simulateExtractFromInventory(ItemVariant item, long count, Storage<ItemVariant> inventory, @Nullable TransactionContext ctx) {
-		try (Transaction transaction = Transaction.openNested(ctx)) {
-			return extractFromInventory(item, count, inventory, transaction);
-		}
-	}
-	public static long extractFromInventory(Item item, long count, Storage<ItemVariant> inventory, @Nullable TransactionContext ctx) {
-		return extractFromInventory(ItemVariant.of(item), count, inventory, ctx);
-	}
-
-	public static long extractFromInventory(ItemVariant variant, long count, Storage<ItemVariant> inventory, @Nullable TransactionContext ctx) {
-		long extracted;
-		try (Transaction nested = Transaction.openNested(ctx)) {
-			extracted = inventory.extract(variant, count, ctx);
-			nested.commit();
-		}
-		return extracted;
-		/*long ret = 0;
-		ItemVariant resource = ItemVariant.of(item);
-		int slots = inventory.getSlotCount();
-		for (int slot = 0; slot < slots && ret < count; slot++) {
-			ItemStack slotStack = inventory.getStackInSlot(slot);
-			if (slotStack.getItem() == item && (ret == 0 || ItemStackHelper.canItemStacksStack(resource.toStack((int) ret), slotStack))) {
-				long toExtract = Math.min(slotStack.getCount(), count - ret);
-				ret += inventory.extractSlot(slot, resource, toExtract, ctx);
-			}
-		}
-
-		return ret;*/
-	}
-
-	public static ItemStack simulateExtractFromInventory(ItemStack stack, SlottedStackStorage inventory, @Nullable TransactionContext ctx) {
-		try (Transaction transaction = Transaction.openNested(ctx)) {
-			return extractFromInventory(stack, inventory, transaction);
-		}
-	}
-
-	public static ItemStack extractFromInventory(ItemStack stack, SlottedStackStorage inventory, @Nullable TransactionContext ctx) {
-		long extractedCount = 0;
-		int slots = inventory.getSlotCount();
-		for (int slot = 0; slot < slots && extractedCount < stack.getCount(); slot++) {
-			ItemStack slotStack = inventory.getStackInSlot(slot);
-			ItemVariant resource = ItemVariant.of(slotStack);
-			if (ItemStackHelper.canItemStacksStack(stack, slotStack)) {
-				try (Transaction nested = Transaction.openNested(ctx)) {
-					long toExtract = Math.min(slotStack.getCount(), stack.getCount() - extractedCount);
-					extractedCount += inventory.extractSlot(slot, resource, toExtract, nested);
-					nested.commit();
-				}
-			}
-		}
-
-		if (extractedCount == 0) {
-			return ItemStack.EMPTY;
-		}
-
-		ItemStack result = stack.copy();
-		result.setCount((int) extractedCount);
-
-		return result;
-	}
-
 	public static ItemStack runPickupOnPickupResponseUpgrades(Level world, UpgradeHandler upgradeHandler, ItemStack remainingStack, @Nullable TransactionContext ctx) {
 		return runPickupOnPickupResponseUpgrades(world, null, upgradeHandler, remainingStack, ctx);
 	}
 
-	public static ItemStack runPickupOnPickupResponseUpgrades(Level world,
-			@Nullable Player player, UpgradeHandler upgradeHandler, ItemStack remainingStack, @Nullable TransactionContext ctx) {
+	public static ItemStack runPickupOnPickupResponseUpgrades(Level world, @Nullable Player player, UpgradeHandler upgradeHandler, ItemStack remainingStack, @Nullable TransactionContext ctx) {
 		List<IPickupResponseUpgrade> pickupUpgrades = upgradeHandler.getWrappersThatImplement(IPickupResponseUpgrade.class);
 
 		for (IPickupResponseUpgrade pickupUpgrade : pickupUpgrades) {
@@ -350,7 +252,7 @@ public class InventoryHelper {
 		long toInsert = stack.getCount();
 		for (Storage<ItemVariant> inventory : inventories) {
 			try (Transaction outer = Transaction.openOuter()) {
-				toInsert -= insertIntoInventory(resource, toInsert, inventory, outer);
+				toInsert -= inventory.insert(resource, toInsert, outer);
 				outer.commit();
 			}
 			if (toInsert == 0) {
@@ -395,7 +297,7 @@ public class InventoryHelper {
 
 	public static Set<ItemStackKey> getUniqueStacks(SlottedStorage<ItemVariant> handler) {
 		Set<ItemStackKey> uniqueStacks = new HashSet<>();
-		iterate(handler, (slot, stack) -> {
+		iterate(handler, stack -> {
 			if (stack.isEmpty()) {
 				return;
 			}
@@ -451,26 +353,6 @@ public class InventoryHelper {
 
 		stacks.addAll(list);
 		Collections.shuffle(stacks, new Random());
-	}
-
-	public static void dropItems(SlottedStackStorage inventoryHandler, Level level, BlockPos pos) {
-		dropItems(inventoryHandler, level, pos.getX(), pos.getY(), pos.getZ());
-	}
-
-	public static void dropItems(SlottedStackStorage inventoryHandler, Level level, double x, double y, double z) {
-		iterate(inventoryHandler, (slot, stack) -> {
-			if (stack.isEmpty()) {
-				return;
-			}
-
-			ItemVariant resource = ItemVariant.of(stack);
-			long extracted = inventoryHandler.extractSlot(slot, resource, stack.getCount(), null);
-			ItemStack extractedStack = resource.toStack((int) extracted);
-			while (!extractedStack.isEmpty()) {
-				Containers.dropItemStack(level, x, y, z, extractedStack.split(Math.min(extractedStack.getCount(), extractedStack.getMaxStackSize())));
-				inventoryHandler.setStackInSlot(slot, ItemStack.EMPTY);
-			}
-		});
 	}
 
 	public static int getAnalogOutputSignal(ITrackedContentsItemHandler handler) {
