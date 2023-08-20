@@ -89,7 +89,7 @@ public class MagnetUpgradeWrapper extends UpgradeWrapperBase<MagnetUpgradeWrappe
 	}
 
 	private boolean canFillStorageWithXp() {
-		return storageWrapper.getFluidHandler().map(fluidHandler -> fluidHandler.simulateInsert(ModFluids.EXPERIENCE_TAG, FluidConstants.BUCKET, ModFluids.XP_STILL.get(), null) > 0).orElse(false);
+		return storageWrapper.getFluidHandler().map(fluidHandler -> fluidHandler.simulateInsert(ModFluids.EXPERIENCE_TAG, FluidConstants.BUCKET, ModFluids.XP_STILL, null) > 0).orElse(false);
 	}
 
 	private int pickupXpOrbs(@Nullable LivingEntity entity, Level world, BlockPos pos) {
@@ -113,7 +113,7 @@ public class MagnetUpgradeWrapper extends UpgradeWrapperBase<MagnetUpgradeWrappe
 		return storageWrapper.getFluidHandler().map(fluidHandler -> {
 			long amountAdded;
 			try (Transaction outer = Transaction.openOuter()) {
-				amountAdded = fluidHandler.insert(ModFluids.EXPERIENCE_TAG, amountToTransfer, ModFluids.XP_STILL.get(), outer);
+				amountAdded = fluidHandler.insert(ModFluids.EXPERIENCE_TAG, amountToTransfer, ModFluids.XP_STILL, outer);
 				outer.commit();
 			}
 			if (amountAdded > 0) {

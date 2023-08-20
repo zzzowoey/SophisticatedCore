@@ -16,6 +16,6 @@ public class SCRecipeProvider extends FabricRecipeProvider {
 
 	@Override
 	public void buildRecipes(Consumer<FinishedRecipe> exporter) {
-		SpecialRecipeBuilder.special(ModRecipes.UPGRADE_CLEAR_SERIALIZER.get()).save(exporter, SophisticatedCore.getRL("upgrade_clear").toString());
+		SpecialRecipeBuilder.special(ModRecipes.UPGRADE_CLEAR_SERIALIZER).save(exporter, SophisticatedCore.getRL("upgrade_clear").toString());
 	}
 }

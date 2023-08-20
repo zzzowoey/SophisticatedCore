@@ -15,7 +15,7 @@ public class JukeboxUpgradeNoteParticleData extends ParticleType<JukeboxUpgradeN
 
 	@Override
 	public JukeboxUpgradeNoteParticleData getType() {
-		return ModParticles.JUKEBOX_NOTE.get();
+		return ModParticles.JUKEBOX_NOTE;
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class JukeboxUpgradeNoteParticleData extends ParticleType<JukeboxUpgradeN
 	@Override
 	public String writeToString() {
 		//noinspection ConstantConditions
-		return BuiltInRegistries.PARTICLE_TYPE.getKey(ModParticles.JUKEBOX_NOTE.get()).toString();
+		return BuiltInRegistries.PARTICLE_TYPE.getKey(ModParticles.JUKEBOX_NOTE).toString();
 	}
 
 	@SuppressWarnings("deprecation")

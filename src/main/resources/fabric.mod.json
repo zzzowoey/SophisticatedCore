@@ -18,7 +18,6 @@
     "sources": "https://github.com/P3pp3rF1y/SophisticatedCore/"
   },
 
-  "environment": "*",
   "entrypoints": {
     "main": [
       "net.p3pp3rf1y.sophisticatedcore.SophisticatedCore"
@@ -56,7 +55,6 @@
     "porting_lib_transfer": ">=${port_lib_transfer_version}",
     "porting_lib_tags": ">=${port_lib_tags_version}",
     "porting_lib_utility": ">=${port_lib_utility_version}",
-    "porting_lib_lazy_registration": ">=${port_lib_lazy_registration_version}",
 
     "forgeconfigapiport": ">=${forge_config_version}",
     "team_reborn_energy": ">=${energy_version}"

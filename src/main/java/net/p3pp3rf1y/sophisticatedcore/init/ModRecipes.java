@@ -1,10 +1,9 @@
 package net.p3pp3rf1y.sophisticatedcore.init;
 
-import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
-import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -17,13 +16,14 @@ import net.p3pp3rf1y.sophisticatedcore.crafting.UpgradeNextTierRecipe;
 import net.p3pp3rf1y.sophisticatedcore.util.SimpleIdentifiablePrepareableReloadListener;
 
 public class ModRecipes {
-	private static final LazyRegistrar<RecipeSerializer<?>> RECIPE_SERIALIZERS = LazyRegistrar.create(Registries.RECIPE_SERIALIZER, SophisticatedCore.ID);
-	public static final RegistryObject<RecipeSerializer<?>> UPGRADE_NEXT_TIER_SERIALIZER = RECIPE_SERIALIZERS.register("upgrade_next_tier", UpgradeNextTierRecipe.Serializer::new);
-	public static final RegistryObject<SimpleCraftingRecipeSerializer<?>> UPGRADE_CLEAR_SERIALIZER = RECIPE_SERIALIZERS.register("upgrade_clear", () -> new SimpleCraftingRecipeSerializer<>(UpgradeClearRecipe::new));
+	public static final RecipeSerializer<?> UPGRADE_NEXT_TIER_SERIALIZER = register("upgrade_next_tier", new UpgradeNextTierRecipe.Serializer());
+	public static final SimpleCraftingRecipeSerializer<?> UPGRADE_CLEAR_SERIALIZER = register("upgrade_clear", new SimpleCraftingRecipeSerializer<>(UpgradeClearRecipe::new));
+
+	public static <T extends RecipeSerializer<?>> T register(String id, T value) {
+		return Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, SophisticatedCore.getRL(id), value);
+	}
 
 	public static void registerHandlers() {
-		RECIPE_SERIALIZERS.register();
-
 		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new SimpleIdentifiablePrepareableReloadListener<>(SophisticatedCore.getRL("modrecipes")) {
 			@Override
 			protected void apply(Object object, ResourceManager resourceManager, ProfilerFiller profiler) {

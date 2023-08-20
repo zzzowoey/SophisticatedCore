@@ -52,6 +52,6 @@ public class UpgradeClearRecipe extends CustomRecipe {
 
 	@Override
 	public RecipeSerializer<?> getSerializer() {
-		return ModRecipes.UPGRADE_CLEAR_SERIALIZER.get();
+		return ModRecipes.UPGRADE_CLEAR_SERIALIZER;
 	}
 }

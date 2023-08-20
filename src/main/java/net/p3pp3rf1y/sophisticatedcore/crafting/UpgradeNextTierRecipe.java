@@ -52,7 +52,7 @@ public class UpgradeNextTierRecipe extends ShapedRecipe implements IWrapperRecip
 
 	@Override
 	public RecipeSerializer<?> getSerializer() {
-		return ModRecipes.UPGRADE_NEXT_TIER_SERIALIZER.get();
+		return ModRecipes.UPGRADE_NEXT_TIER_SERIALIZER;
 	}
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, UpgradeNextTierRecipe> {
