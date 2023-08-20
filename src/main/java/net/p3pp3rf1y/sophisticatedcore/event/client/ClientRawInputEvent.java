@@ -20,8 +20,23 @@ public interface ClientRawInputEvent {
         return InteractionResult.PASS;
     });
 
+    Event<MouseScrolled> MOUSE_SCROLLED = EventFactory.createArrayBacked(MouseScrolled.class, callbacks -> (client, delta) -> {
+        for (var event : callbacks) {
+            var result = event.keyPressed(client, delta);
+            if (result != InteractionResult.PASS) {
+                return result;
+            }
+        }
+        return InteractionResult.PASS;
+    });
+
     @FunctionalInterface
     interface KeyPressed {
         InteractionResult keyPressed(Minecraft client, int keyCode, int scanCode, int action, int modifiers);
+    }
+
+    @FunctionalInterface
+    interface MouseScrolled {
+        InteractionResult keyPressed(Minecraft client, double delta);
     }
 }
