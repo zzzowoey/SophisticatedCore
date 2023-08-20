@@ -150,7 +150,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 				if (itemTags.contains(REAL_COUNT_TAG)) {
 					slotStack.setCount(itemTags.getInt(REAL_COUNT_TAG));
 				}
-				this.getSlot(slot).setNewStack(slotStack);
+				this.getSlot(slot).setNewStackInternal(slotStack);
 			}
 		}
 		slotTracker.refreshSlotIndexesFrom(this);
@@ -400,18 +400,19 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 		return slotTracker.insertItemIntoHandler(this, this::insertItemInternal, this::triggerOverflowUpgrades, resource, maxAmount, ctx);
 	}
 
-/*	public void changeSlots(int diff) {
-		var previousStacks = stacks.clone();
+	public void changeSlots(int diff) {
+		var previousSlots = new ArrayList<>(getSlots());
 
-		setSize(previousStacks.length + diff);
-		for (int slot = 0; slot < previousStacks.length && slot < getSlots(); slot++) {
-			contentsChangedInternal(slot, previousStacks[slot], null);
+		setSize(previousSlots.size() + diff);
+		for (int i = 0; i < previousSlots.size() && i < getSlotCount(); i++) {
+			var old = previousSlots.get(i);
+			getSlot(i).setNewStackInternal(old.getResource().toStack((int) old.getAmount()));
 		}
 
 		initStackNbts();
 		saveInventory();
 		slotTracker.refreshSlotIndexesFrom(this);
-	}*/
+	}
 
 	@Override
 	public Set<ItemStackKey> getTrackedStacks() {

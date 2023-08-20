@@ -45,6 +45,18 @@ import java.util.function.Supplier;
 public class InventoryHelper {
 	private InventoryHelper() {}
 
+	public static Optional<ItemStack> getItemFromEitherHand(Player player, Item item) {
+		ItemStack mainHandItem = player.getMainHandItem();
+		if (mainHandItem.getItem() == item) {
+			return Optional.of(mainHandItem);
+		}
+		ItemStack offhandItem = player.getOffhandItem();
+		if (offhandItem.getItem() == item) {
+			return Optional.of(offhandItem);
+		}
+		return Optional.empty();
+	}
+
 	public static boolean hasItem(SlottedStorage<ItemVariant> inventory, Predicate<ItemStack> matches) {
 		AtomicBoolean result = new AtomicBoolean(false);
 		iterate(inventory, (stack) -> {
@@ -353,6 +365,29 @@ public class InventoryHelper {
 
 		stacks.addAll(list);
 		Collections.shuffle(stacks, new Random());
+	}
+
+	public static void dropItems(SlottedStackStorage inventoryHandler, Level level, BlockPos pos) {
+		dropItems(inventoryHandler, level, pos.getX(), pos.getY(), pos.getZ());
+	}
+
+	public static void dropItems(SlottedStackStorage inventoryHandler, Level level, double x, double y, double z) {
+		for (var view : inventoryHandler.nonEmptyViews()) {
+			if (view.isResourceBlank()) {
+				return;
+			}
+
+			long extracted;
+			ItemVariant resource = view.getResource();
+			try (Transaction ctx = Transaction.openOuter()) {
+				extracted = view.extract(resource, view.getAmount(), ctx);
+				ctx.commit();
+			}
+			ItemStack extractedStack = resource.toStack((int) extracted);
+			while (!extractedStack.isEmpty()) {
+				Containers.dropItemStack(level, x, y, z, extractedStack.split(Math.min(extractedStack.getCount(), extractedStack.getMaxStackSize())));
+			}
+		}
 	}
 
 	public static int getAnalogOutputSignal(ITrackedContentsItemHandler handler) {
