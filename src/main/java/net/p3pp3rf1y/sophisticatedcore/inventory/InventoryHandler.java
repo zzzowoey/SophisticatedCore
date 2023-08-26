@@ -403,7 +403,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	public void changeSlots(int diff) {
 		var previousSlots = new ArrayList<>(getSlots());
 
-		setSize(previousSlots.size() + diff);
+		super.setSize(previousSlots.size() + diff);
 		for (int i = 0; i < previousSlots.size() && i < getSlotCount(); i++) {
 			var old = previousSlots.get(i);
 			getSlot(i).setNewStackInternal(old.getResource().toStack((int) old.getAmount()));

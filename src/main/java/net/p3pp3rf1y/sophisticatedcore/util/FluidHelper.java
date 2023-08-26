@@ -79,7 +79,7 @@ public class FluidHelper {
             }
 
             level.updateSnapshots(nested);
-            if (level.dimensionType().ultraWarm() && fluid.is(FluidTags.WATER)) {
+            if (level.dimensionType().ultraWarm() && fluid.defaultFluidState().is(FluidTags.WATER)) {
                 TransactionCallback.onSuccess(nested, () -> {
                     level.playSound(player, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.6f + (level.random.nextFloat() - level.random.nextFloat()) * 0.8f);
                     for (int i = 0; i < 8; ++i) {

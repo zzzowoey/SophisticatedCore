@@ -79,7 +79,7 @@ public class UpgradeHandler extends ItemStackHandler {
 
 	public void setRenderUpgradeItems() {
 		List<ItemStack> upgradeItems = new ArrayList<>();
-		InventoryHelper.iterate(this, upgrade -> upgradeItems.add(upgrade.copyWithCount(1)));
+		InventoryHelper.iterate(this, (i, upgrade) -> upgradeItems.add(upgrade.copyWithCount(1)));
 		storageWrapper.getRenderInfo().setUpgradeItems(upgradeItems);
 	}
 
@@ -344,7 +344,7 @@ public class UpgradeHandler extends ItemStackHandler {
 	public void increaseSize(int diff) {
 		var previousSlots = new ArrayList<>(getSlots());
 
-		setSize(previousSlots.size() + diff);
+		super.setSize(previousSlots.size() + diff);
 		for (int i = 0; i < previousSlots.size() && i < getSlotCount(); i++) {
 			var old = previousSlots.get(i);
 			getSlot(i).setNewStackInternal(old.getResource().toStack((int) old.getAmount()));

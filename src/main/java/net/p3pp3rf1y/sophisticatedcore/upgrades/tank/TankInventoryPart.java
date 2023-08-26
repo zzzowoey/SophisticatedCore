@@ -107,8 +107,7 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 	}
 
 	private MutableComponent getContentsTooltip(FluidStack contents, long capacity) {
-		//noinspection deprecation
-		if (contents.getFluid().is(ModFluids.EXPERIENCE_TAG)) {
+		if (contents.getFluid().defaultFluidState().is(ModFluids.EXPERIENCE_TAG)) {
 			double contentsLevels = XpHelper.getLevelsForExperience((int) XpHelper.liquidToExperience(contents.getAmount()));
 			double tankCapacityLevels = XpHelper.getLevelsForExperience((int) XpHelper.liquidToExperience(capacity));
 
