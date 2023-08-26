@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedcore.upgrades.cooking;
 import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -90,7 +91,7 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 		ItemStack output = cookingLogic.getCookOutput();
 		ItemVariant outputResource = ItemVariant.of(output);
 		IItemHandlerSimpleInserter inventory = storageWrapper.getInventoryForUpgradeProcessing();
-		if (!output.isEmpty() && inventory.simulateInsert(outputResource, output.getCount(), null) < output.getCount()) {
+		if (!output.isEmpty() && StorageUtil.simulateInsert(inventory, outputResource, output.getCount(), null) < output.getCount()) {
 			long ret = inventory.insert(outputResource, output.getCount(), null);
 			cookingLogic.getCookingInventory().extractSlot(CookingLogic.COOK_OUTPUT_SLOT, outputResource,output.getCount() - ret, null);
 		} else {
@@ -99,7 +100,7 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 
 		ItemStack fuel = cookingLogic.getFuel();
 		ItemVariant fuelResource = ItemVariant.of(fuel);
-		if (!fuel.isEmpty() && Objects.requireNonNullElse(FuelRegistry.INSTANCE.get(fuelResource.getItem()), 0) <= 0 && inventory.simulateInsert(fuelResource, fuel.getCount(), null) < fuel.getCount()) {
+		if (!fuel.isEmpty() && Objects.requireNonNullElse(FuelRegistry.INSTANCE.get(fuelResource.getItem()), 0) <= 0 && StorageUtil.simulateInsert(inventory, fuelResource, fuel.getCount(), null) < fuel.getCount()) {
 			long ret = inventory.insert(fuelResource, fuel.getCount(), null);
 			cookingLogic.getCookingInventory().extractSlot(CookingLogic.FUEL_SLOT, fuelResource, fuel.getCount() - ret, null);
 		}

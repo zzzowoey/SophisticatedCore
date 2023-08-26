@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.upgrades.compacting;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
@@ -74,7 +75,7 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 		RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(item, width, height);
 		if (compactingResult.getCount() > 0) {
 			ItemVariant resource = ItemVariant.of(item);
-			long maxExtracted = inventoryHandler.simulateExtract(resource, totalCount, ctx);
+			long maxExtracted = StorageUtil.simulateExtract(inventoryHandler, resource, totalCount, ctx);
 			if (maxExtracted != totalCount) {
 				return;
 			}
@@ -95,7 +96,7 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 					nested.commit();
 				}
 
-				maxExtracted = inventoryHandler.simulateExtract(resource, totalCount, ctx);
+				maxExtracted = StorageUtil.simulateExtract(inventoryHandler, resource, totalCount, ctx);
 			}
 		}
 	}

@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
@@ -213,7 +214,7 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 
 	public boolean fillHandler(ContainerItemContext cic, Storage<FluidVariant> storage, Consumer<ItemStack> updateContainerStack) {
 		if (!contents.isEmpty() && isValidFluidHandler(storage, true)) {
-			long filled = storage.simulateInsert(contents.getType(), Math.min(FluidConstants.BUCKET, contents.getAmount()), null);
+			long filled = StorageUtil.simulateInsert(storage, contents.getType(), Math.min(FluidConstants.BUCKET, contents.getAmount()), null);
 			if (filled <= 0) { //checking for less than as well because some mods have incorrect fill logic
 				return false;
 			}
@@ -232,8 +233,8 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 		if (isValidFluidHandler(storage, false)) {
 			FluidVariant resource = contents.isEmpty() ? TransferUtil.getFirstFluid(storage).getType() : contents.getType();
 			long extracted = contents.isEmpty() ?
-					storage.simulateExtract(resource, FluidConstants.BUCKET, null) :
-					storage.simulateExtract(resource, Math.min(FluidConstants.BUCKET, getTankCapacity() - contents.getAmount()), null);
+					StorageUtil.simulateExtract(storage, resource, FluidConstants.BUCKET, null) :
+					StorageUtil.simulateExtract(storage, resource, Math.min(FluidConstants.BUCKET, getTankCapacity() - contents.getAmount()), null);
 			if (extracted <= 0) {
 				return false;
 			}
