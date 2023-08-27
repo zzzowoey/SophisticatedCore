@@ -72,8 +72,9 @@ public class FeedingUpgradeWrapper extends UpgradeWrapperBase<FeedingUpgradeWrap
 	private boolean tryFeedingFoodFromStorage(Level world, int hungerLevel, Player player) {
 		boolean isHurt = player.getHealth() < player.getMaxHealth() - 0.1F;
 		SlottedStackStorage inventory = storageWrapper.getInventoryForUpgradeProcessing();
-		AtomicBoolean fedPlayer = new AtomicBoolean(false);
-		InventoryHelper.iterate(inventory, (slot, stack) -> {
+
+		for (int slot = 0; slot < inventory.getSlotCount(); slot++) {
+			ItemStack stack = inventory.getStackInSlot(slot);
 			if (isEdible(stack) && filterLogic.matchesFilter(stack) && (isHungryEnoughForFood(hungerLevel, stack) || shouldFeedImmediatelyWhenHurt() && hungerLevel > 0 && isHurt)) {
 				ItemStack mainHandItem = player.getMainHandItem();
 				player.getInventory().items.set(player.getInventory().selected, stack);
@@ -91,14 +92,13 @@ public class FeedingUpgradeWrapper extends UpgradeWrapperBase<FeedingUpgradeWrap
 						PlayerInventoryStorage playerInventory = PlayerInventoryStorage.of(player);
 						InventoryHelper.insertOrDropItem(player, containerItem, inventory, playerInventory);
 					}
-					fedPlayer.set(true);
 					return true;
 				}
 				player.getInventory().items.set(player.getInventory().selected, mainHandItem);
 			}
-			return false;
-		}, () -> false, ret -> ret);
-		return fedPlayer.get();
+		}
+
+		return false;
 	}
 
 	private static boolean isEdible(ItemStack stack) {

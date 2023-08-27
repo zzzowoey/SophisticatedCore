@@ -38,7 +38,8 @@ public class FilterItemStackHandler extends ItemStackHandler {
 	}
 
 	private void updateEmptyFilters() {
-		onlyEmptyFilters = InventoryHelper.iterate(this, (s, filter) -> filter.isEmpty(), () -> true, result -> !result);
+		onlyEmptyFilters = !this.nonEmptyIterator().hasNext();
+		//onlyEmptyFilters = InventoryHelper.iterate(this, (s, filter) -> filter.isEmpty(), () -> true, result -> !result);
 	}
 
 	public boolean hasOnlyEmptyFilters() {

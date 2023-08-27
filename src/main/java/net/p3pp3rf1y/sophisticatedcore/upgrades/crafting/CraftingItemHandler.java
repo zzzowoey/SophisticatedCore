@@ -41,7 +41,7 @@ public class CraftingItemHandler extends CraftingContainer {
 
 	@Override
 	public boolean isEmpty() {
-		return InventoryHelper.isEmpty(supplyInventory.get());
+		return supplyInventory.get().nonEmptyIterator().hasNext();
 	}
 
 	@Override
@@ -79,7 +79,10 @@ public class CraftingItemHandler extends CraftingContainer {
 
 	@Override
 	public void fillStackedContents(StackedContents helper) {
-		InventoryHelper.iterate(supplyInventory.get(), stack -> helper.accountSimpleStack(stack));
+		for (var view : supplyInventory.get().nonEmptyViews()) {
+			ItemStack stack = view.getResource().toStack((int) view.getAmount());
+			helper.accountSimpleStack(stack);
+		};
 	}
 
 }

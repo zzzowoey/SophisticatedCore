@@ -14,10 +14,6 @@ public record ItemStackKey(ItemStack stack) {
 		this.stack.setCount(1);
 	}
 
-	public ItemStackKey(ItemVariant resource) {
-		this(resource.toStack());
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {return true;}

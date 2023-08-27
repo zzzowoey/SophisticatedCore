@@ -18,12 +18,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -80,7 +75,10 @@ public class UpgradeHandler extends ItemStackHandler {
 
 	public void setRenderUpgradeItems() {
 		List<ItemStack> upgradeItems = new ArrayList<>();
-		InventoryHelper.iterate(this, (i, upgrade) -> upgradeItems.add(upgrade.copyWithCount(1)));
+		for (int slot = 0; slot < this.getSlotCount(); slot++) {
+			ItemStack upgrade = this.getStackInSlot(slot);
+			upgradeItems.add(upgrade.copyWithCount(1));
+		}
 		storageWrapper.getRenderInfo().setUpgradeItems(upgradeItems);
 	}
 

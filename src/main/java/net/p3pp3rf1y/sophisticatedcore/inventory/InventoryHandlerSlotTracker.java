@@ -9,12 +9,7 @@ import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
@@ -238,7 +233,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 
 	@Override
 	public long insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
-		ItemStackKey stackKey = new ItemStackKey(resource);
+		ItemStackKey stackKey = new ItemStackKey(resource.toStack());
 
 		long remaining = maxAmount;
 		remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);
@@ -259,7 +254,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 
 	@Override
 	public long insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
-		ItemStackKey stackKey = new ItemStackKey(resource);
+		ItemStackKey stackKey = new ItemStackKey(resource.toStack());
 
 		long remaining = maxAmount;
 		remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);

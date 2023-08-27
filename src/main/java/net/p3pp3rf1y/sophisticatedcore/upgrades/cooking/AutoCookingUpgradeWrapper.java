@@ -8,11 +8,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.BlastingRecipe;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SmeltingRecipe;
-import net.minecraft.world.item.crafting.SmokingRecipe;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
@@ -21,12 +17,10 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.FilterLogic;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
-import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -41,7 +35,6 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 	private final CookingLogic<R> cookingLogic;
 	private final Predicate<ItemStack> isValidInput;
 	private final Predicate<ItemStack> isValidFuel;
-	private final RecipeType<R> recipeType;
 	private int outputCooldown = 0;
 	private int fuelCooldown = 0;
 	private int inputCooldown = 0;
@@ -49,7 +42,6 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 
 	public AutoCookingUpgradeWrapper(IStorageWrapper storageWrapper, ItemStack upgrade, Consumer<ItemStack> upgradeSaveHandler, RecipeType<R> recipeType, float burnTimeModifier) {
 		super(storageWrapper, upgrade, upgradeSaveHandler);
-		this.recipeType = recipeType;
 		autoCookingUpgradeConfig = upgradeItem.getAutoCookingUpgradeConfig();
 		inputFilterLogic = new FilterLogic(upgrade, upgradeSaveHandler, autoCookingUpgradeConfig.inputFilterSlots.get(),
 				s -> RecipeHelper.getCookingRecipe(s, recipeType).isPresent(), "inputFilter");
@@ -88,21 +80,25 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 			return;
 		}
 
-		ItemStack output = cookingLogic.getCookOutput();
-		ItemVariant outputResource = ItemVariant.of(output);
-		IItemHandlerSimpleInserter inventory = storageWrapper.getInventoryForUpgradeProcessing();
-		if (!output.isEmpty() && StorageUtil.simulateInsert(inventory, outputResource, output.getCount(), null) < output.getCount()) {
-			long ret = inventory.insert(outputResource, output.getCount(), null);
-			cookingLogic.getCookingInventory().extractSlot(CookingLogic.COOK_OUTPUT_SLOT, outputResource,output.getCount() - ret, null);
-		} else {
-			outputCooldown = NO_INVENTORY_SPACE_COOLDOWN;
-		}
+		try (Transaction ctx = Transaction.openOuter()) {
+			ItemStack output = cookingLogic.getCookOutput();
+			ItemVariant outputResource = ItemVariant.of(output);
+			IItemHandlerSimpleInserter inventory = storageWrapper.getInventoryForUpgradeProcessing();
+			if (!output.isEmpty() && StorageUtil.simulateInsert(inventory, outputResource, output.getCount(), ctx) > 0) {
+				long ret = inventory.insert(outputResource, output.getCount(), ctx);
+				cookingLogic.getCookingInventory().extractSlot(CookingLogic.COOK_OUTPUT_SLOT, outputResource, ret, ctx);
+			} else {
+				outputCooldown = NO_INVENTORY_SPACE_COOLDOWN;
+			}
 
-		ItemStack fuel = cookingLogic.getFuel();
-		ItemVariant fuelResource = ItemVariant.of(fuel);
-		if (!fuel.isEmpty() && Objects.requireNonNullElse(FuelRegistry.INSTANCE.get(fuelResource.getItem()), 0) <= 0 && StorageUtil.simulateInsert(inventory, fuelResource, fuel.getCount(), null) < fuel.getCount()) {
-			long ret = inventory.insert(fuelResource, fuel.getCount(), null);
-			cookingLogic.getCookingInventory().extractSlot(CookingLogic.FUEL_SLOT, fuelResource, fuel.getCount() - ret, null);
+			ItemStack fuel = cookingLogic.getFuel();
+			ItemVariant fuelResource = ItemVariant.of(fuel);
+			if (!fuel.isEmpty() && Objects.requireNonNullElse(FuelRegistry.INSTANCE.get(fuelResource.getItem()), 0) <= 0 && StorageUtil.simulateInsert(inventory, fuelResource, fuel.getCount(), ctx) > 0) {
+				long ret = inventory.insert(fuelResource, fuel.getCount(), ctx);
+				cookingLogic.getCookingInventory().extractSlot(CookingLogic.FUEL_SLOT, fuelResource, ret, ctx);
+			}
+
+			ctx.commit();
 		}
 	}
 
@@ -152,17 +148,18 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 	}
 
 	private boolean tryPullingGetUnsucessful(ItemStack stack, Consumer<ItemStack> setSlot, Predicate<ItemStack> isItemValid) {
-		ItemStack toExtract;
+		ItemStack toExtract = ItemStack.EMPTY;
 		Storage<ItemVariant> inventory = storageWrapper.getInventoryForUpgradeProcessing();
 		if (stack.isEmpty()) {
-			AtomicReference<ItemStack> ret = new AtomicReference<>(ItemStack.EMPTY);
-			InventoryHelper.iterate(inventory, (st) -> {
-				if (isItemValid.test(st)) {
-					ret.set(st.copy());
+			for (var view : inventory.nonEmptyViews()) {
+				ItemStack ret = view.getResource().toStack((int) view.getAmount());
+				if (isItemValid.test(ret)) {
+					toExtract = ret;
+					break;
 				}
-			}, () -> !ret.get().isEmpty());
-			if (!ret.get().isEmpty()) {
-				toExtract = ret.get();
+			}
+
+			if (!toExtract.isEmpty()) {
 				toExtract.setCount(toExtract.getMaxStackSize());
 			} else {
 				return true;
@@ -177,10 +174,10 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 		try (Transaction ctx = Transaction.openOuter()) {
 			long extracted = inventory.extract(ItemVariant.of(toExtract), toExtract.getCount(), ctx);
 			if (extracted > 0) {
-				ctx.commit();
 				ItemStack toSet = toExtract.copy();
 				toSet.grow(stack.getCount());
 				setSlot.accept(toSet);
+				ctx.commit();
 			} else {
 				return true;
 			}
