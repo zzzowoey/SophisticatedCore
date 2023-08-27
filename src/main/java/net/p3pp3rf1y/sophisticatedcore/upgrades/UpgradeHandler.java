@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.upgrades;
 
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerSlot;
 import io.github.fabricators_of_create.porting_lib.util.LogicalSidedProvider;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -115,7 +116,12 @@ public class UpgradeHandler extends ItemStackHandler {
 			wrapperAccessor.clearCache();
 		}
 
-		InventoryHelper.iterate(this, (slot, upgrade) -> {
+		for (var view : this.nonEmptyViews()) {
+			ItemStackHandlerSlot viewSlot = (ItemStackHandlerSlot) view;
+
+			int slot = viewSlot.getIndex();
+			ItemStack upgrade = viewSlot.getStack();
+
 			if (upgrade.isEmpty() || !(upgrade.getItem() instanceof IUpgradeItem<?>)) {
 				return;
 			}
@@ -127,7 +133,7 @@ public class UpgradeHandler extends ItemStackHandler {
 			});
 			setUpgradeDefaults(wrapper);
 			slotWrappers.put(slot, wrapper);
-		});
+		}
 
 		initRenderInfoCallbacks(false);
 	}
@@ -346,8 +352,8 @@ public class UpgradeHandler extends ItemStackHandler {
 
 		super.setSize(previousSlots.size() + diff);
 		for (int i = 0; i < previousSlots.size() && i < getSlotCount(); i++) {
-			var old = previousSlots.get(i);
-			getSlot(i).setNewStackInternal(old.getResource().toStack((int) old.getAmount()));
+			var old = (ItemStackHandlerSlot)previousSlots.get(i);
+			getSlot(i).setNewStackInternal(old.getStack());
 		}
 
 		saveInventory();
