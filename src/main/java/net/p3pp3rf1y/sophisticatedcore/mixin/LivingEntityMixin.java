@@ -1,13 +1,18 @@
 package net.p3pp3rf1y.sophisticatedcore.mixin;
 
-import io.github.fabricators_of_create.porting_lib.util.MixinHelper;
+import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import io.github.fabricators_of_create.porting_lib.extensions.extensions.EntityExtensions;
+import io.github.fabricators_of_create.porting_lib.util.MixinHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.event.common.LivingEntityEvents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,7 +20,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,5 +59,10 @@ public abstract class LivingEntityMixin extends Entity implements EntityExtensio
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V"))
     private void sophisticatedcore$tick(CallbackInfo ci) {
         LivingEntityEvents.TICK.invoker().onLivingEntityTick(MixinHelper.cast(this));
+    }
+
+    @WrapWithCondition(method = "checkFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;sendParticles(Lnet/minecraft/core/particles/ParticleOptions;DDDIDDDD)I"))
+    public boolean sophisticatedcore$addLandingEffects(ServerLevel level, ParticleOptions type, double posX, double posY, double posZ, int particleCount, double xOffset, double yOffset, double zOffset, double speed, double y, boolean onGround, BlockState state, BlockPos pos) {
+        return !state.addLandingEffects(level, pos, state, MixinHelper.cast(this), particleCount);
     }
 }

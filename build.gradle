@@ -110,6 +110,9 @@ def dependencies(DependencyHandler deps) {
     }
 
     deps.api(deps.include("com.google.code.findbugs:jsr305:$jsr305_version"))
+
+    deps.implementation(deps.include("com.github.llamalad7.mixinextras:mixinextras-fabric:$mixin_extras_version"))
+    deps.annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:$mixin_extras_version")
 }
 
 def compat(DependencyHandler deps) {
