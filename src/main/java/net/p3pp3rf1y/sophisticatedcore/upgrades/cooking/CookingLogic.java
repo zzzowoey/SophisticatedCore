@@ -219,13 +219,14 @@ public class CookingLogic<T extends AbstractCookingRecipe> {
 			}
 			setBurnTime(world, (int) (getBurnTime(fuel, burnTimeModifier) * fuelEfficiencyMultiplier / cookingSpeedMultiplier));
 			if (isBurning(world)) {
-				if (fuel.hasCraftingRemainingItem()) {
-					setFuel(fuel.getCraftingRemainingItem());
+				ItemStack remainder = fuel.getRecipeRemainder();
+				if (!remainder.isEmpty()) {
+					setFuel(remainder);
 				} else if (!fuel.isEmpty()) {
 					fuel.shrink(1);
 					setFuel(fuel);
 					if (fuel.isEmpty()) {
-						setFuel(fuel.getCraftingRemainingItem());
+						setFuel(fuel.getRecipeRemainder());
 					}
 				}
 			}

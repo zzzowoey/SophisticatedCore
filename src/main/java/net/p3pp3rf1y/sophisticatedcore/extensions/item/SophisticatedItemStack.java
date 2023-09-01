@@ -21,27 +21,6 @@ public interface SophisticatedItemStack {
     }
 
     /**
-     * ItemStack sensitive version of {@link Item#getCraftingRemainingItem()}.
-     * Returns a full ItemStack instance of the result.
-     *
-     * @return The resulting ItemStack
-     */
-    default ItemStack getCraftingRemainingItem()
-    {
-        return self().getItem().getCraftingRemainingItem(self());
-    }
-
-    /**
-     * ItemStack sensitive version of {@link Item#hasCraftingRemainingItem()}.
-     *
-     * @return True if this item has a crafting remaining item
-     */
-    default boolean hasCraftingRemainingItem()
-    {
-        return self().getItem().hasCraftingRemainingItem(self());
-    }
-
-    /**
      * Called to tick armor in the armor slot. Override to do something
      */
     default void onArmorTick(Level level, Player player)
