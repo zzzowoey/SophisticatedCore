@@ -3,7 +3,6 @@ package net.p3pp3rf1y.sophisticatedcore.event.common;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -35,12 +34,12 @@ public interface ItemEntityEvents {
     });
 
     @FunctionalInterface
-    public interface CanPickup {
+    interface CanPickup {
         InteractionResult canPickup(Player player, ItemEntity itemEntity, ItemStack stack);
     }
 
     @FunctionalInterface
-    public interface PostPickup {
+    interface PostPickup {
         void postPickup(Player player, ItemEntity itemEntity, ItemStack stack);
     }
 }
