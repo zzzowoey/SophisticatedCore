@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -148,33 +149,30 @@ public class AutoCookingUpgradeWrapper<W extends AutoCookingUpgradeWrapper<W, U,
 	}
 
 	private boolean tryPullingGetUnsucessful(ItemStack stack, Consumer<ItemStack> setSlot, Predicate<ItemStack> isItemValid) {
-		ItemStack toExtract = ItemStack.EMPTY;
+		ResourceAmount<ItemVariant> toExtract = null;
 		Storage<ItemVariant> inventory = storageWrapper.getInventoryForUpgradeProcessing();
 		if (stack.isEmpty()) {
 			for (var view : inventory.nonEmptyViews()) {
 				ItemStack ret = view.getResource().toStack((int) view.getAmount());
 				if (isItemValid.test(ret)) {
-					toExtract = ret;
+					toExtract = new ResourceAmount<>(view.getResource(), ret.getMaxStackSize());
 					break;
 				}
 			}
 
-			if (!toExtract.isEmpty()) {
-				toExtract.setCount(toExtract.getMaxStackSize());
-			} else {
+			if (toExtract == null) {
 				return true;
 			}
 		} else if (stack.getCount() == stack.getMaxStackSize() || !isItemValid.test(stack)) {
 			return true;
 		} else {
-			toExtract = stack.copy();
-			toExtract.setCount(stack.getMaxStackSize() - stack.getCount());
+			toExtract = new ResourceAmount<>(ItemVariant.of(stack), stack.getMaxStackSize() - stack.getCount());
 		}
 
 		try (Transaction ctx = Transaction.openOuter()) {
-			long extracted = inventory.extract(ItemVariant.of(toExtract), toExtract.getCount(), ctx);
+			long extracted = inventory.extract(toExtract.resource(), toExtract.amount(), ctx);
 			if (extracted > 0) {
-				ItemStack toSet = toExtract.copy();
+				ItemStack toSet = toExtract.resource().toStack((int) extracted);
 				toSet.grow(stack.getCount());
 				setSlot.accept(toSet);
 				ctx.commit();
