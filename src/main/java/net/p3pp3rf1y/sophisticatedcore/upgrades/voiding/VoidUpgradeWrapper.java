@@ -12,14 +12,7 @@ import net.p3pp3rf1y.sophisticatedcore.api.ISlotChangeResponseUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.FilterLogic;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.IFilteredUpgrade;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.IInsertResponseUpgrade;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.IOverflowResponseUpgrade;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.ISlotLimitUpgrade;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.PrimaryMatch;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.*;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 
 import javax.annotation.Nullable;

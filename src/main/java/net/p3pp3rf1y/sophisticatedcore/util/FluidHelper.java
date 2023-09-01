@@ -35,7 +35,6 @@ import net.minecraft.world.level.material.Material;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-
 import java.util.Objects;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;

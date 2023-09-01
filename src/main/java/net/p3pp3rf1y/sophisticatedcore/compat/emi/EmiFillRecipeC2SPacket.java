@@ -1,8 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.compat.emi;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
+import com.google.common.collect.Lists;
+import dev.emi.emi.runtime.EmiLog;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -10,15 +9,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.ICraftingContainer;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerBase;
 import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.collect.Lists;
-
-import dev.emi.emi.runtime.EmiLog;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class EmiFillRecipeC2SPacket extends SimplePacketBase {
     private final int syncId;

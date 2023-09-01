@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
