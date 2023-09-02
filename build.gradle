@@ -84,10 +84,12 @@ def setup(DependencyHandler deps) {
         it.officialMojangMappings { nameSyntheticMembers = false }
     })
     deps.modImplementation("net.fabricmc:fabric-loader:$loader_version")
+
+    deps.api(deps.include("com.google.code.findbugs:jsr305:$jsr305_version"))
 }
 
 def devEnv(DependencyHandler deps) {
-    deps.modLocalRuntime("maven.modrinth:lazydfu:$lazy_dfu_version")
+    //deps.modLocalRuntime("maven.modrinth:lazydfu:$lazy_dfu_version")
     deps.modLocalRuntime("me.shedaniel.cloth:cloth-config-fabric:$cloth_config_version")
     deps.modLocalRuntime("curse.maven:balm-500525:${balm_cf_file_id}")
     deps.modLocalRuntime("curse.maven:craftingtweaks-502516:${crafting_tweaks_cf_file_id}")
