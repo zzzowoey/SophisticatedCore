@@ -99,7 +99,7 @@ def dependencies(DependencyHandler deps) {
     deps.modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
 
     for (String module in port_lib_modules.split(",")) {
-        deps.modApi(deps.include("io.github.fabricators_of_create.Porting-Lib:$module:$port_lib_version+$minecraft_version"))
+        deps.modApi(deps.include("io.github.fabricators_of_create.Porting-Lib:${module.trim()}:$port_lib_version+$minecraft_version"))
     }
 
     // Forge Config Api Ports recommended way to implement this is to use their github repo, also include it as a jar-in-jar

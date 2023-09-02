@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedcore.mixin;
+package net.p3pp3rf1y.sophisticatedcore.mixin.common;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.DifficultyInstance;

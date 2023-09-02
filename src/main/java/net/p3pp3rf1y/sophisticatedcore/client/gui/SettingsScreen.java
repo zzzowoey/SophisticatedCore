@@ -169,14 +169,14 @@ public abstract class SettingsScreen extends AbstractContainerScreen<SettingsCon
 
 	@Override
 	protected void renderSlot(PoseStack poseStack, Slot slot) {
-		ItemStack itemstack = slot.getItem() != ItemStack.EMPTY ? slot.getItem() : settingsTabControl.getSlotStackDisplayOverride(slot.getSlotIndex());
+		ItemStack itemstack = slot.getItem() != ItemStack.EMPTY ? slot.getItem() : settingsTabControl.getSlotStackDisplayOverride(slot.getContainerSlot());
 
 		RenderSystem.enableDepthTest();
 		poseStack.pushPose();
 		poseStack.translate(0, 0, 100);
 		if (!settingsTabControl.renderGuiItem(poseStack, itemRenderer, itemstack, slot)) {
-			if (!getMenu().getSlotFilterItem(slot.index).isEmpty()) {
-				itemRenderer.renderAndDecorateItem(poseStack, getMenu().getSlotFilterItem(slot.index), slot.x, slot.y);
+			if (!getMenu().getSlotFilterItem(slot.getContainerSlot()).isEmpty()) {
+				itemRenderer.renderAndDecorateItem(poseStack, getMenu().getSlotFilterItem(slot.getContainerSlot()), slot.x, slot.y);
 			} else {
 				Pair<ResourceLocation, ResourceLocation> pair = slot.getNoItemIcon();
 				if (pair != null) {

@@ -3,8 +3,6 @@ package net.p3pp3rf1y.sophisticatedcore.client.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
@@ -22,6 +20,7 @@ import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.CountAbbreviator;
+import net.p3pp3rf1y.sophisticatedcore.util.FluidHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 
 import javax.annotation.Nullable;
@@ -175,7 +174,7 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 					tooltipLines.add(Component.translatable(getEmptyFluidTooltipTranslation()).withStyle(ChatFormatting.BLUE));
 				} else {
 					tooltipLines.add(Component.translatable(getFluidTooltipTranslation(),
-							Component.literal(FluidTextUtil.getUnicodeMillibuckets(view.getAmount(), FluidUnit.MILIBUCKETS, true)).withStyle(ChatFormatting.WHITE),
+							Component.literal(CountAbbreviator.abbreviate(FluidHelper.toBuckets(view.getAmount()))).withStyle(ChatFormatting.WHITE),
 							((MutableComponent)FluidVariantAttributes.getName(view.getResource())).withStyle(ChatFormatting.BLUE)
 					));
 				}

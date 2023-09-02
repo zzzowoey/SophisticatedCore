@@ -2,8 +2,6 @@ package net.p3pp3rf1y.sophisticatedcore.upgrades.tank;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
-import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
-import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -108,7 +106,7 @@ public class TankInventoryPart extends UpgradeInventoryPartBase<TankUpgradeConta
 
 			return Component.translatable(TranslationHelper.INSTANCE.translUpgradeKey("tank.xp_contents_tooltip"), String.format("%.1f", contentsLevels), String.format("%.1f", tankCapacityLevels));
 		}
-		return Component.translatable(TranslationHelper.INSTANCE.translUpgradeKey("tank.contents_tooltip"), FluidTextUtil.getUnicodeMillibuckets(contents.getAmount(), FluidUnit.MILIBUCKETS, true), FluidTextUtil.getUnicodeMillibuckets(capacity, FluidUnit.MILIBUCKETS, true));
+		return Component.translatable(TranslationHelper.INSTANCE.translUpgradeKey("tank.contents_tooltip"), String.format("%,d", FluidHelper.toBuckets(contents.getAmount())), String.format("%,d", FluidHelper.toBuckets(capacity)));
 	}
 
 	private void renderFluid(PoseStack matrixStack) {

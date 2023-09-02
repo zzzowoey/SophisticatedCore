@@ -40,6 +40,11 @@ import static net.minecraft.world.level.block.state.properties.BlockStatePropert
 
 public class FluidHelper {
     public static final long BUCKET_VOLUME_IN_MILLIBUCKETS = FluidConstants.BUCKET / 1000;
+
+    public static int toBuckets(long amount) {
+        return (int) (amount / BUCKET_VOLUME_IN_MILLIBUCKETS);
+    }
+
     public static boolean isFluidStorage(ItemStack stack) {
         return ContainerItemContext.withConstant(stack).find(FluidStorage.ITEM) != null;
     }

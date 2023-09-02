@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedcore.mixin;
+package net.p3pp3rf1y.sophisticatedcore.mixin.common;
 
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import io.github.fabricators_of_create.porting_lib.extensions.extensions.EntityExtensions;

@@ -122,13 +122,13 @@ public class MemorySettingsTab extends SettingsTab<MemorySettingsContainer> {
 
 	@Override
 	public void drawSlotStackOverlay(PoseStack poseStack, Slot slot) {
-		if (getSettingsContainer().isSlotSelected(slot.getSlotIndex()) || isShowingTemplateItemInSlot(slot)) {
+		if (getSettingsContainer().isSlotSelected(slot.getContainerSlot()) || isShowingTemplateItemInSlot(slot)) {
 			drawMemorizedStackOverlay(poseStack, slot);
 		}
 	}
 
 	private boolean isShowingTemplateItemInSlot(Slot slot) {
-		return loadTemplateButton.isHovered() && !getSettingsContainer().getSelectedTemplatesMemorizedStack(slot.getSlotIndex()).isEmpty();
+		return loadTemplateButton.isHovered() && !getSettingsContainer().getSelectedTemplatesMemorizedStack(slot.getContainerSlot()).isEmpty();
 	}
 
 	private void drawMemorizedStackOverlay(PoseStack poseStack, Slot slot) {

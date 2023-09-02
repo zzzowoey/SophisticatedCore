@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedcore.mixin;
+package net.p3pp3rf1y.sophisticatedcore.mixin.client;
 
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.NonNullList;

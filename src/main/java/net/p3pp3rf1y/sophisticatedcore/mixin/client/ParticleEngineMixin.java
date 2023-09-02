@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedcore.mixin;
+package net.p3pp3rf1y.sophisticatedcore.mixin.client;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;

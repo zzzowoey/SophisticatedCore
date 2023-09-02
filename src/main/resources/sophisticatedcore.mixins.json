@@ -6,18 +6,21 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "${archivesBaseName}-refmap.json",
   "mixins": [
-    "EntityMixin",
-    "ItemEntityMixin",
-    "LivingEntityMixin",
-    "MobMixin"
+    "common.EntityMixin",
+    "common.ItemEntityMixin",
+    "common.LivingEntityMixin",
+    "common.MobMixin",
+    "common.PersistentEntitySectionManagerMixin",
+    "common.ServerLevelMixin",
+    "common.SlotMixin"
   ],
   "client": [
-    "AbstractContainerScreenMixin",
-    "ClientLevelMixin",
-    "KeyboardHandlerMixin",
-    "MinecraftMixin",
-    "MouseHandlerMixin",
-    "ParticleEngineMixin"
+    "client.AbstractContainerScreenMixin",
+    "client.ClientLevelMixin",
+    "client.KeyboardHandlerMixin",
+    "client.MinecraftMixin",
+    "client.MouseHandlerMixin",
+    "client.ParticleEngineMixin"
   ],
   "injectors": {
     "defaultRequire": 1

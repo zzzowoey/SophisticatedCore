@@ -186,7 +186,6 @@ public class PumpUpgradeWrapper extends UpgradeWrapperBase<PumpUpgradeWrapper, P
 			BlockState state = world.getBlockState(pos);
 			Block block = state.getBlock();
 			Storage<FluidVariant> targetFluidHandler;
-			// TODO: TransferUtil.getFluidStorage(world, pos);
 			if (block instanceof BucketPickup bucketPickup) {
 				targetFluidHandler = new BucketPickupHandlerWrapper(bucketPickup, world, pos);
 			} else {

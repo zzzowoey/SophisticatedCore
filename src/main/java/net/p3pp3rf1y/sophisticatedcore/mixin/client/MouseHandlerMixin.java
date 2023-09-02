@@ -1,7 +1,7 @@
-package net.p3pp3rf1y.sophisticatedcore.mixin;
+package net.p3pp3rf1y.sophisticatedcore.mixin.client;
 
-import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
 import net.minecraft.world.InteractionResult;
 import net.p3pp3rf1y.sophisticatedcore.event.client.ClientRawInputEvent;
 import org.spongepowered.asm.mixin.Final;
@@ -10,17 +10,18 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(KeyboardHandler.class)
-public class KeyboardHandlerMixin {
+@Mixin(MouseHandler.class)
+public class MouseHandlerMixin {
     @Shadow
     @Final
     private Minecraft minecraft;
 
-    @Inject(method = "keyPress", at = @At("RETURN"), cancellable = true)
-    public void sophisticatedcore$keyPress(long handle, int key, int scanCode, int action, int modifiers, CallbackInfo ci) {
+    @Inject(method = "onScroll", at= @At(value="FIELD", target="Lnet/minecraft/client/MouseHandler;accumulatedScroll:D", ordinal = 5, shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
+    private void  sophisticatedCore$onScroll(long handle, double xOffset, double yOffset, CallbackInfo ci, double d) {
         if (handle == this.minecraft.getWindow().getWindow()) {
-            var result = ClientRawInputEvent.KEY_PRESSED.invoker().keyPressed(minecraft, key, scanCode, action, modifiers);
+            var result = ClientRawInputEvent.MOUSE_SCROLLED.invoker().keyPressed(minecraft, d);
             if (result != InteractionResult.PASS)
                 ci.cancel();
         }
