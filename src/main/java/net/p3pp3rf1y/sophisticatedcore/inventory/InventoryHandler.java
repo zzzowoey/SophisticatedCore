@@ -396,7 +396,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	@Override
 	public long extract(ItemVariant resource, long maxAmount, TransactionContext ctx) {
 		for (int i = 0 ; i < getSlotCount(); i++) {
-            if (getVariantInSlot(i) != resource) {
+            if (!getVariantInSlot(i).equals(resource)) {
                 continue;
             }
 
