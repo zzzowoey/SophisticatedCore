@@ -50,7 +50,6 @@
     "fabricloader": ">=${loader_version}",
     "fabric-api": ">=${fabric_version}",
 
-    "porting_lib_common": ">=${port_lib_common_version}",
     "porting_lib_networking": ">=${port_lib_networking_version}",
     "porting_lib_transfer": ">=${port_lib_transfer_version}",
     "porting_lib_tags": ">=${port_lib_tags_version}",

@@ -291,19 +291,6 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 			}});
 	}
 
-/*	private void overwriteFilterStacks(MemorySettingsCategory otherCategory) {
-		InventoryHandler inventoryHandler = getInventoryHandler();
-		otherCategory.slotFilterStacks.forEach((slot, isk) -> {
-			if(slot >= inventoryHandler.getSlots()) {
-				return;
-			}
-
-			ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
-			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, stackInSlot)) {
-				addSlotStack(slot, isk.getStack());
-			}});
-	}*/
-
 	private void overwriteFilterItems(MemorySettingsCategory otherCategory) {
 		InventoryHandler inventoryHandler = getInventoryHandler();
 		otherCategory.slotFilterItems.forEach((slot, item) -> {
@@ -316,19 +303,6 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 				addSlotItem(slot, item);
 			}});
 	}
-
-/*	private void overwriteFilterItems(MemorySettingsCategory otherCategory) {
-		InventoryHandler inventoryHandler = getInventoryHandler();
-		otherCategory.slotFilterItems.forEach((slot, item) -> {
-			if(slot >= inventoryHandler.getSlots()) {
-				return;
-			}
-
-			ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
-			if (stackInSlot.isEmpty() || otherCategory.matchesFilter(slot, stackInSlot)) {
-				addSlotItem(slot, item);
-			}});
-	}*/
 
 	public Set<Integer> getSlotIndexes() {
 		HashSet<Integer> slots = new HashSet<>(slotFilterItems.keySet());

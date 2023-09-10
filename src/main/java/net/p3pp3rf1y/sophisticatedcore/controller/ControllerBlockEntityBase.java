@@ -53,6 +53,13 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 	private final Map<BlockPos, Set<Item>> storageFilterItems = new HashMap<>();
 	private Set<BlockPos> linkedBlocks = new LinkedHashSet<>();
 
+	protected ControllerBlockEntityBase(BlockEntityType<?> blockEntityType, BlockPos pos, BlockState state) {
+		super(blockEntityType, pos, state);
+
+		ClientChunkEvents.CHUNK_UNLOAD.register(this::onClientChunkUnloaded);
+		ServerChunkEvents.CHUNK_UNLOAD.register(this::onServerChunkUnloaded);
+	}
+
 	public boolean addLinkedBlock(BlockPos linkedPos) {
 		if (level != null && !level.isClientSide() && isWithinRange(linkedPos) && !linkedBlocks.contains(linkedPos) && !storagePositions.contains(linkedPos)) {
 
@@ -471,13 +478,6 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		}
 	}
 
-	protected ControllerBlockEntityBase(BlockEntityType<?> blockEntityType, BlockPos pos, BlockState state) {
-		super(blockEntityType, pos, state);
-
-		ClientChunkEvents.CHUNK_UNLOAD.register(this::onClientChunkUnloaded);
-		ServerChunkEvents.CHUNK_UNLOAD.register(this::onServerChunkUnloaded);
-	}
-
 	@Override
 	public int getSlotCount() {
 		return totalSlots;
@@ -496,6 +496,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		return -1;
 	}
 
+	@Nullable
 	protected SlottedStackStorage getHandlerFromIndex(int index) {
 		if (index < 0 || index >= storagePositions.size()) {
 			return null;
@@ -554,10 +555,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 
 	@Override
 	public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		if (isItemValid(-1, resource))
-			return insert(resource, maxAmount, transaction, true);
-
-		return 0;
+		return insert(resource, maxAmount, transaction, true);
 	}
 
 	public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction, boolean insertIntoAnyEmpty) {
@@ -571,6 +569,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 				return maxAmount;
 			}
 		}
+
 		if (itemStackKeys.containsKey(resource.getItem())) {
 			for (ItemStackKey key : itemStackKeys.get(resource.getItem())) {
 				if (stackStorages.containsKey(key)) {
@@ -605,7 +604,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 			}
 		}
 
-		return insertIntoAnyEmpty ? remaining - insertIntoStorages(emptySlotsStorages, resource, remaining, transaction) : maxAmount - remaining;
+		return (insertIntoAnyEmpty ? insertIntoStorages(emptySlotsStorages, resource, remaining, transaction) : maxAmount - remaining);
 	}
 
 	private long insertIntoStorages(Set<BlockPos> positions, ItemVariant resource, long maxAmount, TransactionContext transaction) {
@@ -613,13 +612,13 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		Set<BlockPos> positionsCopy = new HashSet<>(positions); //to prevent CME if stack insertion actually causes set of positions to change
 		for (BlockPos storagePos : positionsCopy) {
 			long finalRemaining = remaining;
-			remaining = getInventoryHandlerValueFromHolder(storagePos, ins -> finalRemaining - ins.insert(resource, finalRemaining, transaction)).orElse(remaining);
+			remaining -= getInventoryHandlerValueFromHolder(storagePos, ins -> ins.insert(resource, finalRemaining, transaction)).orElse(0L);
 			if (remaining == 0) {
-				return 0;
+				return maxAmount;
 			}
 		}
 
-		return remaining;
+		return maxAmount - remaining;
 	}
 
 	@Override
