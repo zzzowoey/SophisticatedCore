@@ -12,12 +12,12 @@ import net.p3pp3rf1y.sophisticatedcore.data.SCRecipeProvider;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCompat;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SophisticatedCore implements ModInitializer {
 	public static final String ID = "sophisticatedcore";
-	public static final Logger LOGGER = LogManager.getLogger(ID);
+	public static final Logger LOGGER = LoggerFactory.getLogger(ID);
 	public static boolean SERVER_STARTED = false;
 
 	public final CommonEventHandler commonEventHandler = new CommonEventHandler();

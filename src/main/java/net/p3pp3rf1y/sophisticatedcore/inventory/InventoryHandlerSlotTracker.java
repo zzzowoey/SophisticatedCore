@@ -9,7 +9,12 @@ import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
@@ -86,7 +91,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 			@Nullable
 			Set<Integer> partialSlots = partiallyFilledStackSlots.get(stackKey);
 			if (partialSlots == null) {
-				SophisticatedCore.LOGGER.error("Unstable ItemStack detected in slot tracking: {}", () -> stackKey != null ? stackKey.stack().toString() : "null");
+				SophisticatedCore.LOGGER.error("Unstable ItemStack detected in slot tracking: {}", stackKey != null ? stackKey.stack().toString() : "null");
 			} else {
 				partialSlots.remove(slot);
 			}
@@ -105,7 +110,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 			@Nullable
 			Set<Integer> fullSlots = fullStackSlots.get(stackKey);
 			if (fullSlots == null) {
-				SophisticatedCore.LOGGER.error("Unstable ItemStack detected in slot tracking: {}", () -> stackKey != null ? stackKey.stack().toString() : "null");
+				SophisticatedCore.LOGGER.error("Unstable ItemStack detected in slot tracking: {}", stackKey != null ? stackKey.stack().toString() : "null");
 			} else {
 				fullSlots.remove(slot);
 			}

@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.settings;
 
 import net.minecraft.nbt.CompoundTag;
-import org.apache.logging.log4j.util.TriConsumer;
+import net.p3pp3rf1y.sophisticatedcore.util.TriConsumer;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
