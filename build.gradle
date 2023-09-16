@@ -18,12 +18,12 @@ plugins {
     id "maven-publish"
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
-archivesBaseName = project.mod_id
 version = project.mod_version
 group = project.maven_group
+
+base {
+    archivesName = project.mod_id + "-" + project.minecraft_version
+}
 
 repositories {
     mavenLocal()
@@ -68,7 +68,9 @@ configurations.configureEach {
 }
 
 dependencies {
-    setup(dependencies)
+    if (!project.hasProperty("noSetupDependency")) {
+        setup(dependencies)
+    }
     devEnv(dependencies)
     compat(dependencies)
     dependencies(dependencies)
@@ -171,8 +173,7 @@ loom {
             vmArg "-Dfabric-api.datagen"
             vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"
             vmArg "-Dfabric-api.datagen.modid=$mod_id"
-            vmArg "-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}"
-            vmArg "-Dmixin.debug.export=true"
+
             source sourceSets.main
             runDir "run/test_client"
         }
@@ -202,6 +203,10 @@ loom {
             runDir "run/gametest_server"
         }*/
     }
+
+    interfaceInjection {
+        enableDependencyInterfaceInjection = true
+    }
 }
 
 /*test {
@@ -210,6 +215,10 @@ loom {
         events "passed", "skipped", "failed"
     }
 }*/
+
+if (project.tasks.findByName("generateResources")) {
+    generateResources.dependsOn runDatagen
+}
 
 machete {
     enabled = System.getenv("GITHUB_RUN_NUMBER") != null
@@ -240,7 +249,7 @@ processResources {
         "energy_version": project.energy_version
     ]
     for (String module in port_lib_modules.split(","))
-        properties.put("port_lib_${module}_version".toString(), port_lib_version)
+        properties.put("port_lib_${module.trim()}_version".toString(), port_lib_version)
 
     properties.forEach((k, v) -> inputs.property(k, v))
 
@@ -248,25 +257,24 @@ processResources {
         expand properties
     }
 
-    filesMatching("sophisticatedcore.mixins.json") {
-        expand "archivesBaseName": archivesBaseName
-    }
-
     duplicatesStrategy = DuplicatesStrategy.WARN
 }
 
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = 'UTF-8'
-    it.options.release = Integer.parseInt(sourceCompatibility)
+    it.options.release = 17
 }
 
 java {
     withSourcesJar()
+
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${archivesBaseName}" }
+        rename { "${it}_${project.base.archivesName}" }
     }
 
     manifest {
