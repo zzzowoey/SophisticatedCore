@@ -18,7 +18,12 @@ import net.p3pp3rf1y.sophisticatedcore.util.TransactionCallback;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -120,8 +125,8 @@ public class UpgradeHandler extends ItemStackHandler {
 			int slot = viewSlot.getIndex();
 			ItemStack upgrade = viewSlot.getStack();
 
-			if (upgrade.isEmpty() || !(upgrade.getItem() instanceof IUpgradeItem<?>)) {
-				return;
+			if (!(upgrade.getItem() instanceof IUpgradeItem<?>)) {
+				continue;
 			}
 			UpgradeType<?> type = ((IUpgradeItem<?>) upgrade.getItem()).getType();
 			IUpgradeWrapper wrapper = type.create(storageWrapper, upgrade, upgradeStack -> {
