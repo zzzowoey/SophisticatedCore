@@ -31,13 +31,13 @@ public interface SophisticatedItemStack {
     default InteractionResult onItemUseFirst(UseOnContext context) {
         Player player = context.getPlayer();
         BlockPos pos = context.getClickedPos();
-        Registry<Block> registry = player.level.registryAccess().registryOrThrow(Registries.BLOCK);
-        if (player != null && !player.getAbilities().mayBuild && !self().hasAdventureModePlaceTagForBlock(registry, new BlockInWorld(context.getLevel(), pos, false))) {
+		Registry<Block> registry = player.level.registryAccess().registryOrThrow(Registries.BLOCK);
+        if (!player.getAbilities().mayBuild && !self().hasAdventureModePlaceTagForBlock(registry, new BlockInWorld(context.getLevel(), pos, false))) {
             return InteractionResult.PASS;
         } else {
             Item item = self().getItem();
             InteractionResult result = item.onItemUseFirst(self(), context);
-            if (player != null && result == InteractionResult.SUCCESS) {
+            if (result == InteractionResult.SUCCESS) {
                 player.awardStat(Stats.ITEM_USED.get(item));
             }
 

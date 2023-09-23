@@ -16,7 +16,7 @@ public interface ClientLifecycleEvent {
     });
 
     @FunctionalInterface
-    public interface Load {
+    interface Load {
         void onWorldLoad(Minecraft client, ClientLevel world);
     }
 }
