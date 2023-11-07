@@ -1,13 +1,14 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import java.util.List;
+
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
-
-import java.util.List;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 public class SyncContainerStacksMessage extends SimplePacketBase {
 	private final int windowId;
@@ -48,9 +49,10 @@ public class SyncContainerStacksMessage extends SimplePacketBase {
 	}
 
 	@Override
+	@Environment(EnvType.CLIENT)
 	public boolean handle(Context context) {
 		context.enqueueWork(() -> {
-			LocalPlayer player = Minecraft.getInstance().player;
+			Player player = context.getClientPlayer();
 			if (player == null || !(player.containerMenu instanceof StorageContainerMenuBase) || player.containerMenu.containerId != windowId) {
 				return;
 			}

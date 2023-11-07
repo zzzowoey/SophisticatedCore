@@ -1,14 +1,15 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeSlotChangeResult;
-
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeSlotChangeResult;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 public class SyncSlotChangeErrorMessage extends SimplePacketBase {
 	private final UpgradeSlotChangeResult slotChangeError;
@@ -38,9 +39,10 @@ public class SyncSlotChangeErrorMessage extends SimplePacketBase {
 
 
 	@Override
+	@Environment(EnvType.CLIENT)
 	public boolean handle(Context context) {
 		context.enqueueWork(() -> {
-			LocalPlayer player = Minecraft.getInstance().player;
+			Player player = context.getClientPlayer();
 			if (player == null || !(player.containerMenu instanceof StorageContainerMenuBase<?> menu)) {
 				return;
 			}

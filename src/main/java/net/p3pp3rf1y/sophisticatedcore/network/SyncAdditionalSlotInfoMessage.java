@@ -1,17 +1,18 @@
 
 package net.p3pp3rf1y.sophisticatedcore.network;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.item.Item;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.IAdditionalSlotInfoMenu;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.IAdditionalSlotInfoMenu;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 public class SyncAdditionalSlotInfoMessage extends SimplePacketBase {
 	private final Set<Integer> inaccessibleSlots;
@@ -75,9 +76,10 @@ public class SyncAdditionalSlotInfoMessage extends SimplePacketBase {
 	}
 
 	@Override
+	@Environment(EnvType.CLIENT)
 	public boolean handle(Context context) {
 		context.enqueueWork(() -> {
-			LocalPlayer player = Minecraft.getInstance().player;
+			Player player = context.getClientPlayer();
 			if (player == null || !(player.containerMenu instanceof IAdditionalSlotInfoMenu menu)) {
 				return;
 			}

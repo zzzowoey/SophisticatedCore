@@ -1,13 +1,14 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.p3pp3rf1y.sophisticatedcore.settings.SettingsTemplateStorage;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
+import net.p3pp3rf1y.sophisticatedcore.settings.SettingsTemplateStorage;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 public class SyncTemplateSettingsMessage extends SimplePacketBase {
 	private final Map<Integer, CompoundTag> playerTemplates;
@@ -17,25 +18,26 @@ public class SyncTemplateSettingsMessage extends SimplePacketBase {
 	}
 	public SyncTemplateSettingsMessage(FriendlyByteBuf buffer) {
 		int size = buffer.readInt();
-		playerTemplates = new HashMap<>(size);
+		this.playerTemplates = new HashMap<>(size);
 		for (int i = 0 ; i < size; i++) {
-			playerTemplates.put(buffer.readInt(), buffer.readNbt());
+			this.playerTemplates.put(buffer.readInt(), buffer.readNbt());
 		}
 	}
 
 	@Override
 	public void write(FriendlyByteBuf buffer) {
-		buffer.writeInt(playerTemplates.size());
-		playerTemplates.forEach((k, v) -> {
+		buffer.writeInt(this.playerTemplates.size());
+		this.playerTemplates.forEach((k, v) -> {
 			buffer.writeInt(k);
 			buffer.writeNbt(v);
 		});
 	}
 
 	@Override
+	@Environment(EnvType.CLIENT)
 	public boolean handle(Context context) {
 		context.enqueueWork(() -> {
-			LocalPlayer player = Minecraft.getInstance().player;
+			Player player = context.getClientPlayer();
 			if (player == null) {
 				return;
 			}
@@ -45,5 +47,4 @@ public class SyncTemplateSettingsMessage extends SimplePacketBase {
 		});
 		return true;
 	}
-
 }
