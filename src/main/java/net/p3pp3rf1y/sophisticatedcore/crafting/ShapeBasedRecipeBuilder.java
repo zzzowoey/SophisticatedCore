@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
 import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.minecraft.advancements.Advancement;
@@ -24,12 +25,12 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 import static net.minecraft.data.recipes.RecipeBuilder.ROOT_RECIPE_ADVANCEMENT;
 
@@ -150,23 +151,12 @@ public class ShapeBasedRecipeBuilder {
 	}
 
 	protected static CraftingBookCategory determineBookCategory(RecipeCategory category) {
-		CraftingBookCategory var10000;
-		switch (category) {
-			case BUILDING_BLOCKS:
-				var10000 = CraftingBookCategory.BUILDING;
-				break;
-			case TOOLS:
-			case COMBAT:
-				var10000 = CraftingBookCategory.EQUIPMENT;
-				break;
-			case REDSTONE:
-				var10000 = CraftingBookCategory.REDSTONE;
-				break;
-			default:
-				var10000 = CraftingBookCategory.MISC;
-		}
-
-		return var10000;
+		return switch (category) {
+			case BUILDING_BLOCKS -> CraftingBookCategory.BUILDING;
+			case TOOLS, COMBAT -> CraftingBookCategory.EQUIPMENT;
+			case REDSTONE -> CraftingBookCategory.REDSTONE;
+			default -> CraftingBookCategory.MISC;
+		};
 	}
 
 	public static class Result implements FinishedRecipe {

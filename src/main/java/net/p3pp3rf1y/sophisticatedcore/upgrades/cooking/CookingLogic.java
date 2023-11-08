@@ -14,12 +14,12 @@ import net.minecraft.world.level.block.Blocks;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 public class CookingLogic<T extends AbstractCookingRecipe> {
 	private final ItemStack upgrade;

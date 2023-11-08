@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.settings;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;

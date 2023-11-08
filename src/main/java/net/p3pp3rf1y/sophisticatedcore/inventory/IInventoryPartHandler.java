@@ -2,7 +2,9 @@ package net.p3pp3rf1y.sophisticatedcore.inventory;
 
 import com.mojang.datafixers.util.Function4;
 import com.mojang.datafixers.util.Pair;
+
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -10,12 +12,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 public interface IInventoryPartHandler {
 	IInventoryPartHandler EMPTY = () -> "EMPTY";
@@ -119,13 +121,17 @@ public interface IInventoryPartHandler {
 		}
 
 		@Override
-		public long extractItem(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
-			return parent.extractItemInternal(slot, resource, maxAmount, transaction);
+		public long extractItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
+			try (Transaction nested = Transaction.openNested(ctx)) {
+				return parent.extractItemInternal(slot, resource, maxAmount, nested);
+			}
 		}
 
 		@Override
-		public long insertItem(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
-			return insertSuper.apply(slot, resource, maxAmount, transaction);
+		public long insertItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
+			try (Transaction nested = Transaction.openNested(ctx)) {
+				return insertSuper.apply(slot, resource, maxAmount, nested);
+			}
 		}
 
 		@Override

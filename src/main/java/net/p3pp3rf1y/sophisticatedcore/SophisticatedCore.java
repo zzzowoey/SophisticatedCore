@@ -1,5 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -12,13 +15,10 @@ import net.p3pp3rf1y.sophisticatedcore.data.SCRecipeProvider;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCompat;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SophisticatedCore implements ModInitializer {
 	public static final String ID = "sophisticatedcore";
 	public static final Logger LOGGER = LoggerFactory.getLogger(ID);
-	public static boolean SERVER_STARTED = false;
 
 	public final CommonEventHandler commonEventHandler = new CommonEventHandler();
 

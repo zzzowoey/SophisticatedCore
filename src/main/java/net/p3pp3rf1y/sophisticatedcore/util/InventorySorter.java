@@ -9,7 +9,12 @@ import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class InventorySorter {
@@ -62,7 +67,6 @@ public class InventorySorter {
 	};
 
 	private static String getRegistryName(ItemStackKey itemStackKey) {
-		//noinspection ConstantConditions - registryName is nonNull by the time it exists in itemstack form
 		return BuiltInRegistries.ITEM.getKey(itemStackKey.getStack().getItem()).toString();
 	}
 

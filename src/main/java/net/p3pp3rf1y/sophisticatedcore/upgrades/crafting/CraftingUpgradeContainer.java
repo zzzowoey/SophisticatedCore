@@ -13,13 +13,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.*;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.ICraftingContainer;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SlotSuppliedHandler;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerBase;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerType;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgradeWrapper, CraftingUpgradeContainer> implements ICraftingContainer {
 	private static final String DATA_SHIFT_CLICK_INTO_STORAGE = "shiftClickIntoStorage";
@@ -103,7 +107,6 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 			if (lastRecipe != null && lastRecipe.matches(inventory, world)) {
 				itemstack = lastRecipe.assemble(inventory, world.registryAccess());
 			} else {
-				//noinspection ConstantConditions - we're on server and for sure in the world so getServer can't return null here
 				Optional<CraftingRecipe> optional = RecipeHelper.safeGetRecipeFor(RecipeType.CRAFTING, inventory, world);
 				if (optional.isPresent()) {
 					CraftingRecipe craftingRecipe = optional.get();

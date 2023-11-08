@@ -1,6 +1,14 @@
 package net.p3pp3rf1y.sophisticatedcore.mixin.common;
 
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
 import io.github.fabricators_of_create.porting_lib.extensions.extensions.EntityExtensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
@@ -14,12 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.event.common.LivingEntityEvents;
 import net.p3pp3rf1y.sophisticatedcore.util.MixinHelper;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +31,7 @@ public abstract class LivingEntityMixin extends Entity implements EntityExtensio
     @Shadow
     protected int lastHurtByPlayerTime;
 
+    @Unique
     private int lootingLevel;
 
     public LivingEntityMixin(EntityType<?> entityType, Level world) {

@@ -1,10 +1,11 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
+import org.apache.commons.lang3.Validate;
+
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import org.apache.commons.lang3.Validate;
 
 import java.util.Optional;
 

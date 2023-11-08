@@ -1,8 +1,10 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
-import javax.annotation.Nullable;
-import java.util.concurrent.Executor;
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
 
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,17 +13,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.player.Player;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.api.EnvironmentInterface;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
 
-import me.pepperbell.simplenetworking.C2SPacket;
-import me.pepperbell.simplenetworking.S2CPacket;
-import me.pepperbell.simplenetworking.SimpleChannel;
+import java.util.concurrent.Executor;
+import javax.annotation.Nullable;
 
-@EnvironmentInterface(value = EnvType.CLIENT, itf = S2CPacket.class)
-@EnvironmentInterface(value = EnvType.SERVER, itf = C2SPacket.class)
 public abstract class SimplePacketBase implements C2SPacket, S2CPacket {
     public abstract void write(FriendlyByteBuf buffer);
 
@@ -33,13 +28,11 @@ public abstract class SimplePacketBase implements C2SPacket, S2CPacket {
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
     public void handle(Minecraft client, ClientPacketListener listener, PacketSender responseSender, SimpleChannel channel) {
         handle(new Context(client, listener, null, client.player));
     }
 
     @Override
-    @Environment(EnvType.SERVER)
     public void handle(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl listener, PacketSender responseSender, SimpleChannel channel) {
         handle(new Context(server, listener, player, null));
     }

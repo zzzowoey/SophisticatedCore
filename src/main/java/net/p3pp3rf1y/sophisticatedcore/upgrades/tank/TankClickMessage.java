@@ -58,7 +58,7 @@ public class TankClickMessage extends SimplePacketBase {
 						drainHandler(sender, containerMenu, cic, storage, tankWrapper);
 					}
 				}
-			};
+			}
 		});
 		return true;
 	}

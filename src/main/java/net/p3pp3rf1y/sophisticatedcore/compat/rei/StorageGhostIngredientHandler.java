@@ -6,6 +6,7 @@ import me.shedaniel.rei.api.client.gui.drag.DraggableStack;
 import me.shedaniel.rei.api.client.gui.drag.DraggableStackVisitor;
 import me.shedaniel.rei.api.client.gui.drag.DraggedAcceptorResult;
 import me.shedaniel.rei.api.client.gui.drag.DraggingContext;
+
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
@@ -37,7 +38,9 @@ public abstract class StorageGhostIngredientHandler<S extends StorageScreenBase<
 				double maxY = box.maxY;
 				return x >= minX && x <= maxX && y >= minY && y <= maxY && b instanceof GhostTarget;
 			}).findFirst();
-			if (target.isPresent() && target.get() instanceof GhostTarget ghost) {
+			if (target.isPresent()) {
+				//noinspection unchecked
+				GhostTarget<ItemStack, ? extends StorageScreenBase<?>> ghost = (GhostTarget<ItemStack, ? extends StorageScreenBase<?>>) target.get();
 				Object held = stack.getStack().getValue();
 				if (held instanceof ItemStack item) {
 					ghost.accept(item);
@@ -64,7 +67,7 @@ public abstract class StorageGhostIngredientHandler<S extends StorageScreenBase<
 		return targets.stream();
 	}
 
-	private static class GhostTarget<I, S extends StorageScreenBase> implements BoundsProvider {
+	private static class GhostTarget<I, S extends StorageScreenBase<?>> implements BoundsProvider {
 		private final Rectangle area;
 		private final Slot slot;
 		private final ItemStack stack;

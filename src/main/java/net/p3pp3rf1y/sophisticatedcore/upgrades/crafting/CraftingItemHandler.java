@@ -82,7 +82,7 @@ public class CraftingItemHandler extends CraftingContainer {
 		for (var view : supplyInventory.get().nonEmptyViews()) {
 			ItemStack stack = view.getResource().toStack((int) view.getAmount());
 			helper.accountSimpleStack(stack);
-		};
+		}
 	}
 
 }

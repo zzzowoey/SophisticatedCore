@@ -3,14 +3,24 @@ package net.p3pp3rf1y.sophisticatedcore.settings.memory;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.*;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.Button;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ButtonDefinition;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ButtonDefinitions;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ImageButton;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ToggleButton;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Dimension;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TextureBlitData;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.UV;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsTab;
 
 import java.util.List;

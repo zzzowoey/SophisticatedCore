@@ -2,6 +2,8 @@ package net.p3pp3rf1y.sophisticatedcore.compat.emi;
 
 import com.google.common.collect.Lists;
 import dev.emi.emi.runtime.EmiLog;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -11,7 +13,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -120,13 +121,12 @@ public class EmiFillRecipeC2SPacket extends SimplePacketBase {
 
             if (crafting.size() >= stacks.size()) {
                 List<ItemStack> rubble = Lists.newArrayList();
-                for (int i = 0; i < crafting.size(); i++) {
-                    Slot s = crafting.get(i);
-                    if (s != null && s.mayPickup(sender) && !s.getItem().isEmpty()) {
-                        rubble.add(s.getItem().copy());
-                        s.setByPlayer(ItemStack.EMPTY);
-                    }
-                }
+				for (Slot s : crafting) {
+					if (s != null && s.mayPickup(sender) && !s.getItem().isEmpty()) {
+						rubble.add(s.getItem().copy());
+						s.setByPlayer(ItemStack.EMPTY);
+					}
+				}
                 try {
                     for (int i = 0; i < stacks.size(); i++) {
                         ItemStack stack = stacks.get(i);

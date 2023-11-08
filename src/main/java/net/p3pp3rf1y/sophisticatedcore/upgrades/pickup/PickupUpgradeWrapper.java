@@ -11,8 +11,8 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.IContentsFilteredUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IPickupResponseUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 public class PickupUpgradeWrapper extends UpgradeWrapperBase<PickupUpgradeWrapper, PickupUpgradeItem>
 		implements IPickupResponseUpgrade, IContentsFilteredUpgrade {

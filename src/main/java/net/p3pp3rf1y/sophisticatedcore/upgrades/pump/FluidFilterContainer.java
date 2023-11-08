@@ -39,7 +39,6 @@ public class FluidFilterContainer {
 		CompoundTag ret = new CompoundTag();
 		CompoundTag fluidNbt = new CompoundTag();
 		fluidNbt.putInt("index", index);
-		//noinspection ConstantConditions
 		fluidNbt.put("fluid", fluid.writeToNBT(new CompoundTag()));
 		ret.put(DATA_FLUID, fluidNbt);
 		return ret;
@@ -74,6 +73,6 @@ public class FluidFilterContainer {
 			if (!containedFluid.isEmpty()) {
 				setFluid(index, containedFluid);
 			}
-		};
+		}
 	}
 }

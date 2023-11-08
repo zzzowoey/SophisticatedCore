@@ -1,14 +1,14 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsTemplateStorage;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SyncTemplateSettingsMessage extends SimplePacketBase {
 	private final Map<Integer, CompoundTag> playerTemplates;

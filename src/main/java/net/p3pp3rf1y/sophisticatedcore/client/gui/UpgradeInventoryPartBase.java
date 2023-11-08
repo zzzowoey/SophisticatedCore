@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.client.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerBase;
 
 public abstract class UpgradeInventoryPartBase<C extends UpgradeContainerBase<?, ?>> {

@@ -1,10 +1,15 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.battery;
 
+import team.reborn.energy.api.EnergyStorage;
+import team.reborn.energy.api.EnergyStorageUtil;
+import team.reborn.energy.api.base.SimpleEnergyItem;
+
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,12 +21,9 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.IStackableContentsUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.EnergyStorageUtil;
-import team.reborn.energy.api.base.SimpleEnergyItem;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrapper, BatteryUpgradeItem>
 		implements IRenderedBatteryUpgrade, EnergyStorage, ITickableUpgrade, IStackableContentsUpgrade {
@@ -30,7 +32,7 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 	public static final String ENERGY_STORED_TAG = SimpleEnergyItem.ENERGY_KEY;
 	private Consumer<BatteryRenderInfo> updateTankRenderInfoCallback;
 	private final ItemStackHandler inventory;
-	private BatteryUpgradeEnergyStorage energyStorage;
+	private final BatteryUpgradeEnergyStorage energyStorage;
 
 	protected BatteryUpgradeWrapper(IStorageWrapper storageWrapper, ItemStack upgrade, Consumer<ItemStack> upgradeSaveHandler) {
 		super(storageWrapper, upgrade, upgradeSaveHandler);
@@ -80,8 +82,10 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 
 	@Override
 	public long insert(long maxAmount, @Nullable TransactionContext ctx) {
-		long ret = Math.min(getCapacity() - getAmount(), Math.min(getMaxInOut(), maxAmount));
-		return energyStorage.insert(ret, ctx);
+		try (Transaction nested = Transaction.openNested(ctx)) {
+			long ret = Math.min(getCapacity() - getAmount(), Math.min(getMaxInOut(), maxAmount));
+			return energyStorage.insert(ret, nested);
+		}
 	}
 
 	private void serializeEnergyStored() {
@@ -92,8 +96,10 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 
 	@Override
 	public long extract(long maxAmount, @Nullable TransactionContext ctx) {
-		long ret = Math.min(getAmount(), Math.min(getMaxInOut(), maxAmount));
-		return energyStorage.extract(ret, ctx);
+		try (Transaction nested = Transaction.openNested(ctx)) {
+			long ret = Math.min(getAmount(), Math.min(getMaxInOut(), maxAmount));
+			return energyStorage.extract(ret, nested);
+		}
 	}
 
 	@Override
@@ -171,7 +177,7 @@ public class BatteryUpgradeWrapper extends UpgradeWrapperBase<BatteryUpgradeWrap
 	}
 
 	private class EnergyStackWrapper extends SingleStackStorage {
-		private int slot;
+		private final int slot;
 
 		public EnergyStackWrapper(int slot) {
 			this.slot = slot;

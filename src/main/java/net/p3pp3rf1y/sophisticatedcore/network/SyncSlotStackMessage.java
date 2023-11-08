@@ -1,12 +1,12 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 public class SyncSlotStackMessage  extends SimplePacketBase{
 	private final int windowId;

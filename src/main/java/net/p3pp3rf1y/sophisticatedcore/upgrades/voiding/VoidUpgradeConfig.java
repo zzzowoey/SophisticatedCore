@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.voiding;
 
 import net.minecraftforge.common.ForgeConfigSpec;
+
 import net.p3pp3rf1y.sophisticatedcore.upgrades.FilteredUpgradeConfigBase;
 
 public class VoidUpgradeConfig extends FilteredUpgradeConfigBase {

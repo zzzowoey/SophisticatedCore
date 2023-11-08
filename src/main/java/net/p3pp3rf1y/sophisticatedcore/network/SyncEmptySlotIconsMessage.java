@@ -1,17 +1,17 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.IAdditionalSlotInfoMenu;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.IAdditionalSlotInfoMenu;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 public class SyncEmptySlotIconsMessage extends SimplePacketBase {
 	private final Map<ResourceLocation, Set<Integer>> emptySlotIcons;

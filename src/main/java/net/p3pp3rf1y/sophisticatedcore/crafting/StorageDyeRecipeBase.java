@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.crafting;
 
 import me.alphamode.forgetags.Tags;
+
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
@@ -13,11 +14,11 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public abstract class StorageDyeRecipeBase extends CustomRecipe {
 	protected StorageDyeRecipeBase(ResourceLocation registryName, CraftingBookCategory category) {

@@ -6,6 +6,7 @@ import me.shedaniel.rei.api.client.gui.drag.DraggableStack;
 import me.shedaniel.rei.api.client.gui.drag.DraggableStackVisitor;
 import me.shedaniel.rei.api.client.gui.drag.DraggedAcceptorResult;
 import me.shedaniel.rei.api.client.gui.drag.DraggingContext;
+
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +38,9 @@ public class SettingsGhostIngredientHandler<S extends SettingsScreen> implements
 				double maxY = box.maxY;
 				return x >= minX && x <= maxX && y >= minY && y <= maxY && b instanceof GhostTarget;
 			}).findFirst();
-			if (target.isPresent() && target.get() instanceof GhostTarget ghost) {
+			if (target.isPresent()) {
+				//noinspection unchecked
+				GhostTarget<ItemStack, ? extends SettingsScreen> ghost = (GhostTarget<ItemStack, ? extends SettingsScreen>) target.get();
 				Object held = stack.getStack().getValue();
 				if (held instanceof ItemStack item) {
 					ghost.accept(item);

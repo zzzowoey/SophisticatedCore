@@ -7,7 +7,7 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public abstract class SimpleIdentifiablePrepareableReloadListener<T> extends SimplePreparableReloadListener<T> implements IdentifiableResourceReloadListener {
-    private ResourceLocation id;
+    private final ResourceLocation id;
 
     public SimpleIdentifiablePrepareableReloadListener(ResourceLocation id) {
         this.id = id;

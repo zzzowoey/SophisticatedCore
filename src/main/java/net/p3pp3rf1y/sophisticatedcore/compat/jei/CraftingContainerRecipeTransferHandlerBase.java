@@ -13,6 +13,7 @@ import mezz.jei.common.transfer.RecipeTransferOperationsResult;
 import mezz.jei.common.transfer.RecipeTransferUtil;
 import mezz.jei.common.transfer.TransferOperation;
 import mezz.jei.common.util.StringUtil;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -25,9 +26,16 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerBase;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 
-import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 public abstract class CraftingContainerRecipeTransferHandlerBase<C extends StorageContainerMenuBase<?>> implements IRecipeTransferHandler<C, CraftingRecipe> {
 	private final IRecipeTransferHandlerHelper handlerHelper;
@@ -87,7 +95,7 @@ public abstract class CraftingContainerRecipeTransferHandlerBase<C extends Stora
 				craftingSlots
 		);
 
-		if (transferOperations.missingItems.size() > 0) {
+		if (!transferOperations.missingItems.isEmpty()) {
 			Component message = Component.translatable("jei.tooltip.error.recipe.transfer.missing");
 			return handlerHelper.createUserErrorForMissingSlots(message, transferOperations.missingItems);
 		}

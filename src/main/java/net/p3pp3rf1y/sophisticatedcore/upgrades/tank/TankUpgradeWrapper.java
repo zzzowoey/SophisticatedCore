@@ -29,8 +29,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.FluidHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.TransactionCallback;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, TankUpgradeItem>
 		implements IRenderedTankUpgrade, ITickableUpgrade, IStackableContentsUpgrade, SingleSlotStorage<FluidVariant> {
@@ -194,7 +194,7 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 			return;
 		}
 
-		Boolean didSomething = false;
+		boolean didSomething = false;
 		ContainerItemContext cic = ContainerItemContext.withConstant(inventory.getStackInSlot(INPUT_SLOT));
 		Storage<FluidVariant> storage = cic.find(FluidStorage.ITEM);
 		if (storage != null) {

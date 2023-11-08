@@ -1,14 +1,14 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
-import javax.annotation.Nullable;
-import java.util.function.BiConsumer;
-
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsManager;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
+import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 
 public class SyncPlayerSettingsMessage extends SimplePacketBase {
 	private final String playerTagName;

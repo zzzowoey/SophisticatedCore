@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.serialization.Codec;
+
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;

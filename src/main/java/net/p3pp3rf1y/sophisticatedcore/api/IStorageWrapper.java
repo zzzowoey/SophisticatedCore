@@ -1,5 +1,7 @@
 package net.p3pp3rf1y.sophisticatedcore.api;
 
+import team.reborn.energy.api.EnergyStorage;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
@@ -8,7 +10,6 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.Optional;
 import java.util.UUID;

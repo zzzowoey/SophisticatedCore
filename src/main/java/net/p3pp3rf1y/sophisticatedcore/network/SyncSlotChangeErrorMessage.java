@@ -1,15 +1,15 @@
 package net.p3pp3rf1y.sophisticatedcore.network;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeSlotChangeResult;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class SyncSlotChangeErrorMessage extends SimplePacketBase {
 	private final UpgradeSlotChangeResult slotChangeError;

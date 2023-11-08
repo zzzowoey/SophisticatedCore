@@ -1,12 +1,12 @@
 package net.p3pp3rf1y.sophisticatedcore.crafting;
 
 import com.google.gson.JsonObject;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
-import javax.annotation.Nullable;
 import java.util.function.Function;
 
 public class RecipeWrapperSerializer<T extends Recipe<?>, R extends Recipe<?> & IWrapperRecipe<T>> implements RecipeSerializer<R> {
@@ -23,11 +23,9 @@ public class RecipeWrapperSerializer<T extends Recipe<?>, R extends Recipe<?> & 
 		return initialize.apply(recipeSerializer.fromJson(recipeId, json));
 	}
 
-	@Nullable
 	@Override
 	public R fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-		T compose = recipeSerializer.fromNetwork(recipeId, buffer);
-		return compose == null ? null : initialize.apply(compose);
+		return initialize.apply(recipeSerializer.fromNetwork(recipeId, buffer));
 	}
 
 	@Override
