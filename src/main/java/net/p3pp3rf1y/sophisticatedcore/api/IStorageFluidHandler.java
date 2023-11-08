@@ -1,7 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.api;
 
-import org.jetbrains.annotations.Nullable;
-
 import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -10,6 +8,8 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
+
+import javax.annotation.Nullable;
 
 public interface IStorageFluidHandler extends Storage<FluidVariant> {
 	default long simulateInsert(TagKey<Fluid> fluidTag, long maxFill, Fluid fallbackFluid, @Nullable TransactionContext transaction) {

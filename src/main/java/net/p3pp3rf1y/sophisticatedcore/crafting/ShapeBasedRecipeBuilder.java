@@ -109,7 +109,7 @@ public class ShapeBasedRecipeBuilder {
 		return this;
 	}
 
-	public ShapeBasedRecipeBuilder group(@org.jetbrains.annotations.Nullable String groupName) {
+	public ShapeBasedRecipeBuilder group(@Nullable String groupName) {
 		this.group = groupName;
 		return this;
 	}

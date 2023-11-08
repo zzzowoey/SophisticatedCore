@@ -2,7 +2,6 @@ package net.p3pp3rf1y.sophisticatedcore.compat.emi;
 
 import com.google.common.collect.Lists;
 import dev.emi.emi.runtime.EmiLog;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +15,7 @@ import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
 
 import java.util.List;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 public class EmiFillRecipeC2SPacket extends SimplePacketBase {
     private final int syncId;
