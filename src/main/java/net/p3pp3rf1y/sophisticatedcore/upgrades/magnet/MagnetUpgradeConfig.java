@@ -1,7 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.magnet;
 
 import net.minecraftforge.common.ForgeConfigSpec;
-
 import net.p3pp3rf1y.sophisticatedcore.upgrades.FilteredUpgradeConfigBase;
 
 public class MagnetUpgradeConfig extends FilteredUpgradeConfigBase {

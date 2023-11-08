@@ -1,11 +1,10 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.stack;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.p3pp3rf1y.sophisticatedcore.Config;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;

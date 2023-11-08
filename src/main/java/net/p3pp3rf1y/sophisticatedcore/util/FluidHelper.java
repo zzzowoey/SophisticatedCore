@@ -1,7 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.util;
 
-import org.jetbrains.annotations.NotNull;
-
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -36,6 +34,7 @@ import net.minecraft.world.level.material.Material;
 
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
 
