@@ -1,72 +1,72 @@
 {
-  "schemaVersion": 1,
-  "id": "sophisticatedcore",
-  "version": "${mod_version}",
-
-  "name": "Sophisticated Core",
-  "description": "Base mod of Sophisticated mods.",
-
-  "environment": "*",
-  "license": "GNU General Public License v3.0",
-  "authors": [
-    "Salandora",
-    "P3pp3rF1y"
-  ],
-  "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/sophisticated-core",
-    "issues": "https://github.com/P3pp3rF1y/SophisticatedCore/issues",
-    "sources": "https://github.com/P3pp3rF1y/SophisticatedCore/"
-  },
-
-  "entrypoints": {
-    "main": [
-      "net.p3pp3rf1y.sophisticatedcore.SophisticatedCore"
+    "schemaVersion": 1,
+    "id": "sophisticatedcore",
+    "version": "${mod_version}",
+    "name": "Sophisticated Core",
+    "description": "Base mod of Sophisticated mods.",
+    "license": "GNU General Public License v3.0",
+    "authors": [
+        "P3pp3rF1y",
+        "Salandora"
     ],
-    "client": [
-      "net.p3pp3rf1y.sophisticatedcore.client.SophisticatedCoreClient"
-    ],
-    "fabric-datagen": [
-      "net.p3pp3rf1y.sophisticatedcore.data.SophisticatedCoreData"
-    ],
-
-    "emi": [
-      "net.p3pp3rf1y.sophisticatedcore.compat.emi.EmiCompat"
-    ],
-
-    "jei_mod_plugin": [
-      "net.p3pp3rf1y.sophisticatedcore.compat.jei.JeiCompat"
-    ],
-
-    "rei_client": [
-      "net.p3pp3rf1y.sophisticatedcore.compat.rei.ReiCompat"
-    ]
-  },
-
-  "mixins": [ "sophisticatedcore.mixins.json" ],
-  "accessWidener": "sophisticatedcore.accesswidener",
-
-  "depends": {
-    "minecraft": "${minecraft_version}",
-    "fabricloader": ">=${loader_version}",
-    "fabric-api": ">=${fabric_version}",
-
-    "porting_lib_networking": ">=${port_lib_networking_version}",
-    "porting_lib_transfer": ">=${port_lib_transfer_version}",
-    "porting_lib_tags": ">=${port_lib_tags_version}",
-    "porting_lib_utility": ">=${port_lib_utility_version}",
-
-    "forgeconfigapiport": ">=${forge_config_version}",
-    "team_reborn_energy": ">=${energy_version}"
-  },
-
-  "custom": {
-    "loom:injected_interfaces": {
-      "net/minecraft/class_465":  ["net/p3pp3rf1y/sophisticatedcore/extensions/client/gui/screens/inventory/SophisticatedAbstractContainerScreen"],
-      "net/minecraft/class_1735": ["net/p3pp3rf1y/sophisticatedcore/extensions/inventory/SophisticatedSlot"],
-      "net/minecraft/class_1792": ["net/p3pp3rf1y/sophisticatedcore/extensions/item/SophisticatedItem"],
-      "net/minecraft/class_1799": ["net/p3pp3rf1y/sophisticatedcore/extensions/item/SophisticatedItemStack"],
-      "net/minecraft/class_2248": ["net/p3pp3rf1y/sophisticatedcore/extensions/block/SophisticatedBlock"],
-      "net/minecraft/class_2680": ["net/p3pp3rf1y/sophisticatedcore/extensions/block/SophisticatedBlockState"]
+    "contact": {
+        "homepage": "https://www.curseforge.com/minecraft/mc-mods/sophisticated-core",
+        "issues": "https://github.com/Salandora/SophisticatedCore/issues",
+        "sources": "https://github.com/Salandora/SophisticatedCore/"
+    },
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "net.p3pp3rf1y.sophisticatedcore.SophisticatedCore"
+        ],
+        "client": [
+            "net.p3pp3rf1y.sophisticatedcore.client.SophisticatedCoreClient"
+        ],
+        "fabric-datagen": [
+            "net.p3pp3rf1y.sophisticatedcore.data.SophisticatedCoreData"
+        ],
+        "emi": [
+            "net.p3pp3rf1y.sophisticatedcore.compat.emi.EmiCompat"
+        ],
+        "jei_mod_plugin": [
+            "net.p3pp3rf1y.sophisticatedcore.compat.jei.JeiCompat"
+        ],
+        "rei_client": [
+            "net.p3pp3rf1y.sophisticatedcore.compat.rei.ReiCompat"
+        ]
+    },
+    "mixins": ["sophisticatedcore.mixins.json"],
+    "accessWidener": "sophisticatedcore.accesswidener",
+    "depends": {
+        "minecraft": "${minecraft_version}",
+        "fabricloader": ">=${loader_version}",
+        "fabric-api": ">=${fabric_version}",
+        "porting_lib_networking": ">=${port_lib_networking_version}",
+        "porting_lib_transfer": ">=${port_lib_transfer_version}",
+        "porting_lib_tags": ">=${port_lib_tags_version}",
+        "porting_lib_utility": ">=${port_lib_utility_version}",
+        "forgeconfigapiport": ">=${forge_config_version}",
+        "team_reborn_energy": ">=${energy_version}"
+    },
+    "suggests": {
+        "modsmenu": "*"
+    },
+    "custom": {
+        "loom:injected_interfaces": {
+            "net/minecraft/class_465": ["net/p3pp3rf1y/sophisticatedcore/extensions/client/gui/screens/inventory/SophisticatedAbstractContainerScreen"],
+            "net/minecraft/class_1735": ["net/p3pp3rf1y/sophisticatedcore/extensions/inventory/SophisticatedSlot"],
+            "net/minecraft/class_1792": ["net/p3pp3rf1y/sophisticatedcore/extensions/item/SophisticatedItem"],
+            "net/minecraft/class_1799": ["net/p3pp3rf1y/sophisticatedcore/extensions/item/SophisticatedItemStack"],
+            "net/minecraft/class_2248": ["net/p3pp3rf1y/sophisticatedcore/extensions/block/SophisticatedBlock"],
+            "net/minecraft/class_2680": ["net/p3pp3rf1y/sophisticatedcore/extensions/block/SophisticatedBlockState"]
+        },
+        "modmenu": {
+            "badges": ["library"],
+            "parent": {
+                "id": "sophisticatedmods",
+                "name": "Sophisticated Mods",
+                "description": "Group of P3pp3rf1y's Sophisticated Mods"
+            }
+        }
     }
-  }
 }
