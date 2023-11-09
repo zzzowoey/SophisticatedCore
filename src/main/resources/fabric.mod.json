@@ -20,7 +20,7 @@
             "net.p3pp3rf1y.sophisticatedcore.SophisticatedCore"
         ],
         "client": [
-            "net.p3pp3rf1y.sophisticatedcore.client.SophisticatedCoreClient"
+            "net.p3pp3rf1y.sophisticatedcore.client.ClientEventHandler"
         ],
         "fabric-datagen": [
             "net.p3pp3rf1y.sophisticatedcore.data.SophisticatedCoreData"

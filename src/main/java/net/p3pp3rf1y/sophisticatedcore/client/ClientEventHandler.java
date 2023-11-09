@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -31,7 +32,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
-public class SophisticatedCoreClient implements ClientModInitializer {
+public class ClientEventHandler implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ModParticles.registerFactories();
@@ -47,7 +48,7 @@ public class SophisticatedCoreClient implements ClientModInitializer {
                 return;
             }
 
-            ScreenEvents.afterRender(screen).register(SophisticatedCoreClient::onDrawScreen);
+            ScreenEvents.afterRender(screen).register(ClientEventHandler::onDrawScreen);
         });
 
         PacketHandler.getChannel().initClientListener();
@@ -67,51 +68,62 @@ public class SophisticatedCoreClient implements ClientModInitializer {
                 if (!s.mayPickup(mc.player) || stack.isEmpty()) {
                     continue;
                 }
-                Optional<TooltipComponent> tooltip = getStashableAndTooltip(stack, held);
-                if (tooltip.isEmpty()) {
-                    continue;
-                }
+				Optional<StashResultAndTooltip> stashResultAndTooltip = getStashResultAndTooltip(stack, held);
+				if (stashResultAndTooltip.isEmpty()) {
+					continue;
+				}
 
                 if (s == under) {
-                    renderSpecialTooltip(mc, containerGui, poseStack, mouseX, mouseY, tooltip);
+                    renderSpecialTooltip(mc, containerGui, poseStack, mouseX, mouseY, stashResultAndTooltip.get());
                 } else {
-                    renderStashSign(mc, containerGui, poseStack, s, stack);
+                    renderStashSign(mc, containerGui, poseStack, s, stack, stashResultAndTooltip.get().stashResult());
                 }
             }
         }
     }
 
-    private static void renderStashSign(Minecraft mc, AbstractContainerScreen<?> containerGui, PoseStack poseStack, Slot s, ItemStack stack) {
+    private static void renderStashSign(Minecraft mc, AbstractContainerScreen<?> containerGui, PoseStack poseStack, Slot s, ItemStack stack, IStashStorageItem.StashResult stashResult) {
         int x = containerGui.getGuiLeft() + s.x;
         int y = containerGui.getGuiTop() + s.y;
 
         poseStack.pushPose();
-        poseStack.translate(0, 0, containerGui instanceof StorageScreenBase ? 150 : 499);
+		poseStack.translate(0, 0, 300);
 
+		int color = stashResult == IStashStorageItem.StashResult.MATCH_AND_SPACE ? ChatFormatting.GREEN.getColor() : 0xFFFF00;
         if (stack.getItem() instanceof IStashStorageItem) {
-            mc.font.drawShadow(poseStack, "+", (float) x + 10, (float) y + 8, 0xFFFF00);
+            mc.font.drawShadow(poseStack, "+", (float) x + 10, (float) y + 8, color);
         } else {
-            mc.font.drawShadow(poseStack, "-", x + 1, y, 0xFFFF00);
+            mc.font.drawShadow(poseStack, "-", x + 1, y, color);
         }
         poseStack.popPose();
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // Necessary cause renderTooltip wants an Optional<TooltipComponent> as parameter
-    private static void renderSpecialTooltip(Minecraft mc, AbstractContainerScreen<?> containerGui, PoseStack poseStack, int mouseX, int mouseY, Optional<TooltipComponent> tooltip) {
+    private static void renderSpecialTooltip(Minecraft mc, AbstractContainerScreen<?> containerGui, PoseStack poseStack, int mouseX, int mouseY, StashResultAndTooltip stashResultAndTooltip) {
         poseStack.pushPose();
         poseStack.translate(0, 0, containerGui instanceof StorageScreenBase ? -100 : 100);
-        containerGui.renderTooltip(poseStack, Collections.singletonList(Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".right_click_to_add_to_storage")), tooltip, mouseX, mouseY);
+        containerGui.renderTooltip(poseStack, Collections.singletonList(Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".right_click_to_add_to_storage")), stashResultAndTooltip.tooltip(), mouseX, mouseY);
         poseStack.popPose();
     }
 
-    private static Optional<TooltipComponent> getStashableAndTooltip(ItemStack inInventory, ItemStack held) {
-        if (inInventory.getCount() == 1 && inInventory.getItem() instanceof IStashStorageItem stashStorageItem && stashStorageItem.isItemStashable(inInventory, held)) {
-            return stashStorageItem.getInventoryTooltip(inInventory);
-        }
+	private static Optional<StashResultAndTooltip> getStashResultAndTooltip(ItemStack inInventory, ItemStack held) {
+		if (inInventory.getCount() == 1 && inInventory.getItem() instanceof IStashStorageItem stashStorageItem) {
+			return getStashResultAndTooltip(inInventory, held, stashStorageItem);
+		}
 
-        if (held.getItem() instanceof IStashStorageItem stashStorageItem && stashStorageItem.isItemStashable(held, inInventory)) {
-            return stashStorageItem.getInventoryTooltip(held);
-        }
-        return Optional.empty();
+		if (held.getItem() instanceof IStashStorageItem stashStorageItem) {
+			return getStashResultAndTooltip(held, inInventory, stashStorageItem);
+		}
+		return Optional.empty();
+	}
+
+    private static Optional<StashResultAndTooltip> getStashResultAndTooltip(ItemStack potentialStashStorage, ItemStack potentiallyStashable, IStashStorageItem stashStorageItem) {
+		IStashStorageItem.StashResult stashResult = stashStorageItem.getItemStashable(potentialStashStorage, potentiallyStashable);
+		if (stashResult == IStashStorageItem.StashResult.NO_SPACE) {
+			return Optional.empty();
+		}
+		return Optional.of(new StashResultAndTooltip(stashResult, stashStorageItem.getInventoryTooltip(potentialStashStorage)));
     }
+
+	private record StashResultAndTooltip(IStashStorageItem.StashResult stashResult, Optional<TooltipComponent> tooltip) {}
 }

@@ -279,12 +279,11 @@ public class InventoryHelper {
 		Map<ItemStackKey, Integer> ret = new HashMap<>();
 		for (int slotIndex = 0; slotIndex < handler.getSlotCount(); slotIndex++) {
 			var slot = handler.getSlot(slotIndex);
-			if (slot.isResourceBlank() || ignoreSlots.contains(slot)) {
+			if (slot.isResourceBlank() || ignoreSlots.contains(slotIndex)) {
 				continue;
 			}
-			ItemStack stack = slot.getResource().toStack((int) slot.getAmount());
-			ItemStackKey itemStackKey = new ItemStackKey(stack);
-			ret.put(itemStackKey, ret.computeIfAbsent(itemStackKey, fs -> 0) + stack.getCount());
+			ItemStackKey itemStackKey = ItemStackKey.of(slot.getResource().toStack());
+			ret.put(itemStackKey, ret.computeIfAbsent(itemStackKey, fs -> 0) + (int)slot.getAmount());
 		}
 		return ret;
 	}
@@ -310,7 +309,7 @@ public class InventoryHelper {
 			if (stack.isEmpty()) {
 				continue;
 			}
-			ItemStackKey itemStackKey = new ItemStackKey(stack);
+			ItemStackKey itemStackKey = ItemStackKey.of(stack);
 			uniqueStacks.add(itemStackKey);
 		}
 		return uniqueStacks;

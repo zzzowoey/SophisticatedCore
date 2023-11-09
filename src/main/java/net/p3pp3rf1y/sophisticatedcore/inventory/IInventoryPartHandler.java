@@ -123,14 +123,18 @@ public interface IInventoryPartHandler {
 		@Override
 		public long extractItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
 			try (Transaction nested = Transaction.openNested(ctx)) {
-				return parent.extractItemInternal(slot, resource, maxAmount, nested);
+				long extracted = parent.extractItemInternal(slot, resource, maxAmount, nested);
+				nested.commit();
+				return extracted;
 			}
 		}
 
 		@Override
 		public long insertItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
 			try (Transaction nested = Transaction.openNested(ctx)) {
-				return insertSuper.apply(slot, resource, maxAmount, nested);
+				long inserted = insertSuper.apply(slot, resource, maxAmount, nested);
+				nested.commit();
+				return inserted;
 			}
 		}
 

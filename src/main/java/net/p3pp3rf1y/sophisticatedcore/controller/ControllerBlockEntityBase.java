@@ -3,11 +3,12 @@ package net.p3pp3rf1y.sophisticatedcore.controller;
 import org.apache.commons.lang3.NotImplementedException;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -15,15 +16,14 @@ import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
+import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
@@ -62,11 +62,32 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 	private final Map<BlockPos, Set<Item>> storageFilterItems = new HashMap<>();
 	private Set<BlockPos> linkedBlocks = new LinkedHashSet<>();
 
+	@Nullable
+	private SlottedStackStorage itemHandlerCap;
+	private boolean unloaded = false;
+
 	protected ControllerBlockEntityBase(BlockEntityType<?> blockEntityType, BlockPos pos, BlockState state) {
 		super(blockEntityType, pos, state);
 
-		ClientChunkEvents.CHUNK_UNLOAD.register(this::onClientChunkUnloaded);
-		ServerChunkEvents.CHUNK_UNLOAD.register(this::onServerChunkUnloaded);
+		ServerChunkEvents.CHUNK_LOAD.register((level, chunk) -> {
+			if (chunk.getBlockEntities().containsValue(this)) {
+				unloaded = false;
+			}
+		});
+		ServerChunkEvents.CHUNK_UNLOAD.register((level, chunk) -> {
+			if (unloaded) {
+				return;
+			}
+
+			if (chunk.getBlockEntities().containsValue(this)) {
+				onChunkUnloaded();
+			}
+		});
+		ServerBlockEntityEvents.BLOCK_ENTITY_UNLOAD.register((be, world) -> {
+			if (be == this) {
+				invalidateCaps();
+			}
+		});
 	}
 
 	public boolean addLinkedBlock(BlockPos linkedPos) {
@@ -487,6 +508,24 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		}
 	}
 
+	@Nullable
+	public <T, C> T getCapability(BlockApiLookup<T, C> cap, @Nullable C opt) {
+		if (cap == ItemStorage.SIDED) {
+			if (itemHandlerCap == null) {
+				itemHandlerCap = new CachedFailedInsertInventoryHandler(this, () -> level != null ? level.getGameTime() : 0);
+			}
+			//noinspection unchecked
+			return (T)itemHandlerCap;
+		}
+		return null;
+	}
+
+	public void invalidateCaps() {
+		if (itemHandlerCap != null) {
+			itemHandlerCap = null;
+		}
+	}
+
 	@Override
 	public int getSlotCount() {
 		return totalSlots;
@@ -552,86 +591,103 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		return false;
 	}
 
-
 	@Override
-	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		if (isItemValid(slot, resource))
-			return insert(resource, maxAmount, transaction, true);
+	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		if (isItemValid(slot, resource)) {return insert(resource, maxAmount, ctx, true);}
 
 		return 0;
 	}
 
-
 	@Override
-	public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		return insert(resource, maxAmount, transaction, true);
+	public long insert(ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		return insert(resource, maxAmount, ctx, true);
 	}
 
-	public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction, boolean insertIntoAnyEmpty) {
-		ItemStackKey stackKey = new ItemStackKey(resource.toStack());
+	public long insert(ItemVariant resource, long maxAmount, TransactionContext ctx, boolean insertIntoAnyEmpty) {
+		ItemStackKey stackKey = ItemStackKey.of(resource.toStack());
 		long remaining = maxAmount;
 
-		if (stackStorages.containsKey(stackKey)) {
-			Set<BlockPos> positions = stackStorages.get(stackKey);
-			remaining -= insertIntoStorages(positions, resource, remaining, transaction);
-			if (remaining == 0) {
-				return maxAmount;
-			}
+		remaining -= insertIntoStoragesThatMatchStack(resource, remaining, stackKey, ctx);
+		if (remaining == 0) {
+			return maxAmount;
 		}
 
-		if (itemStackKeys.containsKey(resource.getItem())) {
-			for (ItemStackKey key : itemStackKeys.get(resource.getItem())) {
-				if (stackStorages.containsKey(key)) {
-					Set<BlockPos> positions = stackStorages.get(key);
-					remaining -= insertIntoStorages(positions, resource, remaining, transaction);
-					if (remaining == 0) {
-						break;
-					}
-				}
-			}
+		remaining = insertIntoStoragesThatMatchItem(resource, remaining, ctx);
+		if (remaining == 0) {
+			return maxAmount;
 		}
 
 		if (memorizedItemStorages.containsKey(resource.getItem())) {
-			remaining -= insertIntoStorages(memorizedItemStorages.get(resource.getItem()), resource, remaining, transaction);
+			remaining -= insertIntoStorages(memorizedItemStorages.get(resource.getItem()), resource, remaining, ctx, false);
 			if (remaining == 0) {
 				return maxAmount;
 			}
 		}
 
-		int stackHash = ItemStackKey.getHashCode(resource);
+		int stackHash = stackKey.hashCode();
 		if (memorizedStackStorages.containsKey(stackHash)) {
-			remaining -= insertIntoStorages(memorizedStackStorages.get(stackHash), resource, remaining, transaction);
+			remaining -= insertIntoStorages(memorizedStackStorages.get(stackHash), resource, remaining, ctx, false);
 			if (remaining == 0) {
 				return maxAmount;
 			}
 		}
 
 		if (filterItemStorages.containsKey(resource.getItem())) {
-			remaining -= insertIntoStorages(filterItemStorages.get(resource.getItem()), resource, remaining, transaction);
+			remaining -= insertIntoStorages(filterItemStorages.get(resource.getItem()), resource, remaining, ctx, false);
 			if (remaining == 0) {
 				return maxAmount;
 			}
 		}
 
-		return (insertIntoAnyEmpty ? insertIntoStorages(emptySlotsStorages, resource, remaining, transaction) : maxAmount - remaining);
+		return (insertIntoAnyEmpty ? insertIntoStorages(emptySlotsStorages, resource, remaining, ctx, false) : maxAmount - remaining);
 	}
 
-	private long insertIntoStorages(Set<BlockPos> positions, ItemVariant resource, long maxAmount, TransactionContext transaction) {
+	private long insertIntoStoragesThatMatchStack(ItemVariant resource, long maxAmount, ItemStackKey stackKey, TransactionContext ctx) {
 		long remaining = maxAmount;
-		Set<BlockPos> positionsCopy = new HashSet<>(positions); //to prevent CME if stack insertion actually causes set of positions to change
-		for (BlockPos storagePos : positionsCopy) {
-			long finalRemaining = remaining;
-			remaining -= getInventoryHandlerValueFromHolder(storagePos, ins -> ins.insert(resource, finalRemaining, transaction)).orElse(0L);
-			if (remaining == 0) {
-				return maxAmount;
-			}
+		if (stackStorages.containsKey(stackKey)) {
+			Set<BlockPos> positions = stackStorages.get(stackKey);
+			remaining -= insertIntoStorages(positions, resource, remaining, ctx, false);
 		}
-
 		return maxAmount - remaining;
 	}
 
+	private long insertIntoStoragesThatMatchItem(ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		long remaining = maxAmount;
+		if (!emptySlotsStorages.isEmpty() && itemStackKeys.containsKey(resource.getItem())) {
+			for (ItemStackKey key : itemStackKeys.get(resource.getItem())) {
+				if (stackStorages.containsKey(key)) {
+					Set<BlockPos> positions = stackStorages.get(key);
+					remaining -= insertIntoStorages(positions, resource, remaining, ctx, true);
+					if (remaining == 0) {
+						return maxAmount;
+					}
+				}
+			}
+		}
+		return remaining;
+	}
+
+	private long insertIntoStorages(Set<BlockPos> positions, ItemVariant resource, long maxAmount, TransactionContext ctx, boolean checkHasEmptySlotFirst) {
+		long remaining = maxAmount;
+		Set<BlockPos> positionsCopy = new LinkedHashSet<>(positions); //to prevent CME if stack insertion actually causes set of positions to change
+		for (BlockPos storagePos : positionsCopy) {
+			if (checkHasEmptySlotFirst && !emptySlotsStorages.contains(storagePos)) {
+				continue;
+			}
+			remaining -= insertIntoStorage(storagePos, resource, remaining, ctx);
+			if (remaining == 0) {
+				return maxAmount;
+			}
+		}
+		return maxAmount - remaining;
+	}
+
+	private long insertIntoStorage(BlockPos storagePos, ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		return maxAmount - getInventoryHandlerValueFromHolder(storagePos, ins -> ins.insert(resource, maxAmount, ctx)).orElse(0L);
+	}
+
 	@Override
-	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
+	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
 		if (isSlotIndexInvalid(slot)) {
 			return 0;
 		}
@@ -640,7 +696,7 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		SlottedStackStorage handler = getHandlerFromIndex(handlerIndex);
 		slot = getSlotFromIndex(slot, handlerIndex);
 		if (validateHandlerSlotIndex(handler, handlerIndex, slot, "extractItem(int slot, int amount, boolean simulate)")) {
-			return handler.extractSlot(slot, resource, maxAmount, transaction);
+			return handler.extractSlot(slot, resource, maxAmount, ctx);
 		}
 
 		return 0;
@@ -664,7 +720,6 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		}
 		return 0;
 	}
-
 
 	@Override
 	public boolean isItemValid(int slot, ItemVariant resource) {
@@ -694,12 +749,9 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		}
 	}
 
-	public void onClientChunkUnloaded(ClientLevel world, LevelChunk chunk) {
+	public void onChunkUnloaded() {
 		detachFromStoragesAndUnlinkBlocks();
-	}
-
-	public void onServerChunkUnloaded(ServerLevel world, LevelChunk chunk) {
-		detachFromStoragesAndUnlinkBlocks();
+		unloaded = true;
 	}
 
 	public void detachFromStoragesAndUnlinkBlocks() {

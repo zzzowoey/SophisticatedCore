@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedcore.common;
 
 import io.github.fabricators_of_create.porting_lib.util.LogicalSidedProvider;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.server.TickTask;
 import net.minecraft.world.InteractionHand;
@@ -18,12 +19,17 @@ import net.p3pp3rf1y.sophisticatedcore.event.common.EntityEvents;
 import net.p3pp3rf1y.sophisticatedcore.init.ModFluids;
 import net.p3pp3rf1y.sophisticatedcore.init.ModParticles;
 import net.p3pp3rf1y.sophisticatedcore.init.ModRecipes;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
+import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 
 public class CommonEventHandler {
 	public void registerHandlers() {
 		ModFluids.registerHandlers();
 		ModParticles.registerParticles();
 		ModRecipes.registerHandlers();
+
+		ServerTickEvents.END_SERVER_TICK.register((server) -> ItemStackKey.clearCacheOnTickEnd());
+		RecipeHelper.addReloadListener();
 
 		UseBlockCallback.EVENT.register(this::onUseBlock);
 

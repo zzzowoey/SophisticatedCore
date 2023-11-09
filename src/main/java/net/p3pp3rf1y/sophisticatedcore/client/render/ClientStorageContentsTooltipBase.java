@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
-public abstract class ClientStorageContentsTooltip implements ClientTooltipComponent {
+public abstract class ClientStorageContentsTooltipBase implements ClientTooltipComponent {
 	private static final int REFRESH_INTERVAL = 20;
 	private static final String STORAGE_ITEM = "storage";
 	protected static long lastRequestTime = 0;
@@ -66,11 +66,11 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 
 	@SuppressWarnings("java:S2696")
 	protected void setLastRequestTime(long lastRequestTime) {
-		ClientStorageContentsTooltip.lastRequestTime = lastRequestTime;
+		ClientStorageContentsTooltipBase.lastRequestTime = lastRequestTime;
 	}
 
 	protected long getLastRequestTime() {
-		return ClientStorageContentsTooltip.lastRequestTime;
+		return ClientStorageContentsTooltipBase.lastRequestTime;
 	}
 
 	private void requestContents(LocalPlayer player, IStorageWrapper wrapper) {
@@ -107,11 +107,11 @@ public abstract class ClientStorageContentsTooltip implements ClientTooltipCompo
 
 	@SuppressWarnings("java:S2696")
 	protected void setShouldRefreshContents(boolean shouldRefreshContents) {
-		ClientStorageContentsTooltip.shouldRefreshContents = shouldRefreshContents;
+		ClientStorageContentsTooltipBase.shouldRefreshContents = shouldRefreshContents;
 	}
 
 	protected boolean shouldRefreshContents() {
-		return ClientStorageContentsTooltip.shouldRefreshContents;
+		return ClientStorageContentsTooltipBase.shouldRefreshContents;
 	}
 
 	private void calculateWidth() {

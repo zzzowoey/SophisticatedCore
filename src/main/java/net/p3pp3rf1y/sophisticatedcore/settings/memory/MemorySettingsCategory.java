@@ -15,10 +15,10 @@ import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -31,8 +31,8 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 	private final Supplier<InventoryHandler> inventoryHandlerSupplier;
 	private CompoundTag categoryNbt;
 	private final Consumer<CompoundTag> saveNbt;
-	private final Map<Integer, Item> slotFilterItems = new TreeMap<>();
-	private final Map<Integer, ItemStackKey> slotFilterStacks = new TreeMap<>();
+	private final Map<Integer, Item> slotFilterItems = new LinkedHashMap<>();
+	private final Map<Integer, ItemStackKey> slotFilterStacks = new LinkedHashMap<>();
 	private final Map<Item, Set<Integer>> filterItemSlots = new HashMap<>();
 
 	private final Map<Integer, Set<Integer>> filterStackSlots = new HashMap<>();
@@ -168,7 +168,7 @@ public class MemorySettingsCategory implements ISettingsCategory<MemorySettingsC
 	}
 
 	private void addSlotStack(int slot, ItemStack stack) {
-		ItemStackKey isk = new ItemStackKey(stack);
+		ItemStackKey isk = ItemStackKey.of(stack);
 		slotFilterStacks.put(slot, isk);
 		int stackHash = isk.hashCode();
 		filterStackSlots.computeIfAbsent(stackHash, k -> {

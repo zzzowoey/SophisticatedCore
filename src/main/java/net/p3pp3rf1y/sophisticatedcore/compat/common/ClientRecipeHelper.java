@@ -2,7 +2,10 @@ package net.p3pp3rf1y.sophisticatedcore.compat.common;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
@@ -45,9 +48,18 @@ public class ClientRecipeHelper {
 		return ret;
 	}
 
-
 	public static CraftingRecipe copyShapedRecipe(ShapedRecipe recipe) {
 		Minecraft mc = Minecraft.getInstance();
 		return new ShapedRecipe(recipe.getId(), recipe.getGroup(), recipe.category(), recipe.getWidth(), recipe.getHeight(), recipe.getIngredients(), recipe.getResultItem(mc.level.registryAccess()));
+	}
+
+	public static <C extends Container> ItemStack assemble(Recipe<C> recipe, C container) {
+		Minecraft minecraft = Minecraft.getInstance();
+		ClientLevel level = minecraft.level;
+		if (level == null) {
+			throw new NullPointerException("level must not be null.");
+		}
+		RegistryAccess registryAccess = level.registryAccess();
+		return recipe.assemble(container, registryAccess);
 	}
 }

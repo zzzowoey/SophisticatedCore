@@ -23,13 +23,13 @@ public class Config {
 	private static final Map<ModConfig.Type, BaseConfig> CONFIGS = new EnumMap<>(ModConfig.Type.class);
 
 	public static Client CLIENT;
-	public static Server SERVER;
+	public static Common COMMON;
 
 	public static class BaseConfig {
 		public ForgeConfigSpec specification;
 
-		public void onLoad() { }
-		public void onReload() { }
+		public void onConfigLoad() { }
+		public void onConfigReload() { }
 	}
 
 	public static class Client extends BaseConfig {
@@ -44,16 +44,16 @@ public class Config {
 		}
 	}
 
-	public static class Server extends BaseConfig {
+	public static class Common extends BaseConfig {
 		public final EnabledItems enabledItems;
 
 		@SuppressWarnings("unused") //need the Event parameter for forge reflection to understand what event this listens to
-		public void onReload() {
+		public void onConfigReload() {
 			enabledItems.enabledMap.clear();
 		}
 
-		Server(ForgeConfigSpec.Builder builder) {
-			builder.comment("Server Settings").push("server");
+		Common(ForgeConfigSpec.Builder builder) {
+			builder.comment("Common Settings").push("common");
 
 			enabledItems = new EnabledItems(builder);
 		}
@@ -71,7 +71,7 @@ public class Config {
 			}
 
 			public boolean isItemEnabled(ResourceLocation itemRegistryName) {
-				if (!SERVER.specification.isLoaded()) {
+				if (!COMMON.specification.isLoaded()) {
 					return true;
 				}
 				if (enabledMap.isEmpty()) {
@@ -113,25 +113,25 @@ public class Config {
 
 	public static void register() {
 		CLIENT = register(Client::new, ModConfig.Type.CLIENT);
-		SERVER = register(Server::new, ModConfig.Type.SERVER);
+		COMMON = register(Common::new, ModConfig.Type.SERVER);
 
 		for (Map.Entry<ModConfig.Type, BaseConfig> pair : CONFIGS.entrySet()) {
 			ForgeConfigRegistry.INSTANCE.register(SophisticatedCore.ID, pair.getKey(), pair.getValue().specification);
 		}
 
-		ModConfigEvents.loading(SophisticatedCore.ID).register(Config::onLoad);
-		ModConfigEvents.reloading(SophisticatedCore.ID).register(Config::onReload);
+		ModConfigEvents.loading(SophisticatedCore.ID).register(Config::onConfigLoad);
+		ModConfigEvents.reloading(SophisticatedCore.ID).register(Config::onConfigReload);
 	}
 
-	public static void onLoad(ModConfig modConfig) {
+	public static void onConfigLoad(ModConfig modConfig) {
 		for (BaseConfig config : CONFIGS.values())
 			if (config.specification == modConfig.getSpec())
-				config.onLoad();
+				config.onConfigLoad();
 	}
 
-	public static void onReload(ModConfig modConfig) {
+	public static void onConfigReload(ModConfig modConfig) {
 		for (BaseConfig config : CONFIGS.values())
 			if (config.specification == modConfig.getSpec())
-				config.onReload();
+				config.onConfigReload();
 	}
 }

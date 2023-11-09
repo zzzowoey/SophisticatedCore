@@ -29,6 +29,6 @@ public class ItemEnabledCondition implements ConditionJsonProvider {
 	}
 
 	public static boolean test(JsonObject json) {
-		return Config.SERVER.enabledItems.isItemEnabled(new ResourceLocation(GsonHelper.getAsString(json, "itemRegistryName")));
+		return Config.COMMON.enabledItems.isItemEnabled(new ResourceLocation(GsonHelper.getAsString(json, "itemRegistryName")));
 	}
 }

@@ -39,7 +39,7 @@ public abstract class StorageDyeRecipeBase extends CustomRecipe {
 					return false;
 				}
 				storagePresent = true;
-			} else if (slotStack.getItem() instanceof DyeItem) {
+			} else if (slotStack.is(Tags.Items.DYES)) {
 				dyePresent = true;
 			} else {
 				return false;

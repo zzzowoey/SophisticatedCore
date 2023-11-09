@@ -6,7 +6,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
-import net.p3pp3rf1y.sophisticatedcore.util.ItemStackHelper;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,7 +46,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 	}
 
 	public void addPartiallyFilled(int slot, ItemStack stack) {
-		ItemStackKey stackKey = new ItemStackKey(stack);
+		ItemStackKey stackKey = ItemStackKey.of(stack);
 		partiallyFilledStackSlots.computeIfAbsent(stackKey, k -> {
 			if (!fullStackSlots.containsKey(k)) {
 				onAddStackKey.accept(k);
@@ -74,7 +73,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 	}
 
 	public void addFull(int slot, ItemStack stack) {
-		ItemStackKey stackKey = new ItemStackKey(stack);
+		ItemStackKey stackKey = ItemStackKey.of(stack);
 		fullStackSlots.computeIfAbsent(stackKey, k -> {
 			if (!partiallyFilledStackSlots.containsKey(k)) {
 				onAddStackKey.accept(k);
@@ -238,9 +237,13 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 
 	@Override
 	public long insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
-		ItemStackKey stackKey = new ItemStackKey(resource.toStack());
+		if (emptySlots.isEmpty() && !itemStackKeys.containsKey(resource.getItem())) {
+			return maxAmount;
+		}
 
 		long remaining = maxAmount;
+
+		ItemStackKey stackKey = ItemStackKey.of(resource.toStack());
 		remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);
 		if (remaining <= 0) {
 			return 0;
@@ -259,33 +262,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 
 	@Override
 	public long insertItemIntoHandler(InventoryHandler itemHandler, IItemHandlerInserter inserter, UnaryOperator<ItemStack> overflowHandler, int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
-		ItemStackKey stackKey = new ItemStackKey(resource.toStack());
-
-		long remaining = maxAmount;
-		remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);
-		if (remaining <= 0) {
-			return 0;
-		}
-
-		ItemStack existing = itemHandler.getStackInSlot(slot);
-		boolean wasEmpty = existing.isEmpty();
-
-		boolean doesNotMatchCurrentSlot = !ItemStackHelper.canItemStacksStack(resource.toStack((int) remaining), existing);
-		if (wasEmpty || doesNotMatchCurrentSlot) {
-			remaining -= insertIntoSlotsThatMatchStack(inserter, resource, remaining, ctx, stackKey);
-		}
-		if (remaining > 0 && doesNotMatchCurrentSlot) {
-			remaining -= insertIntoEmptySlots(inserter, resource, remaining, ctx);
-		}
-		if (remaining > 0 && (!emptySlots.contains(slot) || shouldInsertIntoEmpty.getAsBoolean())) {
-			remaining -= inserter.insertItem(slot, resource, remaining, ctx);
-		}
-
-		if (remaining > 0) {
-			remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);
-		}
-
-		return (int)maxAmount - remaining;
+		return insertItemIntoHandler(itemHandler, inserter, overflowHandler, resource, maxAmount, ctx);
 	}
 
 	@Override
@@ -319,7 +296,11 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		long remaining = maxAmount;
 
 		Set<Integer> slots = partiallyFilledStackSlots.get(stackKey);
-		int sizeBefore = slots == null ? 0 : slots.size();
+		if (slots == null || slots.isEmpty()) {
+			return 0;
+		}
+
+		int sizeBefore = slots.size();
 		int i = 0;
 		// Always taking first element here and iterating while not empty as iterating using iterator would produce CME due to void/compacting reacting to inserts
 		// and going into this logic as well and because of that causing collection to be updated outside of first level iterator. The increment is here just

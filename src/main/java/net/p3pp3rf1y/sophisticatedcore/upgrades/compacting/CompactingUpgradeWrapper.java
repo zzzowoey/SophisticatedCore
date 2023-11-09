@@ -73,26 +73,26 @@ public class CompactingUpgradeWrapper extends UpgradeWrapperBase<CompactingUpgra
 	private void tryCompacting(IItemHandlerSimpleInserter inventoryHandler, Item item, int width, int height, @Nullable TransactionContext ctx) {
 		int totalCount = width * height;
 		RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(item, width, height);
-		if (compactingResult.getCount() > 0) {
+		if (!compactingResult.getResult().isEmpty()) {
 			ItemVariant resource = ItemVariant.of(item);
 			long maxExtracted = StorageUtil.simulateExtract(inventoryHandler, resource, totalCount, ctx);
 			if (maxExtracted != totalCount) {
 				return;
 			}
 
-			ItemVariant resultVariant = compactingResult.getResult();
+			ItemVariant resultVariant = ItemVariant.of(compactingResult.getResult());
 			while (maxExtracted == totalCount) {
 				List<ItemStack> remainingItemsCopy = compactingResult.getRemainingItems().isEmpty() ? Collections.emptyList() : compactingResult.getRemainingItems().stream().map(ItemStack::copy).toList();
 
 				try (Transaction nested = Transaction.openNested(ctx)) {
-					long inserted = inventoryHandler.insert(resultVariant, compactingResult.getCount(), nested);
+					inventoryHandler.extract(resource, totalCount, nested);
+					long inserted = inventoryHandler.insert(resultVariant, compactingResult.getResult().getCount(), nested);
 					List<ItemStack> remaining = InventoryHelper.insertIntoInventory(remainingItemsCopy, inventoryHandler, nested);
 
-					if (!(inserted == compactingResult.getCount() && remaining.isEmpty())) {
+					if (!(inserted == compactingResult.getResult().getCount() && remaining.isEmpty())) {
 						return;
 					}
 
-					inventoryHandler.extract(resource, totalCount, nested);
 					nested.commit();
 				}
 

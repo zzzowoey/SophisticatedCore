@@ -18,7 +18,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
@@ -30,7 +29,6 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
-	private final RecipeCategory category;
 	private final Item result;
 	@Nullable
 	private final CompoundTag nbt;
@@ -40,25 +38,33 @@ public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
 	private final List<ConditionJsonProvider> conditions = new ArrayList<>();
 	@Nullable
 	private String group;
-	private boolean showNotification = true;
+	private final RecipeSerializer<?> serializer;
 
-	public ShapelessBasedRecipeBuilder(RecipeCategory category, ItemLike result, int count, @Nullable CompoundTag nbt) {
-		this.category = category;
+	public ShapelessBasedRecipeBuilder(ItemLike result, int count, @Nullable CompoundTag nbt, RecipeSerializer<?> serializer) {
 		this.result = result.asItem();
 		this.count = count;
 		this.nbt = nbt;
+		this.serializer = serializer;
 	}
 
-	public static ShapelessBasedRecipeBuilder shapeless(RecipeCategory category, ItemLike result) {
-		return shapeless(category, result, 1);
+	public static ShapelessBasedRecipeBuilder shapeless(ItemLike result) {
+		return shapeless(result, 1, RecipeSerializer.SHAPELESS_RECIPE);
 	}
 
-	public static ShapelessBasedRecipeBuilder shapeless(RecipeCategory category, ItemLike result, int count) {
-		return new ShapelessBasedRecipeBuilder(category, result, count, null);
+	public static ShapelessBasedRecipeBuilder shapeless(ItemLike result, RecipeSerializer<?> serializer) {
+		return shapeless(result, 1, serializer);
 	}
 
-	public static ShapelessBasedRecipeBuilder shapeless(RecipeCategory category, ItemStack stack) {
-		return new ShapelessBasedRecipeBuilder(category, stack.getItem(), 1, stack.getTag());
+	public static ShapelessBasedRecipeBuilder shapeless(ItemLike result, int count) {
+		return new ShapelessBasedRecipeBuilder(result, count, null, RecipeSerializer.SHAPELESS_RECIPE);
+	}
+
+	public static ShapelessBasedRecipeBuilder shapeless(ItemLike result, int count, RecipeSerializer<?> serializer) {
+		return new ShapelessBasedRecipeBuilder(result, count, null, serializer);
+	}
+
+	public static ShapelessBasedRecipeBuilder shapeless(ItemStack stack) {
+		return new ShapelessBasedRecipeBuilder(stack.getItem(), 1, stack.getTag(), RecipeSerializer.SHAPELESS_RECIPE);
 	}
 
 	public ShapelessBasedRecipeBuilder condition(ConditionJsonProvider condition) {
@@ -104,28 +110,15 @@ public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
 		return this;
 	}
 
-	public ShapelessBasedRecipeBuilder showNotification(boolean bl) {
-		this.showNotification = bl;
-		return this;
-	}
-
 	public Item getResult() {
 		return result;
 	}
 
 	public void save(Consumer<FinishedRecipe> finishedRecipeConsumer, ResourceLocation recipeId) {
 		advancement.parent(new ResourceLocation("recipes/root")).addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(recipeId)).rewards(AdvancementRewards.Builder.recipe(recipeId)).requirements(RequirementsStrategy.OR);
-		finishedRecipeConsumer.accept(new Result(recipeId, result, conditions, nbt, count, group == null ? "" : group, determineBookCategory(this.category), ingredients, advancement, new ResourceLocation(recipeId.getNamespace(), "recipes/" + this.category.getFolderName() + "/" + recipeId.getPath()), this.showNotification));
+		finishedRecipeConsumer.accept(new Result(recipeId, result, conditions, nbt, count, group == null ? "" : group, ingredients, advancement, new ResourceLocation(recipeId.getNamespace(), "recipes/" + RecipeCategory.MISC.getFolderName() + "/" + recipeId.getPath()), this.serializer));
 	}
 
-	protected static CraftingBookCategory determineBookCategory(RecipeCategory category) {
-		return switch (category) {
-			case BUILDING_BLOCKS -> CraftingBookCategory.BUILDING;
-			case TOOLS, COMBAT -> CraftingBookCategory.EQUIPMENT;
-			case REDSTONE -> CraftingBookCategory.REDSTONE;
-			default -> CraftingBookCategory.MISC;
-		};
-	}
 	public static class Result implements FinishedRecipe {
 		private final List<ConditionJsonProvider> conditions;
 		private final ResourceLocation id;
@@ -134,33 +127,29 @@ public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
 		private final CompoundTag nbt;
 		private final int count;
 		private final String group;
-		private final CraftingBookCategory category;
 		private final List<Ingredient> ingredients;
 		private final Advancement.Builder advancement;
 		private final ResourceLocation advancementId;
-		private final boolean showNotification;
+		private final RecipeSerializer<?> serializer;
 
 		@SuppressWarnings("java:S107") //the only way of reducing number of parameters here means adding pretty much unnecessary object parameter
 		public Result(ResourceLocation id, Item itemResult, List<ConditionJsonProvider> conditions, @Nullable CompoundTag nbt,
-				int count, String group, CraftingBookCategory craftingBookCategory, List<Ingredient> ingredients, Advancement.Builder advancement, ResourceLocation advancementId, boolean showNotification) {
+				int count, String group, List<Ingredient> ingredients, Advancement.Builder advancement, ResourceLocation advancementId, RecipeSerializer<?> serializer) {
 			this.id = id;
 			this.itemResult = itemResult;
 			this.conditions = conditions;
 			this.nbt = nbt;
 			this.count = count;
 			this.group = group;
-			this.category = craftingBookCategory;
 			this.ingredients = ingredients;
 			this.advancement = advancement;
 			this.advancementId = advancementId;
-			this.showNotification = showNotification;
+			this.serializer = serializer;
 
 			conditions.add(new ItemEnabledCondition(this.itemResult));
 		}
 
 		public void serializeRecipeData(JsonObject json) {
-			json.addProperty("category", this.category.getSerializedName());
-
 			if (!group.isEmpty()) {
 				json.addProperty("group", group);
 			}
@@ -186,11 +175,10 @@ public class ShapelessBasedRecipeBuilder implements RecipeBuilder {
 			}
 
 			json.add("result", jsonobject);
-			json.addProperty("show_notification", this.showNotification);
 		}
 
 		public RecipeSerializer<?> getType() {
-			return RecipeSerializer.SHAPELESS_RECIPE;
+			return serializer;
 		}
 
 		public ResourceLocation getId() {
