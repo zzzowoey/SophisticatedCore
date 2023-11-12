@@ -54,8 +54,9 @@ repositories {
         }
     }
 
-    maven { url = "https://maven.ladysnake.org/releases" } // CCA, for Trinkets
+    maven { url = 'https://maven.blamejared.com' }
     maven { url = "https://modmaven.dev" } // Jei
+    maven { url = "https://maven.ladysnake.org/releases" } // CCA, for Trinkets
     maven { url = "https://www.cursemaven.com" } // Balm, CraftingTweaks
 }
 
@@ -131,6 +132,8 @@ def recipeViewers(DependencyHandler deps) {
     // EMI
     deps.modCompileOnly("dev.emi:emi-fabric:$emi_version") { transitive = false }
     // JEI
+    deps.modCompileOnlyApi("mezz.jei:jei-$minecraft_version-common-api:$jei_version") { transitive = false }
+    deps.modCompileOnlyApi("mezz.jei:jei-$minecraft_version-fabric-api:$jei_version") { transitive = false }
     deps.modCompileOnly("mezz.jei:jei-$minecraft_version-fabric:$jei_version") { transitive = false }
     // REI
     deps.modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:$rei_version")
@@ -138,7 +141,7 @@ def recipeViewers(DependencyHandler deps) {
 
     switch (recipe_viewer.toLowerCase(Locale.ROOT)) {
         case "emi": deps.modLocalRuntime("dev.emi:emi-fabric:$emi_version"); break
-        case "jei": deps.modLocalRuntime("mezz.jei:jei-$minecraft_version-fabric:$jei_version"); break
+        case "jei": deps.modRuntimeOnly("mezz.jei:jei-$minecraft_version-fabric:$jei_version"); break
         case "rei": deps.modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:$rei_version"); break
         case "disabled": break
         default: println("Unknown recipe viewer specified: $recipe_viewer. Must be JEI, REI, EMI, or disabled.")
