@@ -158,23 +158,30 @@ def recipeViewers(DependencyHandler deps) {
 }
 
 def testing(DependencyHandler deps) {
+    deps.testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+
     deps.testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
     deps.testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.+'
     deps.testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.+'
     deps.testImplementation "org.mockito:mockito-core:5.1.+"
 }
 
-loom {
-    accessWidenerPath = file("src/main/resources/sophisticatedcore.accesswidener")
-
-    sourceSets {
-        main {
-            resources {
-                srcDir("src/generated/resources")
-                exclude("src/generated/resources/.cache")
-            }
+sourceSets {
+    main {
+        resources {
+            srcDir("src/generated/resources")
+            exclude("src/generated/resources/.cache")
         }
     }
+
+    test {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
+    }
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/sophisticatedcore.accesswidener")
 
     runs {
         datagen {
@@ -231,12 +238,13 @@ loom {
     }
 }
 
-/*test {
+test {
     useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"
     }
-}*/
+}
+test.dependsOn("processResources")
 
 tasks.named('jar', Jar).configure {
     from('/') {

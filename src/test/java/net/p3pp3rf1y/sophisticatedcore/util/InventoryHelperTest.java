@@ -57,7 +57,7 @@ class InventoryHelperTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("transferMovesOnlyStacksThatCanGoIntoInventory")
+	@MethodSource
 	void transferMovesOnlyStacksThatCanGoIntoInventory(NonNullList<ItemStack> stacksHandlerA, int limitMultiplierA, NonNullList<ItemStack> stacksHandlerB, int limitMultiplierB,
 			BiPredicate<Integer, ItemStack> isStackValidInHandlerB, Map<Integer, ItemStack> stacksAfterTransferA, Map<Integer, ItemStack> stacksAfterTransferB) {
 		SlottedStackStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
@@ -69,7 +69,7 @@ class InventoryHelperTest {
 		assertHandlerState(handlerB, stacksAfterTransferB);
 	}
 
-	private static Object[][] transferMovesOnlyStacksThatCanGoIntoInventory() {
+	static Object[][] transferMovesOnlyStacksThatCanGoIntoInventory() {
 		return new Object[][] {
 				{
 						stacks(new ItemStack(Items.IRON_INGOT, 64), new ItemStack(Items.IRON_INGOT, 64), new ItemStack(Items.GOLD_INGOT, 64)),
@@ -176,7 +176,7 @@ class InventoryHelperTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("transferMovesStacksCorrectly")
+	@MethodSource
 	void transferMovesStacksCorrectly(NonNullList<ItemStack> stacksHandlerA, int limitMultiplierA, NonNullList<ItemStack> stacksHandlerB, int limitMultiplierB, Map<Integer, ItemStack> stacksAfterTransferA, Map<Integer, ItemStack> stacksAfterTransferB) {
 		SlottedStackStorage handlerA = getItemHandler(stacksHandlerA, limitMultiplierA);
 		SlottedStackStorage handlerB = getItemHandler(stacksHandlerB, limitMultiplierB);
@@ -207,7 +207,7 @@ class InventoryHelperTest {
 		}
 	}
 
-	private static Object[][] transferMovesStacksCorrectly() {
+	static Object[][] transferMovesStacksCorrectly() {
 		return new Object[][] {
 				{
 						stacks(new ItemStack(Items.IRON_INGOT)),

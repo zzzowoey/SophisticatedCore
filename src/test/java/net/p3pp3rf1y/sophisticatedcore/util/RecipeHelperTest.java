@@ -76,7 +76,7 @@ public class RecipeHelperTest {
 	}
 
 	private static class CombinedArguments implements Arguments {
-		private Object[] arguments;
+		private final Object[] arguments;
 
 		public CombinedArguments(Level level, Arguments methodArguments) {
 			arguments = new Object[methodArguments.get().length + 1];
@@ -135,7 +135,7 @@ public class RecipeHelperTest {
 
 	@ParameterizedTest
 	@MethodSource
-	void testGetCompatingResult(Level level, Item item, RecipeHelper.CompactingResult expectedResult) {
+	void testGetCompactingResult(Level level, Item item, RecipeHelper.CompactingResult expectedResult) {
 		RecipeHelper.setWorld(level);
 
 		RecipeHelper.CompactingResult actualResult = RecipeHelper.getCompactingResult(item, RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE);
@@ -143,7 +143,7 @@ public class RecipeHelperTest {
 		assertCompactingResultEquals(expectedResult, actualResult, "getCompactingResult returned wrong result");
 	}
 
-	static Stream<Arguments> testGetCompatingResult() {
+	static Stream<Arguments> testGetCompactingResult() {
 		return withClassParams(
 				List.of(
 						Arguments.of(Items.GOLD_INGOT, new RecipeHelper.CompactingResult(new ItemStack(Items.GOLD_BLOCK), Collections.emptyList())),
