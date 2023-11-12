@@ -42,6 +42,7 @@ public class PacketHandler {
 		registerS2CMessage(SyncAdditionalSlotInfoMessage.class, SyncAdditionalSlotInfoMessage::new);
 		registerS2CMessage(SyncEmptySlotIconsMessage.class, SyncEmptySlotIconsMessage::new);
 		registerS2CMessage(SyncSlotChangeErrorMessage.class, SyncSlotChangeErrorMessage::new);
+		registerS2CMessage(SyncDatapackSettingsTemplateMessage.class, SyncDatapackSettingsTemplateMessage::new);
 	}
 
 	public static <T extends SimplePacketBase> void registerC2SMessage(Class<T> type, Function<FriendlyByteBuf, T> factory) {

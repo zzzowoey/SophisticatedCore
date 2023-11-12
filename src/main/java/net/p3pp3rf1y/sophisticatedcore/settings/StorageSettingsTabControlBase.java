@@ -44,9 +44,9 @@ public abstract class StorageSettingsTabControlBase extends SettingsTabControl<S
 
 	protected abstract Tab instantiateReturnBackTab();
 
-	public void renderSlotOverlays(PoseStack matrixStack, Slot slot, ISlotOverlayRenderer overlayRenderer) {
+	public void renderSlotOverlays(PoseStack matrixStack, Slot slot, ISlotOverlayRenderer overlayRenderer, boolean templateLoadHovered) {
 		List<Integer> colors = new ArrayList<>();
-		settingsTabs.forEach(tab -> tab.getSlotOverlayColor(slot.index).ifPresent(colors::add));
+		settingsTabs.forEach(tab -> tab.getSlotOverlayColor(slot.index, templateLoadHovered).ifPresent(colors::add));
 		if (colors.isEmpty()) {
 			return;
 		}
@@ -60,9 +60,9 @@ public abstract class StorageSettingsTabControlBase extends SettingsTabControl<S
 		}
 	}
 
-	public ItemStack getSlotStackDisplayOverride(int slotNumber) {
+	public ItemStack getSlotStackDisplayOverride(int slotNumber, boolean isTemplateLoadHovered) {
 		for (SettingsTab<?> settingsTab : settingsTabs) {
-			ItemStack stack = settingsTab.getItemDisplayOverride(slotNumber);
+			ItemStack stack = settingsTab.getItemDisplayOverride(slotNumber, isTemplateLoadHovered);
 			if (!stack.isEmpty()) {
 				return stack;
 			}
@@ -78,9 +78,9 @@ public abstract class StorageSettingsTabControlBase extends SettingsTabControl<S
 		getOpenTab().ifPresent(tab -> tab.handleSlotClick(slot, mouseButton));
 	}
 
-	public boolean renderGuiItem(PoseStack poseStack, ItemRenderer itemRenderer, ItemStack itemstack, Slot slot) {
+	public boolean renderGuiItem(PoseStack poseStack, ItemRenderer itemRenderer, ItemStack itemstack, Slot slot, boolean templateLoadHovered) {
 		for (SettingsTab<?> tab : settingsTabs) {
-			int rotation = tab.getItemRotation(slot.index);
+			int rotation = tab.getItemRotation(slot.index, templateLoadHovered);
 			if (rotation != 0) {
 				GuiHelper.tryRenderGuiItem(poseStack, itemRenderer, minecraft.getTextureManager(), minecraft.player, itemstack, slot.x, slot.y, rotation);
 				return true;
@@ -93,9 +93,9 @@ public abstract class StorageSettingsTabControlBase extends SettingsTabControl<S
 		return false;
 	}
 
-	public void drawSlotStackOverlay(PoseStack poseStack, Slot slot) {
+	public void drawSlotStackOverlay(PoseStack poseStack, Slot slot, boolean templateLoadHovered) {
 		for (SettingsTab<?> tab : settingsTabs) {
-			tab.drawSlotStackOverlay(poseStack, slot);
+			tab.drawSlotStackOverlay(poseStack, slot, templateLoadHovered);
 		}
 	}
 

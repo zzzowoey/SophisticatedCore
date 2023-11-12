@@ -567,6 +567,10 @@ public abstract class ControllerBlockEntityBase extends BlockEntity implements S
 		}
 		int handlerIndex = getIndexForSlot(slot);
 		SlottedStackStorage handler = getHandlerFromIndex(handlerIndex);
+		if (handler == null) {
+			return ItemStack.EMPTY;
+		}
+
 		slot = getSlotFromIndex(slot, handlerIndex);
 		if (validateHandlerSlotIndex(handler, handlerIndex, slot, "getStackInSlot")) {
 			return handler.getStackInSlot(slot);

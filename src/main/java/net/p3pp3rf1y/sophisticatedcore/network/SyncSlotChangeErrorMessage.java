@@ -27,16 +27,11 @@ public class SyncSlotChangeErrorMessage extends SimplePacketBase {
 
 	@Override
 	public void write(FriendlyByteBuf buffer) {
-		writeSlotChangeResult(buffer, slotChangeError);
+		buffer.writeComponent(slotChangeError.getErrorMessage().orElse(Component.empty()));
+		buffer.writeVarIntArray(slotChangeError.getErrorUpgradeSlots().stream().mapToInt(i -> i).toArray());
+		buffer.writeVarIntArray(slotChangeError.getErrorInventorySlots().stream().mapToInt(i -> i).toArray());
+		buffer.writeVarIntArray(slotChangeError.getErrorInventoryParts().stream().mapToInt(i -> i).toArray());
 	}
-
-	private static void writeSlotChangeResult(FriendlyByteBuf packetBuffer, UpgradeSlotChangeResult slotChangeResult) {
-		packetBuffer.writeComponent(slotChangeResult.getErrorMessage().orElse(Component.empty()));
-		packetBuffer.writeVarIntArray(slotChangeResult.getErrorUpgradeSlots().stream().mapToInt(i -> i).toArray());
-		packetBuffer.writeVarIntArray(slotChangeResult.getErrorInventorySlots().stream().mapToInt(i -> i).toArray());
-		packetBuffer.writeVarIntArray(slotChangeResult.getErrorInventoryParts().stream().mapToInt(i -> i).toArray());
-	}
-
 
 	@Override
 	@Environment(EnvType.CLIENT)
