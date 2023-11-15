@@ -49,7 +49,7 @@
         "team_reborn_energy": ">=${energy_version}"
     },
     "suggests": {
-        "modsmenu": "*"
+        "modmenu": "*"
     },
     "custom": {
         "loom:injected_interfaces": {
