@@ -60,14 +60,6 @@ repositories {
     maven { url = "https://modmaven.dev" } // Jei
     maven { url = "https://maven.ladysnake.org/releases" } // CCA, for Trinkets
     maven { url = "https://www.cursemaven.com" } // Balm, CraftingTweaks
-/*    maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/Salandora/sophisticatedcore")
-        credentials {
-            username = System.getenv("USERNAME")
-            password = System.getenv("READ_PACKAGES_TOKEN")
-        }
-    }*/
 }
 
 configurations.configureEach {
@@ -107,7 +99,6 @@ def devEnv(DependencyHandler deps) {
     deps.modLocalRuntime("curse.maven:balm-500525:${balm_cf_file_id}")
     deps.modLocalRuntime("curse.maven:craftingtweaks-502516:${crafting_tweaks_cf_file_id}")
     deps.modLocalRuntime("com.terraformersmc:modmenu:$modmenu_version")
-    deps.modLocalRuntime("curse.maven:config-menus-forge-544048:$config_menu_version")
 }
 
 def dependencies(DependencyHandler deps) {
@@ -117,11 +108,10 @@ def dependencies(DependencyHandler deps) {
         deps.modApi(deps.include("io.github.fabricators_of_create.Porting-Lib:${module.trim()}:$port_lib_version+$minecraft_version"))
     }
 
-    // Forge Config Api Ports recommended way to implement this is to use their github repo, also include it as a jar-in-jar
-    deps.modApi(deps.include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_port_version"))
+    deps.modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_port_version")
 
-    deps.modApi(deps.include("teamreborn:energy:$energy_version")) {
-        exclude(group: "net.fabricmc.fabric-api")
+    deps.include deps.modApi("teamreborn:energy:$energy_version") {
+        transitive = false
     }
 }
 
@@ -269,6 +259,8 @@ machete {
 }
 
 tasks.withType(ProcessResources).configureEach {
+    exclude '.cache'
+
     var replaceProperties = [
             mod_id              : mod_id,
             mod_version         : mod_version,
@@ -328,7 +320,7 @@ publishing {
     }
     publications {
         gpr(MavenPublication) {
-            artifactId = base.archivesName
+            artifactId = base.archivesName.get()
             from(components.java)
         }
     }
