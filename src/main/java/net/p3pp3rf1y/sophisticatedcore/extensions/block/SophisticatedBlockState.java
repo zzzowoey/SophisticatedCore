@@ -16,13 +16,11 @@ public interface SophisticatedBlockState {
         return (BlockState)this;
     }
 
-    default boolean addLandingEffects(ServerLevel level, BlockPos pos, BlockState state2, LivingEntity entity, int numberOfParticles)
-    {
+    default boolean addLandingEffects(ServerLevel level, BlockPos pos, BlockState state2, LivingEntity entity, int numberOfParticles) {
         return self().getBlock().addLandingEffects(self(), level, pos, state2, entity, numberOfParticles);
     }
 
-    default boolean addRunningEffects(Level level, BlockPos pos, Entity entity)
-    {
+    default boolean addRunningEffects(Level level, BlockPos pos, Entity entity) {
         return self().getBlock().addRunningEffects(self(), level, pos, entity);
     }
 
