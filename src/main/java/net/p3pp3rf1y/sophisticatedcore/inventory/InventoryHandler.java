@@ -276,24 +276,23 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	}
 
 	private long insertItemInternal(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
-		try (Transaction nested = Transaction.openNested(ctx)) {
-			long remaining = runOnBeforeInsert(slot, resource, maxAmount, nested, this, storageWrapper);
-			if (remaining <= 0) {
-				nested.commit();
-				return maxAmount;
-			}
+		long remaining = runOnBeforeInsert(slot, resource, maxAmount, ctx, this, storageWrapper);
+		if (remaining <= 0) {
+			return maxAmount;
+		}
 
+		try (Transaction nested = Transaction.openNested(ctx)) {
 			remaining -= inventoryPartitioner.getPartBySlot(slot).insertItem(slot, resource, maxAmount, nested, super::insertSlot);
 			TransactionCallback.onSuccess(nested, () -> slotTracker.removeAndSetSlotIndexes(this, slot, getStackInSlot(slot)));
-
-			if (remaining == maxAmount) {
-				return 0;
-			}
-
-			runOnAfterInsert(slot, nested, this, storageWrapper);
 			nested.commit();
-			return maxAmount - remaining;
 		}
+
+		if (remaining == maxAmount) {
+			return 0;
+		}
+
+		runOnAfterInsert(slot, ctx, this, storageWrapper);
+		return maxAmount - remaining;
 	}
 
 	private ItemStack triggerOverflowUpgrades(ItemStack ret) {
