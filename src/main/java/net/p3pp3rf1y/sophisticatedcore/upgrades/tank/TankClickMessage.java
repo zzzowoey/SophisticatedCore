@@ -6,10 +6,8 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerBase;
 import net.p3pp3rf1y.sophisticatedcore.network.SimplePacketBase;
@@ -42,20 +40,16 @@ public class TankClickMessage extends SimplePacketBase {
 			if (!(upgradeContainer instanceof TankUpgradeContainer tankContainer)) {
 				return;
 			}
-			ItemStack cursorStack = containerMenu.getCarried();
-			ContainerItemContext cic = ContainerItemContext.withConstant(cursorStack);
+			ContainerItemContext cic = ContainerItemContext.ofPlayerCursor(sender, containerMenu);
 			Storage<FluidVariant> storage = cic.find(FluidStorage.ITEM);
 			if (storage != null) {
 				TankUpgradeWrapper tankWrapper = tankContainer.getUpgradeWrapper();
 				FluidStack tankContents = tankWrapper.getContents();
 				if (tankContents.isEmpty()) {
-					drainHandler(sender, containerMenu, cic, storage, tankWrapper);
+					tankWrapper.drainHandler(storage);
 				} else {
-					if (!tankWrapper.fillHandler(cic, storage, itemStackIn -> {
-						containerMenu.setCarried(itemStackIn);
-						sender.connection.send(new ClientboundContainerSetSlotPacket(-1, containerMenu.incrementStateId(), -1, containerMenu.getCarried()));
-					})) {
-						drainHandler(sender, containerMenu, cic, storage, tankWrapper);
+					if (!tankWrapper.fillHandler(storage)) {
+						tankWrapper.drainHandler(storage);
 					}
 				}
 			}
@@ -63,10 +57,4 @@ public class TankClickMessage extends SimplePacketBase {
 		return true;
 	}
 
-	private static void drainHandler(ServerPlayer sender, AbstractContainerMenu containerMenu, ContainerItemContext cic, Storage<FluidVariant> storage, TankUpgradeWrapper tankWrapper) {
-		tankWrapper.drainHandler(cic, storage, itemStackIn -> {
-			containerMenu.setCarried(itemStackIn);
-			sender.connection.send(new ClientboundContainerSetSlotPacket(-1, containerMenu.incrementStateId(), -1, containerMenu.getCarried()));
-		});
-	}
 }

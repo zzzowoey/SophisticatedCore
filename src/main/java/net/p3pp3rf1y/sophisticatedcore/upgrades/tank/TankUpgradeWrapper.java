@@ -41,6 +41,7 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 	private final ItemStackHandler inventory;
 	private FluidStack contents;
 	private long cooldownTime = 0;
+	private boolean allowEmptyInputResource = false;
 
 	protected TankUpgradeWrapper(IStorageWrapper storageWrapper, ItemStack upgrade, Consumer<ItemStack> upgradeSaveHandler) {
 		super(storageWrapper, upgrade, upgradeSaveHandler);
@@ -84,8 +85,11 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 	}
 
 	private boolean isValidFluidItem(ItemStack stack, boolean isOutput) {
-		if (stack != null && !stack.isEmpty()) {
+		if (!stack.isEmpty()) {
 			Storage<FluidVariant> storage = ContainerItemContext.withConstant(stack).find(FluidStorage.ITEM);
+			if (storage == null) {
+				return false;
+			}
 			return isValidFluidHandler(storage, isOutput);
 		}
 		return false;
@@ -93,14 +97,13 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 
 	private boolean isValidFluidHandler(Storage<FluidVariant> storage, boolean isOutput) {
 		boolean tankEmpty = contents.isEmpty();
-		if (storage != null) {
-			for (StorageView<FluidVariant> view : storage) {
-				if (
-						(isOutput  && (view.isResourceBlank() || (!tankEmpty && view.getResource().isOf(contents.getFluid()))))
-					 || (!isOutput && !view.isResourceBlank() && (tankEmpty  || view.getResource().isOf(contents.getFluid())))
-				) {
-					return true;
-				}
+		for (StorageView<FluidVariant> view : storage) {
+			if (
+					(isOutput  && (view.isResourceBlank() || (!tankEmpty && view.getResource().isOf(contents.getFluid()))))
+				 || (!isOutput && (!view.isResourceBlank() && (tankEmpty  || view.getResource().isOf(contents.getFluid())))
+							|| (view.isResourceBlank() && allowEmptyInputResource))
+			) {
+				return true;
 			}
 		}
 		return false;
@@ -195,16 +198,16 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 		}
 
 		boolean didSomething = false;
-		ContainerItemContext cic = ContainerItemContext.withConstant(inventory.getStackInSlot(INPUT_SLOT));
+		ContainerItemContext cic = ContainerItemContext.ofSingleSlot(inventory.getSlot(INPUT_SLOT));
 		Storage<FluidVariant> storage = cic.find(FluidStorage.ITEM);
 		if (storage != null) {
-			didSomething = drainHandler(cic, storage, stack -> inventory.setStackInSlot(INPUT_SLOT, stack));
+			didSomething = drainHandler(storage);
 		}
 
-		cic = ContainerItemContext.withConstant(inventory.getStackInSlot(OUTPUT_SLOT));
+		cic = ContainerItemContext.ofSingleSlot(inventory.getSlot(OUTPUT_SLOT));
 		storage = cic.find(FluidStorage.ITEM);
 		if (storage != null) {
-			didSomething |= fillHandler(cic, storage, stack -> inventory.setStackInSlot(OUTPUT_SLOT, stack));
+			didSomething |= fillHandler(storage);
 		}
 
 		if (didSomething) {
@@ -212,7 +215,7 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 		}
 	}
 
-	public boolean fillHandler(ContainerItemContext cic, Storage<FluidVariant> storage, Consumer<ItemStack> updateContainerStack) {
+	public boolean fillHandler(Storage<FluidVariant> storage) {
 		if (!contents.isEmpty() && isValidFluidHandler(storage, true)) {
 			long filled = StorageUtil.simulateInsert(storage, contents.getType(), Math.min(FluidConstants.BUCKET, contents.getAmount()), null);
 			if (filled <= 0) { //checking for less than as well because some mods have incorrect fill logic
@@ -221,7 +224,6 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 			try (Transaction ctx = Transaction.openOuter()) {
 				long drained = drain(filled, ctx, false);
 				storage.insert(contents.getType(), drained, ctx);
-				updateContainerStack.accept(cic.getItemVariant().toStack((int) cic.getAmount()));
 				ctx.commit();
 			}
 			return true;
@@ -229,19 +231,24 @@ public class TankUpgradeWrapper extends UpgradeWrapperBase<TankUpgradeWrapper, T
 		return false;
 	}
 
-	public boolean drainHandler(ContainerItemContext cic, Storage<FluidVariant> storage, Consumer<ItemStack> updateContainerStack) {
+	public boolean drainHandler(Storage<FluidVariant> storage) {
 		if (isValidFluidHandler(storage, false)) {
+			// We have confirmed that the inital item is a valid fluid handler, now it's necessary to allow empty resources due to how the ContainerItemContext
+			// works, it takes care of the exchange of the item in the slot, which then will trigger the isValidItem check again.
+			allowEmptyInputResource = true;
+
 			FluidVariant resource = contents.isEmpty() ? TransferUtil.getFirstFluid(storage).getType() : contents.getType();
 			long extracted = contents.isEmpty() ?
 					StorageUtil.simulateExtract(storage, resource, FluidConstants.BUCKET, null) :
 					StorageUtil.simulateExtract(storage, resource, Math.min(FluidConstants.BUCKET, getTankCapacity() - contents.getAmount()), null);
 			if (extracted <= 0) {
+				allowEmptyInputResource = false; // set back to false
 				return false;
 			}
 			try (Transaction ctx = Transaction.openOuter()) {
 				long filled = fill(resource, extracted, ctx, false);
 				storage.extract(resource, filled, ctx);
-				updateContainerStack.accept(cic.getItemVariant().toStack((int) cic.getAmount()));
+				allowEmptyInputResource = false; // set back to false
 				ctx.commit();
 			}
 			return true;
