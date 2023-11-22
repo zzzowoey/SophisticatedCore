@@ -144,11 +144,26 @@ public class InventoryHelper {
 		return remainingStacks;
 	}
 
-	public static ItemStack runPickupOnPickupResponseUpgrades(Level world, UpgradeHandler upgradeHandler, ItemStack remainingStack, @Nullable TransactionContext ctx) {
+	public static ItemStack simulateInsertIntoInventory(SlottedStackStorage inventory, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
+		try (Transaction simulate = Transaction.openNested(ctx)) {
+			return insertIntoInventory(inventory, resource, maxAmount,  simulate);
+		}
+	}
+
+	public static ItemStack insertIntoInventory(SlottedStackStorage inventory, ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		long remaining = maxAmount;
+		int slots = inventory.getSlotCount();
+		for (int slot = 0; slot < slots && remaining > 0; slot++) {
+			remaining -= inventory.insertSlot(slot, resource, remaining, ctx);
+		}
+		return resource.toStack((int) remaining);
+	}
+
+	public static ItemStack runPickupOnPickupResponseUpgrades(Level world, UpgradeHandler upgradeHandler, ItemStack remainingStack, TransactionContext ctx) {
 		return runPickupOnPickupResponseUpgrades(world, null, upgradeHandler, remainingStack, ctx);
 	}
 
-	public static ItemStack runPickupOnPickupResponseUpgrades(Level world, @Nullable Player player, UpgradeHandler upgradeHandler, ItemStack remainingStack, @Nullable TransactionContext ctx) {
+	public static ItemStack runPickupOnPickupResponseUpgrades(Level world, @Nullable Player player, UpgradeHandler upgradeHandler, ItemStack remainingStack, TransactionContext ctx) {
 		List<IPickupResponseUpgrade> pickupUpgrades = upgradeHandler.getWrappersThatImplement(IPickupResponseUpgrade.class);
 
 		for (IPickupResponseUpgrade pickupUpgrade : pickupUpgrades) {
@@ -157,7 +172,7 @@ public class InventoryHelper {
 				remainingStack = pickupUpgrade.pickup(world, remainingStack, pickupTransaction);
 
 				ItemStack finalRemainingStack = remainingStack;
-				TransactionCallback.onSuccess(pickupTransaction, () -> {
+				TransactionCallback.onSuccess(ctx, () -> {
 					if (player != null && finalRemainingStack.getCount() != countBeforePickup) {
 						playPickupSound(world, player);
 					}
@@ -227,7 +242,7 @@ public class InventoryHelper {
 
 					// extract it, or rollback if the amounts don't match
 					if (accepted > 0 && view.extract(resource, accepted, transferTransaction) == accepted) {
-						TransactionCallback.onSuccess(transferTransaction, () -> onInserted.accept(() -> resource.toStack((int) accepted)));
+						TransactionCallback.onSuccess(outer, () -> onInserted.accept(() -> resource.toStack((int) accepted)));
 						transferTransaction.commit();
 					}
 				}

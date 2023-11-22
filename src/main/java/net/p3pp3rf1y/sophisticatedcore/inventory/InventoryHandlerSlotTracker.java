@@ -45,7 +45,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		this.shouldInsertIntoEmpty = shouldInsertIntoEmpty;
 	}
 
-	public void addPartiallyFilled(int slot, ItemStack stack) {
+	private void addPartiallyFilled(int slot, ItemStack stack) {
 		ItemStackKey stackKey = ItemStackKey.of(stack);
 		partiallyFilledStackSlots.computeIfAbsent(stackKey, k -> {
 			if (!fullStackSlots.containsKey(k)) {
@@ -72,7 +72,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		return itemStackKeys.keySet();
 	}
 
-	public void addFull(int slot, ItemStack stack) {
+	private void addFull(int slot, ItemStack stack) {
 		ItemStackKey stackKey = ItemStackKey.of(stack);
 		fullStackSlots.computeIfAbsent(stackKey, k -> {
 			if (!partiallyFilledStackSlots.containsKey(k)) {
@@ -84,7 +84,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 		itemStackKeys.computeIfAbsent(stack.getItem(), i -> new HashSet<>()).add(stackKey);
 	}
 
-	public void removePartiallyFilled(int slot) {
+	private void removePartiallyFilled(int slot) {
 		if (partiallyFilledSlotStacks.containsKey(slot)) {
 			ItemStackKey stackKey = partiallyFilledSlotStacks.remove(slot);
 			@Nullable
@@ -257,7 +257,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 			remaining -= handleOverflow(overflowHandler, stackKey, resource, remaining);
 		}
 
-		return (int)maxAmount - remaining;
+		return remaining;
 	}
 
 	@Override

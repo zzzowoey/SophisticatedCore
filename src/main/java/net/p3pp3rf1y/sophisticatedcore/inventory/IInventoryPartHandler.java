@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Function4;
 import com.mojang.datafixers.util.Pair;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -35,11 +34,11 @@ public interface IInventoryPartHandler {
 		return 0;
 	}
 
-	default long extractItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext transaction) {
+	default long extractItem(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
 		return 0;
 	}
 
-	default long insertItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext transaction, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
+	default long insertItem(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
 		return maxAmount;
 	}
 
@@ -121,21 +120,13 @@ public interface IInventoryPartHandler {
 		}
 
 		@Override
-		public long extractItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx) {
-			try (Transaction nested = Transaction.openNested(ctx)) {
-				long extracted = parent.extractItemInternal(slot, resource, maxAmount, nested);
-				nested.commit();
-				return extracted;
-			}
+		public long extractItem(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
+			return parent.extractItemInternal(slot, resource, maxAmount, ctx);
 		}
 
 		@Override
-		public long insertItem(int slot, ItemVariant resource, long maxAmount, @Nullable TransactionContext ctx, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
-			try (Transaction nested = Transaction.openNested(ctx)) {
-				long inserted = insertSuper.apply(slot, resource, maxAmount, nested);
-				nested.commit();
-				return inserted;
-			}
+		public long insertItem(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx, Function4<Integer, ItemVariant, Long, TransactionContext, Long> insertSuper) {
+			return insertSuper.apply(slot, resource, maxAmount, ctx);
 		}
 
 		@Override

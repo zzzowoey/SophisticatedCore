@@ -98,7 +98,6 @@ public class ClientEventHandler implements ClientModInitializer {
         poseStack.popPose();
     }
 
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // Necessary cause renderTooltip wants an Optional<TooltipComponent> as parameter
     private static void renderSpecialTooltip(Minecraft mc, AbstractContainerScreen<?> containerGui, PoseStack poseStack, int mouseX, int mouseY, StashResultAndTooltip stashResultAndTooltip) {
         poseStack.pushPose();
         poseStack.translate(0, 0, containerGui instanceof StorageScreenBase ? -100 : 100);

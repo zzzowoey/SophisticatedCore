@@ -5,7 +5,6 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandle
 import io.github.fabricators_of_create.porting_lib.util.LogicalSidedProvider;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
@@ -184,23 +183,19 @@ public class UpgradeHandler extends ItemStackHandler {
 	}
 
 	@Override
-	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		try (Transaction extractTransaction = Transaction.openNested(transaction)) {
-			TransactionCallback.onSuccess(extractTransaction, () -> {
-				if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread()) {
-					ItemStack slotStack = getStackInSlot(slot);
-					if (persistent && !slotStack.isEmpty() && maxAmount == 1) {
-						Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
-						if (wrappers.containsKey(slot)) {
-							wrappers.get(slot).onBeforeRemoved();
-						}
+	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
+		TransactionCallback.onSuccess(ctx, () -> {
+			if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread()) {
+				ItemStack slotStack = getStackInSlot(slot);
+				if (persistent && !slotStack.isEmpty() && maxAmount == 1) {
+					Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
+					if (wrappers.containsKey(slot)) {
+						wrappers.get(slot).onBeforeRemoved();
 					}
 				}
-			});
-
-			extractTransaction.commit();
-		}
-		return super.extractSlot(slot, resource, maxAmount, transaction);
+			}
+		});
+		return super.extractSlot(slot, resource, maxAmount, ctx);
 	}
 
 	private void initializeTypeWrappers() {
