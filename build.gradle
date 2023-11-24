@@ -115,6 +115,9 @@ def compat(DependencyHandler deps) {
     deps.modCompileOnly("com.terraformersmc:modmenu:$modmenu_version")
     deps.modCompileOnly("curse.maven:balm-500525:${balm_cf_file_id}")
     deps.modCompileOnly("curse.maven:craftingtweaks-502516:${crafting_tweaks_cf_file_id}")
+    /*deps.modCompileOnly("curse.maven:chipped-456956:${chipped_cf_file_id}")
+    deps.modCompileOnly("curse.maven:ctm-267602:${ctm_cf_file_id}")
+    deps.modCompileOnly("curse.maven:resourcefullib-570073:${resourcefullib_cf_file_id}")*/
 
     recipeViewers(deps)
 }

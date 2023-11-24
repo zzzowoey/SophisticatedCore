@@ -109,6 +109,11 @@ public class ShapeBasedRecipeBuilder {
 		return this;
 	}
 
+	public ShapeBasedRecipeBuilder condition(ConditionJsonProvider condition) {
+		conditions.add(condition);
+		return this;
+	}
+
 	public ShapeBasedRecipeBuilder group(@Nullable String groupName) {
 		this.group = groupName;
 		return this;
