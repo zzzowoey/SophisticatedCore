@@ -39,7 +39,7 @@ public class ClientEventHandler implements ClientModInitializer {
         ModFluids.registerFluids();
 
         ServerWorldEvents.UNLOAD.register(StorageSoundHandler::onWorldUnload);
-        ClientTickEvents.START_CLIENT_TICK.register(StorageSoundHandler::tick);
+		ClientTickEvents.END_WORLD_TICK.register(StorageSoundHandler::tick);
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> RecipeHelper.setWorld(client.level));
 

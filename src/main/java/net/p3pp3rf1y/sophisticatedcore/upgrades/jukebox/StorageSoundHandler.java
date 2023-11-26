@@ -39,9 +39,9 @@ public class StorageSoundHandler {
 		}
 	}
 
-	public static void tick(Minecraft world) {
-		if (!storageSounds.isEmpty() && lastPlaybackChecked < world.level.getGameTime() - SOUND_STOP_CHECK_INTERVAL) {
-			lastPlaybackChecked = world.level.getGameTime();
+	public static void tick(ClientLevel level) {
+		if (!storageSounds.isEmpty() && lastPlaybackChecked < level.getGameTime() - SOUND_STOP_CHECK_INTERVAL) {
+			lastPlaybackChecked = level.getGameTime();
 			storageSounds.entrySet().removeIf(entry -> {
 				if (!Minecraft.getInstance().getSoundManager().isActive(entry.getValue())) {
 					PacketHandler.sendToServer(new SoundStopNotificationMessage(entry.getKey()));
