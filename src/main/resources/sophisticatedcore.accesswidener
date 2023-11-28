@@ -1,5 +1,7 @@
 accessWidener v2 named
 
+transitive-accessible method net/minecraft/client/gui/components/EditBox isEditable ()Z
+
 transitive-accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen clickedSlot Lnet/minecraft/world/inventory/Slot;
 transitive-accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen doubleclick Z
 transitive-accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen draggingItem Lnet/minecraft/world/item/ItemStack;
