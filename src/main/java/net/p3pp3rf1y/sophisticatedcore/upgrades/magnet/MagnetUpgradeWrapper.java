@@ -63,7 +63,7 @@ public class MagnetUpgradeWrapper extends UpgradeWrapperBase<MagnetUpgradeWrappe
 	}
 
 	@Override
-	public ItemStack pickup(Level world, ItemStack stack, @Nullable TransactionContext ctx) {
+	public ItemStack pickup(Level world, ItemStack stack, TransactionContext ctx) {
 		if (!shouldPickupItems() || !filterLogic.matchesFilter(stack)) {
 			return stack;
 		}

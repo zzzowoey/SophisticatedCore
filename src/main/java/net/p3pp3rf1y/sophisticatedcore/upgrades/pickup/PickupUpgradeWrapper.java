@@ -12,7 +12,6 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.IPickupResponseUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
 
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 
 public class PickupUpgradeWrapper extends UpgradeWrapperBase<PickupUpgradeWrapper, PickupUpgradeItem>
 		implements IPickupResponseUpgrade, IContentsFilteredUpgrade {
@@ -24,7 +23,7 @@ public class PickupUpgradeWrapper extends UpgradeWrapperBase<PickupUpgradeWrappe
 	}
 
 	@Override
-	public ItemStack pickup(Level world, ItemStack stack, @Nullable TransactionContext ctx) {
+	public ItemStack pickup(Level world, ItemStack stack, TransactionContext ctx) {
 		if (!filterLogic.matchesFilter(stack)) {
 			return stack;
 		}

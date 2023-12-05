@@ -127,7 +127,7 @@ public class InventoryHelper {
 		}
 	}
 
-	public static List<ItemStack> insertIntoInventory(List<ItemStack> stacks, Storage<ItemVariant> inventory, @Nullable TransactionContext ctx) {
+	public static List<ItemStack> insertIntoInventory(List<ItemStack> stacks, Storage<ItemVariant> inventory, TransactionContext ctx) {
 		if (stacks.isEmpty()) {
 			return stacks;
 		}
