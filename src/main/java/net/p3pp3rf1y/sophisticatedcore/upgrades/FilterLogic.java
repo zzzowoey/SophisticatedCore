@@ -128,8 +128,7 @@ public class FilterLogic extends FilterLogicBase {
 				int slot = itemTags.getInt("Slot");
 
 				if (slot >= 0 && slot < getSlotCount()) {
-					ItemStack stack = ItemStack.of(itemTags);
-					this.getSlot(slot).setNewStackInternal(stack);
+					this.getSlot(slot).load(itemTags);
 				}
 			}
 			onLoad();

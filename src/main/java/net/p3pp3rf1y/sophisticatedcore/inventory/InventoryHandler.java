@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedcore.inventory;
 import com.mojang.datafixers.util.Pair;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerSlot;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.CompoundTag;
@@ -143,14 +144,14 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 		ListTag tagList = nbt.getList("Items", Tag.TAG_COMPOUND);
 		for (int i = 0; i < tagList.size(); i++) {
 			CompoundTag itemTags = tagList.getCompound(i);
-			int slot = itemTags.getInt("Slot");
+			int slotIndex = itemTags.getInt("Slot");
 
-			if (slot >= 0 && slot < getSlotCount()) {
+			if (slotIndex >= 0 && slotIndex < getSlotCount()) {
 				ItemStack slotStack = ItemStack.of(itemTags);
 				if (itemTags.contains(REAL_COUNT_TAG)) {
 					slotStack.setCount(itemTags.getInt(REAL_COUNT_TAG));
 				}
-				this.getSlot(slot).setNewStackInternal(slotStack);
+				this.getSlot(slotIndex).load(slotStack);
 			}
 		}
 		slotTracker.refreshSlotIndexesFrom(this);
@@ -411,8 +412,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 
 		super.setSize(previousSlots.size() + diff);
 		for (int i = 0; i < previousSlots.size() && i < getSlotCount(); i++) {
-			var old = previousSlots.get(i);
-			getSlot(i).setNewStackInternal(old.getResource().toStack((int) old.getAmount()));
+			getSlot(i).load(((ItemStackHandlerSlot) previousSlots.get(i)).getStack());
 		}
 
 		initStackNbts();

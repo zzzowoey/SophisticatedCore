@@ -349,8 +349,7 @@ public class UpgradeHandler extends ItemStackHandler {
 
 		super.setSize(previousSlots.size() + diff);
 		for (int i = 0; i < previousSlots.size() && i < getSlotCount(); i++) {
-			var old = (ItemStackHandlerSlot)previousSlots.get(i);
-			getSlot(i).setNewStackInternal(old.getStack());
+			getSlot(i).load(((ItemStackHandlerSlot) previousSlots.get(i)).getStack());
 		}
 
 		saveInventory();
