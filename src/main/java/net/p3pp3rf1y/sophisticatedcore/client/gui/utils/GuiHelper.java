@@ -115,6 +115,10 @@ public class GuiHelper {
 	}
 
 	public static void blit(PoseStack matrixStack, int x, int y, TextureBlitData texData, int width, int height) {
+		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShaderTexture(0, texData.getTextureName());
+
 		int halfWidth = width / 2;
 		int secondHalfWidth = width - halfWidth;
 		int halfHeight = height / 2;
