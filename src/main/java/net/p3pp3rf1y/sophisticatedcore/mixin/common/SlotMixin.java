@@ -23,10 +23,4 @@ public class SlotMixin implements SophisticatedSlot {
             cir.setReturnValue(background);
         }
     }
-
-    @Override
-    public Slot setBackground(ResourceLocation atlas, ResourceLocation sprite) {
-        this.background = Pair.of(atlas, sprite);
-        return MixinHelper.cast(this);
-    }
 }

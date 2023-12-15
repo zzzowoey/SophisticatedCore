@@ -39,7 +39,7 @@ public class StorageInventorySlot extends SlotItemHandler {
 
 	@Override
 	public int getMaxStackSize(ItemStack stack) {
-		return inventoryHandler.getStackLimit(slotIndex, ItemVariant.of(stack));
+		return inventoryHandler.getStackLimit(slotIndex, stack);
 	}
 
 	@Override

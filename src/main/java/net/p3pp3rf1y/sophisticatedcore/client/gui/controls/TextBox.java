@@ -1,14 +1,14 @@
 package net.p3pp3rf1y.sophisticatedcore.client.gui.controls;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import org.lwjgl.glfw.GLFW;
-
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Dimension;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
 
@@ -21,14 +21,15 @@ public class TextBox extends WidgetBase {
 	}
 
 	@Override
-	protected void renderBg(PoseStack matrixStack, Minecraft minecraft, int mouseX, int mouseY) {
+	protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
 	}
 
 	@Override
-	public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+	protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		PoseStack poseStack = guiGraphics.pose();
 		poseStack.pushPose();
 		poseStack.translate(0, 0, 100);
-		editBox.renderWidget(poseStack, mouseX, mouseY, partialTicks);
+		editBox.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
 		poseStack.popPose();
 	}
 
@@ -39,7 +40,6 @@ public class TextBox extends WidgetBase {
 		}
 		super.setFocused(focused);
 	}
-
 	@Override
 	public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
 		if (!editBox.isFocused()) {

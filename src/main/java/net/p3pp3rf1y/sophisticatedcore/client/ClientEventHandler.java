@@ -6,10 +6,10 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -19,7 +19,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.client.init.ModFluids;
@@ -54,10 +53,12 @@ public class ClientEventHandler implements ClientModInitializer {
         PacketHandler.getChannel().initClientListener();
     }
 
-    private static void onDrawScreen(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float tickDelta) {
-        Minecraft mc = Screens.getClient(screen);
-        AbstractContainerScreen<?> containerGui = (AbstractContainerScreen<?>)screen;
-
+    private static void onDrawScreen(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY, float tickDelta) {
+        Minecraft mc = Minecraft.getInstance();
+        Screen gui = mc.screen;
+        if (!(gui instanceof AbstractContainerScreen<?> containerGui) || gui instanceof CreativeModeInventoryScreen || mc.player == null) {
+            return;
+        }
         AbstractContainerMenu menu = containerGui.getMenu();
         ItemStack held = menu.getCarried();
         if (!held.isEmpty()) {
@@ -74,34 +75,36 @@ public class ClientEventHandler implements ClientModInitializer {
 				}
 
                 if (s == under) {
-                    renderSpecialTooltip(mc, containerGui, poseStack, mouseX, mouseY, stashResultAndTooltip.get());
+                    renderSpecialTooltip(mc, containerGui, guiGraphics, mouseX, mouseY, stashResultAndTooltip.get());
                 } else {
-                    renderStashSign(mc, containerGui, poseStack, s, stack, stashResultAndTooltip.get().stashResult());
+                    renderStashSign(mc, containerGui, guiGraphics, s, stack, stashResultAndTooltip.get().stashResult());
                 }
             }
         }
     }
 
-    private static void renderStashSign(Minecraft mc, AbstractContainerScreen<?> containerGui, PoseStack poseStack, Slot s, ItemStack stack, IStashStorageItem.StashResult stashResult) {
+    private static void renderStashSign(Minecraft mc, AbstractContainerScreen<?> containerGui, GuiGraphics guiGraphics, Slot s, ItemStack stack, IStashStorageItem.StashResult stashResult) {
         int x = containerGui.getGuiLeft() + s.x;
         int y = containerGui.getGuiTop() + s.y;
 
+        PoseStack poseStack = guiGraphics.pose();
         poseStack.pushPose();
 		poseStack.translate(0, 0, 300);
 
 		int color = stashResult == IStashStorageItem.StashResult.MATCH_AND_SPACE ? ChatFormatting.GREEN.getColor() : 0xFFFF00;
         if (stack.getItem() instanceof IStashStorageItem) {
-            mc.font.drawShadow(poseStack, "+", (float) x + 10, (float) y + 8, color);
+            guiGraphics.drawString(mc.font, "+", x + 10, y + 8, color);
         } else {
-            mc.font.drawShadow(poseStack, "-", x + 1, y, color);
+            guiGraphics.drawString(mc.font, "-", x + 1, y, color);
         }
         poseStack.popPose();
     }
 
-    private static void renderSpecialTooltip(Minecraft mc, AbstractContainerScreen<?> containerGui, PoseStack poseStack, int mouseX, int mouseY, StashResultAndTooltip stashResultAndTooltip) {
+    private static void renderSpecialTooltip(Minecraft mc, AbstractContainerScreen<?> containerGui, GuiGraphics guiGraphics, int x, int y, StashResultAndTooltip stashResultAndTooltip) {
+        PoseStack poseStack = guiGraphics.pose();
         poseStack.pushPose();
-        poseStack.translate(0, 0, containerGui instanceof StorageScreenBase ? -100 : 100);
-        containerGui.renderTooltip(poseStack, Collections.singletonList(Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".right_click_to_add_to_storage")), stashResultAndTooltip.tooltip(), mouseX, mouseY);
+        poseStack.translate(0, 0, 100);
+        guiGraphics.renderTooltip(containerGui.font, Collections.singletonList(Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".right_click_to_add_to_storage")), stashResultAndTooltip.tooltip(), x, y);
         poseStack.popPose();
     }
 

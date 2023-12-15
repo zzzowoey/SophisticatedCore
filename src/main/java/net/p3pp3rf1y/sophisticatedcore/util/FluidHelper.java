@@ -30,7 +30,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
 
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -61,9 +60,8 @@ public class FluidHelper {
 
         // check that we can place the fluid at the destination
         BlockState state = level.getBlockState(pos);
-        Material material = state.getMaterial();
         boolean waterlog = state.hasProperty(WATERLOGGED);
-        if (!waterlog && !material.isReplaceable()) {
+        if (!waterlog && !state.canBeReplaced()) {
             return false;
         }
         if (waterlog && fluid != Fluids.WATER) {
@@ -100,7 +98,7 @@ public class FluidHelper {
                 return true;
             }
 
-            if (!level.isClientSide && state.canBeReplaced(fluid) && !material.isLiquid()) {
+            if (!level.isClientSide && state.canBeReplaced(fluid) && !state.liquid()) {
                 level.destroyBlock(pos, true);
             }
 

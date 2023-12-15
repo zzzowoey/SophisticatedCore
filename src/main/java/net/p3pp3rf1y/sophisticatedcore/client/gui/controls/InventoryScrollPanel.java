@@ -3,8 +3,9 @@ package net.p3pp3rf1y.sophisticatedcore.client.gui.controls;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 
-import io.github.fabricators_of_create.porting_lib.client.gui.controls.ScrollPanel;
+import io.github.fabricators_of_create.porting_lib.util.client.ScrollPanel;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.world.inventory.Slot;
 
@@ -36,16 +37,17 @@ public class InventoryScrollPanel extends ScrollPanel {
 	}
 
 	@Override
-	protected void drawBackground(PoseStack poseStack, Tesselator tess, float partialTick) {
-		screen.drawSlotBg(poseStack);
+	protected void drawBackground(GuiGraphics guiGraphics, Tesselator tess, float partialTick) {
+		screen.drawSlotBg(guiGraphics);
 	}
 
 	@Override
-	protected void drawPanel(PoseStack poseStack, int entryRight, int relativeY, Tesselator tess, int mouseX, int mouseY) {
+	protected void drawPanel(GuiGraphics guiGraphics, int entryRight, int relativeY, Tesselator tess, int mouseX, int mouseY) {
+		PoseStack poseStack = guiGraphics.pose();
 		poseStack.pushPose();
 		poseStack.translate(screen.getLeftX(), screen.getTopY(), 0.0D);
 
-		screen.renderInventorySlots(poseStack, mouseX, mouseY, isMouseOver(mouseX, mouseY));
+		screen.renderInventorySlots(guiGraphics, mouseX, mouseY, isMouseOver(mouseX, mouseY));
 
 		poseStack.popPose();
 	}
@@ -64,10 +66,10 @@ public class InventoryScrollPanel extends ScrollPanel {
 	}
 
 	public interface IInventoryScreen {
-		void renderInventorySlots(PoseStack matrixStack, int mouseX, int mouseY, boolean canShowHover);
+		void renderInventorySlots(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean canShowHover);
 
 		boolean isMouseOverSlot(Slot pSlot, double pMouseX, double pMouseY);
-		void drawSlotBg(PoseStack matrixStack);
+		void drawSlotBg(GuiGraphics guiGraphics);
 		int getTopY();
 
 		int getLeftX();

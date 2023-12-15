@@ -11,11 +11,9 @@
         "common.ItemEntityMixin",
         "common.ItemMixin",
         "common.ItemStackMixin",
-        "common.LivingEntityMixin",
         "common.MobMixin",
         "common.PersistentEntitySectionManagerMixin",
-        "common.ServerLevelMixin",
-        "common.SlotMixin"
+        "common.ServerLevelMixin"
     ],
     "client": [
         "client.AbstractContainerScreenMixin",

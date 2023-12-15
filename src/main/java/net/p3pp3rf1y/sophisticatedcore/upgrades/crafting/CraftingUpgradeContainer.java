@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedcore.upgrades.crafting;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -42,7 +41,8 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 				@Override
 				public void setChanged() {
 					super.setChanged();
-					updateCraftingResult(player.level, player, craftMatrix, craftResult, craftingResultSlot);
+					updateCraftingResult(player.level(), player, craftMatrix, craftResult, craftingResultSlot);
+					craftMatrix.setChanged();
 				}
 			});
 		}
@@ -52,15 +52,17 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 			public void onTake(Player thePlayer, ItemStack stack) {
 				ItemStack remainingStack = getItem();
 				checkTakeAchievements(stack);
-				NonNullList<ItemStack> nonnulllist;
-				if (lastRecipe != null && lastRecipe.matches(craftMatrix, player.level)) {
-					nonnulllist = lastRecipe.getRemainingItems(craftMatrix);
+//				net.minecraftforge.common.ForgeHooks.setCraftingPlayer(thePlayer);
+				List<ItemStack> items;
+				if (lastRecipe != null && lastRecipe.matches(craftMatrix, player.level())) {
+					items = lastRecipe.getRemainingItems(craftMatrix);
 				} else {
-					nonnulllist = craftMatrix.items;
+					items = craftMatrix.getItems();
 				}
-				for (int i = 0; i < nonnulllist.size(); ++i) {
+//				net.minecraftforge.common.ForgeHooks.setCraftingPlayer(null);
+				for (int i = 0; i < items.size(); ++i) {
 					ItemStack itemstack = craftMatrix.getItem(i);
-					ItemStack itemstack1 = nonnulllist.get(i);
+					ItemStack itemstack1 = items.get(i);
 					if (!itemstack.isEmpty()) {
 						craftMatrix.removeItem(i, 1);
 						itemstack = craftMatrix.getItem(i);
@@ -69,7 +71,7 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 					if (!itemstack1.isEmpty()) {
 						if (itemstack.isEmpty()) {
 							craftMatrix.setItem(i, itemstack1);
-						} else if (ItemStack.isSame(itemstack, itemstack1) && ItemStack.tagMatches(itemstack, itemstack1)) {
+						} else if (ItemStack.isSameItemSameTags(itemstack, itemstack1)) {
 							itemstack1.grow(itemstack.getCount());
 							craftMatrix.setItem(i, itemstack1);
 						} else if (!player.getInventory().add(itemstack1)) {
@@ -97,7 +99,7 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 	}
 
 	private void onCraftMatrixChanged(Container iInventory) {
-		updateCraftingResult(player.level, player, craftMatrix, craftResult, craftingResultSlot);
+		updateCraftingResult(player.level(), player, craftMatrix, craftResult, craftingResultSlot);
 	}
 
 	private void updateCraftingResult(Level world, Player player, CraftingContainer inventory, ResultContainer inventoryResult, ResultSlot craftingResultSlot) {
@@ -137,7 +139,7 @@ public class CraftingUpgradeContainer extends UpgradeContainerBase<CraftingUpgra
 	public ItemStack getSlotStackToTransfer(Slot slot) {
 		if (slot == craftingResultSlot) {
 			ItemStack slotStack = slot.getItem();
-			slotStack.getItem().onCraftedBy(slotStack, player.level, player);
+			slotStack.getItem().onCraftedBy(slotStack, player.level(), player);
 			return slotStack;
 		}
 		return super.getSlotStackToTransfer(slot);

@@ -44,7 +44,7 @@ public class ItemStackHelper {
 	}
 
 	public static boolean canItemStacksStack(ItemStack a, ItemStack b) {
-		if (a.isEmpty() || !a.sameItem(b) || a.hasTag() != b.hasTag()) {
+		if (a.isEmpty() || !ItemStack.isSameItem(a, b) || a.hasTag() != b.hasTag()) {
 			return false;
 		}
 

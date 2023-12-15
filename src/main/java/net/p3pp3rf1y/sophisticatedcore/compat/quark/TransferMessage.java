@@ -1,4 +1,4 @@
-/*
+package net.p3pp3rf1y.sophisticatedcore.compat.quark;/*
 package net.p3pp3rf1y.sophisticatedcore.compat.quark;
 
 import net.minecraft.network.FriendlyByteBuf;

@@ -104,7 +104,7 @@ public class InventorySorter {
 
 	private static int placeStack(SlottedStackStorage handler, ItemStackKey current, int count, int slot) {
 		ItemStack copy = current.getStack().copy();
-		int slotLimit = handler instanceof InventoryHandler inventoryHandler ? inventoryHandler.getStackLimit(slot, ItemVariant.of(copy)) : handler.getSlotLimit(slot);
+		int slotLimit = handler instanceof InventoryHandler inventoryHandler ? inventoryHandler.getStackLimit(slot, copy) : handler.getSlotLimit(slot);
 		int countPlaced = Math.min(count, slotLimit);
 		copy.setCount(countPlaced);
 		if (!ItemStack.matches(handler.getStackInSlot(slot), copy)) {

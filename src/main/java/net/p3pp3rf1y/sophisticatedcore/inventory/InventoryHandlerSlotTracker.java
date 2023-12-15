@@ -232,7 +232,7 @@ public class InventoryHandlerSlotTracker implements ISlotTracker {
 	}
 
 	private boolean isPartiallyFilled(InventoryHandler itemHandler, int slot, ItemStack stack) {
-		return stack.getCount() < itemHandler.getStackLimit(slot, ItemVariant.of(stack));
+		return stack.getCount() < itemHandler.getStackLimit(slot, stack);
 	}
 
 	@Override

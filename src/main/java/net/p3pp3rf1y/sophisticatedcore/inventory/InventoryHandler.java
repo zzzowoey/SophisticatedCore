@@ -3,7 +3,6 @@ package net.p3pp3rf1y.sophisticatedcore.inventory;
 import com.mojang.datafixers.util.Pair;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerSlot;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.CompoundTag;
@@ -12,6 +11,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IInsertResponseUpgrade;
@@ -151,7 +151,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 				if (itemTags.contains(REAL_COUNT_TAG)) {
 					slotStack.setCount(itemTags.getInt(REAL_COUNT_TAG));
 				}
-				this.getSlot(slotIndex).load(slotStack);
+				this.setSlotStack(slotIndex, slotStack);
 			}
 		}
 		slotTracker.refreshSlotIndexesFrom(this);
@@ -189,6 +189,10 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 			limit = MathHelper.intMaxCappedAddition(limit, remainder * resource.getItem().getMaxStackSize() / 64);
 		}
 		return limit;
+	}
+
+	public int getStackLimit(int slot, ItemStack resource) {
+		return getStackLimit(slot, ItemVariant.of(resource));
 	}
 
 	@Override
@@ -243,7 +247,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 	}
 
 	public ItemStack getSlotStack(int slot) {
-		return this.getSlot(slot).getStack();
+		return super.getStackInSlot(slot);
 	}
 
 	public void setSlotStack(int slot, ItemStack stack) {
@@ -412,7 +416,7 @@ public abstract class InventoryHandler extends ItemStackHandler implements ITrac
 
 		super.setSize(previousSlots.size() + diff);
 		for (int i = 0; i < previousSlots.size() && i < getSlotCount(); i++) {
-			getSlot(i).load(((ItemStackHandlerSlot) previousSlots.get(i)).getStack());
+			this.setSlotStack(i, this.getSlotStack(i));
 		}
 
 		initStackNbts();

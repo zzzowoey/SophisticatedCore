@@ -101,13 +101,16 @@ def dependencies(DependencyHandler deps) {
     deps.modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
 
     for (String module in port_lib_modules.split(",")) {
-        deps.include(deps.modApi("io.github.fabricators_of_create.Porting-Lib:${module.trim()}:$port_lib_version+$minecraft_version"))
+        deps.include(deps.modApi("io.github.fabricators_of_create.Porting-Lib:${module.trim()}:$port_lib_version")) {
+            exclude group:"net.fabricmc.fabric-api"
+        }
     }
 
     deps.modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forge_config_api_port_version")
 
     deps.include deps.modApi("teamreborn:energy:$energy_version") {
         transitive = false
+        exclude group:"net.fabricmc.fabric-api"
     }
 }
 

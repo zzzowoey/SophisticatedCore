@@ -1,4 +1,4 @@
-/*
+package net.p3pp3rf1y.sophisticatedcore.compat.rei;/*
 package net.p3pp3rf1y.sophisticatedcore.compat.rei;
 
 import me.shedaniel.rei.api.client.registry.transfer.TransferHandler;

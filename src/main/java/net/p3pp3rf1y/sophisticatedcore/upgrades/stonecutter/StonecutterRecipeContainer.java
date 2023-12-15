@@ -172,9 +172,9 @@ public class StonecutterRecipeContainer {
 		}
 
 		@Override
-		public void onTake(Player thePlayer, ItemStack stack) {
-			stack.onCraftedBy(thePlayer.level, thePlayer, stack.getCount());
-			resultInventory.awardUsedRecipes(thePlayer);
+		public void onTake(Player player, ItemStack stack) {
+			stack.onCraftedBy(player.level(), player, stack.getCount());
+			resultInventory.awardUsedRecipes(player, List.of(inputSlot.getItem()));
 			ItemStack itemstack = inputSlot.remove(1);
 			if (!itemstack.isEmpty()) {
 				updateRecipeResultSlot();
@@ -187,7 +187,7 @@ public class StonecutterRecipeContainer {
 					lastOnTake = l;
 				}
 			});
-			super.onTake(thePlayer, stack);
+			super.onTake(player, stack);
 		}
 	}
 }

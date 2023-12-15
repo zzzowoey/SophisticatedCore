@@ -1,4 +1,4 @@
-/*
+package net.p3pp3rf1y.sophisticatedcore.compat.chipped;/*
 package net.p3pp3rf1y.sophisticatedcore.compat.chipped;
 
 import com.google.common.base.Suppliers;

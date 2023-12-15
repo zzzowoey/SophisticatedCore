@@ -1,7 +1,6 @@
 package net.p3pp3rf1y.sophisticatedcore.crafting;
 
-import me.alphamode.forgetags.Tags;
-
+import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
@@ -121,7 +120,7 @@ public abstract class StorageDyeRecipeBase extends CustomRecipe {
 		}
 
 		for (DyeColor color : DyeColor.values()) {
-			if (stack.is(color.getTag())) return color;
+			if (stack.is(color.getTag())) {return color;}
 		}
 
 		return null;

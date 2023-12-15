@@ -1,9 +1,8 @@
 package net.p3pp3rf1y.sophisticatedcore.client.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -75,11 +74,11 @@ public class TemplatePersistanceControl extends CompositeWidgetBase<WidgetBase> 
 			}
 
 			@Override
-			public void renderTooltip(Screen screen, PoseStack poseStack, int mouseX, int mouseY) {
+			public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
 				boolean mouseOver = isMouseOver(mouseX, mouseY);
 				boolean showTextBox = container.showsTextbox() && mouseOver;
 				if (mouseOver) {
-					screen.renderTooltip(poseStack, getTooltip(), Optional.empty(), saveTemplateButton.getX() + 10, saveTemplateButton.getY() + (showTextBox ? -13 : 6));
+					guiGraphics.renderTooltip(screen.font, getTooltip(), Optional.empty(), saveTemplateButton.getX() + 10, saveTemplateButton.getY() + (showTextBox ? -13 : 6));
 				}
 				saveInput.setVisible(showTextBox);
 				saveInput.setFocused(showTextBox);
@@ -102,10 +101,10 @@ public class TemplatePersistanceControl extends CompositeWidgetBase<WidgetBase> 
 			}
 
 			@Override
-			public void renderTooltip(Screen screen, PoseStack poseStack, int mouseX, int mouseY) {
+			public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
 				boolean mouseOver = isMouseOver(mouseX, mouseY);
 				if (mouseOver) {
-					screen.renderTooltip(poseStack, getTooltip(), Optional.empty(), loadTemplateButton.getX() + 10, loadTemplateButton.getY() + 6);
+					guiGraphics.renderTooltip(screen.font, getTooltip(), Optional.empty(), loadTemplateButton.getX() + 10, loadTemplateButton.getY() + 6);
 				}
 			}
 		};
@@ -123,10 +122,10 @@ public class TemplatePersistanceControl extends CompositeWidgetBase<WidgetBase> 
 		addChild(exportInput);
 		exportTemplateButton = new Button(new Position(x, y + 2 * (18 + BUTTON_GAP)), EXPORT_TEMPLATE, button -> container.exportTemplate(exportInput.getValue())) {
 			@Override
-			public void renderTooltip(Screen screen, PoseStack poseStack, int mouseX, int mouseY) {
+			public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
 				boolean mouseOver = isMouseOver(mouseX, mouseY);
 				if (mouseOver) {
-					screen.renderTooltip(poseStack, getTooltip(), Optional.empty(), exportTemplateButton.getX() + 10, exportTemplateButton.getY() - 13);
+					guiGraphics.renderTooltip(screen.font, getTooltip(), Optional.empty(), exportTemplateButton.getX() + 10, exportTemplateButton.getY() - 13);
 				}
 				exportInput.setVisible(mouseOver);
 				exportInput.setFocused(mouseOver);
@@ -150,7 +149,7 @@ public class TemplatePersistanceControl extends CompositeWidgetBase<WidgetBase> 
 		if (container.getLoadSlot() == -1) {
 			loadTemplateButton.setTooltip(List.of(Component.translatable(TranslationHelper.INSTANCE.translSettingsButton("load_template.no_save")).withStyle(ChatFormatting.RED)));
 		} else {
-			List<net.minecraft.network.chat.Component> tooltip = new java.util.ArrayList<>();
+			List<Component> tooltip = new java.util.ArrayList<>();
 			tooltip.add(Component.translatable(TranslationHelper.INSTANCE.translSettingsButton("load_template"), container.getLoadSlotTooltipName().withStyle(ChatFormatting.GREEN)));
 			container.getLoadSlotSource().ifPresent(source -> tooltip.add(Component.translatable(TranslationHelper.INSTANCE.translSettingsButton("load_template.source"), Component.literal(source).withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY)).withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY)));
 			tooltip.add(Component.translatable(TranslationHelper.INSTANCE.translSettingsButton("load_template.controls")).withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY));
@@ -170,7 +169,7 @@ public class TemplatePersistanceControl extends CompositeWidgetBase<WidgetBase> 
 	}
 
 	@Override
-	protected void renderBg(PoseStack matrixStack, Minecraft minecraft, int mouseX, int mouseY) {
+	protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
 		//noop
 	}
 

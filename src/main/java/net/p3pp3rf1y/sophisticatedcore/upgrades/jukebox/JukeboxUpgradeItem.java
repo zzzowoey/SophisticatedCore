@@ -72,7 +72,7 @@ public class JukeboxUpgradeItem extends UpgradeItemBase<JukeboxUpgradeItem.Wrapp
 		}
 
 		public void play(LivingEntity entity) {
-			play(entity.level, (world, storageUuid) ->
+			play(entity.level(), (world, storageUuid) ->
 					ServerStorageSoundHandler.startPlayingDisc(world, entity.position(), storageUuid, entity.getId(),
 							Item.getId(getDisc().getItem()), () -> setIsPlaying(false)));
 		}
@@ -101,11 +101,11 @@ public class JukeboxUpgradeItem extends UpgradeItemBase<JukeboxUpgradeItem.Wrapp
 		}
 
 		public void stop(LivingEntity entity) {
-			if (!(entity.level instanceof ServerLevel)) {
+			if (!(entity.level() instanceof ServerLevel)) {
 				return;
 			}
 			storageWrapper.getContentsUuid().ifPresent(storageUuid ->
-					ServerStorageSoundHandler.stopPlayingDisc((ServerLevel) entity.level, entity.position(), storageUuid)
+					ServerStorageSoundHandler.stopPlayingDisc((ServerLevel) entity.level(), entity.position(), storageUuid)
 			);
 			setIsPlaying(false);
 		}

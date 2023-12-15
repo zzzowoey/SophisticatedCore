@@ -122,7 +122,7 @@ public class UpgradeHandler extends ItemStackHandler {
 			ItemStackHandlerSlot viewSlot = (ItemStackHandlerSlot) view;
 
 			int slot = viewSlot.getIndex();
-			ItemStack upgrade = viewSlot.getStack();
+			ItemStack upgrade = this.getStackInSlot(slot);
 
 			if (!(upgrade.getItem() instanceof IUpgradeItem<?>)) {
 				continue;
@@ -349,7 +349,7 @@ public class UpgradeHandler extends ItemStackHandler {
 
 		super.setSize(previousSlots.size() + diff);
 		for (int i = 0; i < previousSlots.size() && i < getSlotCount(); i++) {
-			getSlot(i).load(((ItemStackHandlerSlot) previousSlots.get(i)).getStack());
+			getSlot(i).setNewStack(this.getStackInSlot(i));
 		}
 
 		saveInventory();
