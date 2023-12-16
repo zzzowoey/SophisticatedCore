@@ -58,7 +58,7 @@ public class SettingsTemplateStorage extends SavedData {
 	}
 
 	public static SettingsTemplateStorage get() {
-		if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread()) {
+		if (!LogicalSidedProvider.WORKQUEUE.get(EnvType.CLIENT).isSameThread()) {
 			MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 			if (server != null) {
 				ServerLevel overworld = server.getLevel(Level.OVERWORLD);

@@ -220,7 +220,7 @@ public class ItemDisplaySettingsCategory implements ISettingsCategory<ItemDispla
 	}
 
 	public void itemChanged(int changedSlotIndex) {
-		if (!LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread() || !slotIndexes.contains(changedSlotIndex)) {
+		if (!!LogicalSidedProvider.WORKQUEUE.get(EnvType.CLIENT).isSameThread() || !slotIndexes.contains(changedSlotIndex)) {
 			return;
 		}
 

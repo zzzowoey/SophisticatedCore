@@ -50,7 +50,7 @@ public class UpgradeHandler extends ItemStackHandler {
 		this.contentsSaveHandler = contentsSaveHandler;
 		this.onInvalidateUpgradeCaches = onInvalidateUpgradeCaches;
 		deserializeNBT(contentsNbt.getCompound(UPGRADE_INVENTORY_TAG));
-		if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread() && storageWrapper.getRenderInfo().getUpgradeItems().size() != this.getSlotCount()) {
+		if (!LogicalSidedProvider.WORKQUEUE.get(EnvType.CLIENT).isSameThread() && storageWrapper.getRenderInfo().getUpgradeItems().size() != this.getSlotCount()) {
 			setRenderUpgradeItems();
 		}
 	}
@@ -143,7 +143,7 @@ public class UpgradeHandler extends ItemStackHandler {
 	@Override
 	public long insertSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext transaction) {
 		long inserted = super.insertSlot(slot, resource, maxAmount, transaction);
-		if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread() && inserted > 0 && maxAmount > 0) {
+		if (!LogicalSidedProvider.WORKQUEUE.get(EnvType.CLIENT).isSameThread() && inserted > 0 && maxAmount > 0) {
 			onUpgradeAdded(slot);
 		}
 
@@ -171,13 +171,13 @@ public class UpgradeHandler extends ItemStackHandler {
 		ItemStack originalStack = getStackInSlot(slot);
 		Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
 		boolean itemsDiffer = !ItemStackHelper.canItemStacksStack(originalStack, stack);
-		if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread() && itemsDiffer && wrappers.containsKey(slot)) {
+		if (!LogicalSidedProvider.WORKQUEUE.get(EnvType.CLIENT).isSameThread() && itemsDiffer && wrappers.containsKey(slot)) {
 			wrappers.get(slot).onBeforeRemoved();
 		}
 
 		super.setStackInSlot(slot, stack);
 
-		if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread() && itemsDiffer) {
+		if (!LogicalSidedProvider.WORKQUEUE.get(EnvType.CLIENT).isSameThread() && itemsDiffer) {
 			onUpgradeAdded(slot);
 		}
 	}
@@ -185,7 +185,7 @@ public class UpgradeHandler extends ItemStackHandler {
 	@Override
 	public long extractSlot(int slot, ItemVariant resource, long maxAmount, TransactionContext ctx) {
 		TransactionCallback.onSuccess(ctx, () -> {
-			if (LogicalSidedProvider.WORKQUEUE.get(EnvType.SERVER).isSameThread()) {
+			if (!LogicalSidedProvider.WORKQUEUE.get(EnvType.CLIENT).isSameThread()) {
 				ItemStack slotStack = getStackInSlot(slot);
 				if (persistent && !slotStack.isEmpty() && maxAmount == 1) {
 					Map<Integer, IUpgradeWrapper> wrappers = getSlotWrappers();
