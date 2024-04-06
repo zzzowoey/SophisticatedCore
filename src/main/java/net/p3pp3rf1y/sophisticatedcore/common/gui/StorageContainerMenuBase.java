@@ -1617,9 +1617,16 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 
 		@Override
 		public boolean mayPlace(ItemStack stack) {
-			if (stack.isEmpty() || !getItemHandler().isItemValid(slotIndex, ItemVariant.of(stack))) {
-				return false;
+			boolean slotSupportsItemVariant;
+			try {
+				SlottedStackStorage handler = (SlottedStackStorage) getItemHandler();
+				slotSupportsItemVariant = handler.isItemValid(slotIndex, ItemVariant.of(stack), stack.getCount());
+			} catch (ClassCastException ignored) {
+				slotSupportsItemVariant = true;
 			}
+
+			if (stack.isEmpty() || !slotSupportsItemVariant)
+				return false;
 			UpgradeSlotChangeResult result = ((IUpgradeItem<?>) stack.getItem()).canAddUpgradeTo(storageWrapper, stack, isFirstLevelStorage(), player.level().isClientSide());
 			updateSlotChangeError(result);
 

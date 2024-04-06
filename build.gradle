@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id "fabric-loom" version "1.4-SNAPSHOT"
+    id "fabric-loom" version "1.6.6"
 
     id "io.github.p03w.machete" version "1.+" // automatic jar compressing on build
     id "org.sonarqube" version "4.3.1.3277"
@@ -39,7 +39,7 @@ repositories {
     maven { url = 'https://maven.parchmentmc.org' } // Parchment
 
     maven { url = "https://maven.fabricmc.net/" } // FAPI, Loader
-    maven { url = "https://mvn.devos.one/snapshots/" } // Porting Lib, Forge Tags, serialization-hooks
+    maven { url = "https://mvn.devos.one/releases/" } // Porting Lib, Forge Tags, serialization-hooks
     maven { url = "https://jitpack.io/" } // for Porting Lib: Mixin Extras, Fabric ASM
     maven {// Forge Config API Port
         name = "Fuzs Mod Resources"
