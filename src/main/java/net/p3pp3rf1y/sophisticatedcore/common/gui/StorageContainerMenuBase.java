@@ -1617,17 +1617,14 @@ public abstract class StorageContainerMenuBase<S extends IStorageWrapper> extend
 
 		@Override
 		public boolean mayPlace(ItemStack stack) {
-			boolean slotSupportsItemVariant;
+			IUpgradeItem<?> upgradeItem;
 			try {
-				SlottedStackStorage handler = (SlottedStackStorage) getItemHandler();
-				slotSupportsItemVariant = handler.isItemValid(slotIndex, ItemVariant.of(stack), stack.getCount());
-			} catch (ClassCastException ignored) {
-				slotSupportsItemVariant = true;
+				upgradeItem = (IUpgradeItem<?>) stack.getItem();
+			} catch(ClassCastException e) {
+				return false;
 			}
 
-			if (stack.isEmpty() || !slotSupportsItemVariant)
-				return false;
-			UpgradeSlotChangeResult result = ((IUpgradeItem<?>) stack.getItem()).canAddUpgradeTo(storageWrapper, stack, isFirstLevelStorage(), player.level().isClientSide());
+			UpgradeSlotChangeResult result = upgradeItem.canAddUpgradeTo(storageWrapper, stack, isFirstLevelStorage(), player.level().isClientSide());
 			updateSlotChangeError(result);
 
 			return result.isSuccessful();
